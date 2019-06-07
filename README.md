@@ -1,6 +1,10 @@
 # _picea_
 
-## Lightweight python library for working with (phylogenetic) trees
+### Lightweight python library for working with (phylogenetic) trees
+
+```
+pip install picea
+```
 
 ![example figure](examples/example1.png)
 
