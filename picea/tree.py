@@ -1,6 +1,6 @@
 import re
 
-def default_separation(node_a, node_b):
+def unequal_separation(node_a, node_b):
     if node_a.parent == node_b.parent:
         return 1
     return 2
@@ -26,6 +26,14 @@ class Tree(object):
     
     @classmethod
     def from_newick(cls, newick_string):
+        """Parse a newick formatted string into a Tree object
+        
+        Arguments:
+            newick_string {[string]} -- Newick formatted tree string
+        
+        Returns:
+            [Tree] -- Tree object
+        """
         tokens = re.split('\s*(;|\(|\)|,|:)\s*', newick_string)
         ID = 0
         tree = cls(ID = ID, length = 0, cumulative_length = 0)
@@ -63,6 +71,14 @@ class Tree(object):
         return tree
     
     def to_newick(self, branch_lengths = True):
+        """Make a Newick formatted string
+        
+        Keyword Arguments:
+            branch_lengths {bool} -- Whether to include branch lengths in the Newick string (default: {True})
+        
+        Returns:
+            String -- Newick formatted tree string
+        """
         if self.children:
             subtree_string = ','.join([
                 c.to_newick(branch_lengths = branch_lengths) for c in self.children
@@ -84,14 +100,29 @@ class Tree(object):
     
     @property
     def nodes(self):
+        """A list of all tree nodes in breadth-first order
+        
+        Returns:
+            list -- A list of all tree nodes
+        """
         return list(self.breadth_first())
     
     @property
     def leafs(self):
+        """A list of leaf nodes only
+        
+        Returns:
+            list -- A list of leaf nodes only
+        """
         return [n for n in self.nodes if not n.children]
     
     @property
     def links(self):
+        """A list of all (parent, child) combinations
+        
+        Returns:
+            list -- All (parent,child) combinations
+        """
         _links = []
         for node in self.nodes:
             if node.children:
@@ -99,21 +130,9 @@ class Tree(object):
                     _links.append((node, child))
         return _links
     
-    @property
-    def left_outer_leaf(self):
-        node = self
-        while node.children:
-            node = node.children[0]
-        return node
-    
-    @property
-    def right_outer_leaf(self):
-        node = self
-        while node.children:
-            node = node.children[-1]
-        return node
-    
     def breadth_first(self):
+        """[summary]
+        """
         queue = [self]
         while queue:
             node = queue.pop(0)
@@ -121,6 +140,11 @@ class Tree(object):
             yield node
         
     def depth_first(self, post_order = True):
+        """[summary]
+        
+        Keyword Arguments:
+            post_order {bool} -- [description] (default: {True})
+        """
         if not post_order:
             yield self
         for child in self.children:
@@ -128,8 +152,19 @@ class Tree(object):
         if post_order:
             yield self
     
-    def layout(self, separation = default_separation, d_x = 1, d_y = 1, 
+    def layout(self, separation = equal_separation, d_x = 1, d_y = 1, 
                ltr = True):
+        """Calculate (x,y) position of nodes for plotting, modifies nodes in place
+        
+        Keyword Arguments:
+            separation {function} -- function to calculate separation between leaf nodes (default: {equal_separation})
+            d_x {int} -- [description] (default: {1})
+            d_y {int} -- [description] (default: {1})
+            ltr {bool} -- Left-To-Right layout orientation (default: {True})
+        
+        Returns:
+            Tree -- Original root node with modified (x,y) coordinates according to specified layout properties
+        """
         previous_node = None
         y = 0
         for node in self.depth_first(post_order = True):
