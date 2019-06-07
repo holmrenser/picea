@@ -12,7 +12,7 @@ def main():
         author='rens holmer',
         author_email='rens.holmer@wur.nl',
         description='A lightweight python library for working (phylogenetic) trees',
-        version='0.0.1',
+        version='0.0.2',
         url='https://github.com/holmrenser/picea'
     )
 
