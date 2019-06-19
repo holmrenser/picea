@@ -26,6 +26,22 @@ def equal_separation(node_a, node_b):
     """
     return 1
 
+class TreeIndex(object):
+    def __init__(self, iterator, eq_func):
+        self.iterator = iterator
+        self.eq_func = eq_func
+    def __getitem__(self, key):
+        for element in self.iterator():
+            if self.eq_func(element, key):
+                return element
+        raise IndexError(f'{key} is not valid index')
+
+def index_equals(node, index):
+    return node.ID == index
+
+def name_equals(node, name):
+    return node.name == name
+
 class Tree(object):
     def __init__(self, ID = None, children = list(), x = 0, y = 0, 
                  label = None, length = 0, depth = None, parent = None,
@@ -39,6 +55,8 @@ class Tree(object):
         self.parent = parent
         self.length = length
         self.cumulative_length = cumulative_length
+        self.loc = TreeIndex(iterator = self.depth_first, eq_func = name_equals)
+        self.iloc = TreeIndex(iterator = self.depth_first, eq_func = index_equals)
     def __repr__(self):
         return f'<TreeNode ID={self.ID} depth={self.depth} length={self.length}>'
     
