@@ -1,11 +1,29 @@
 import re
 
 def unequal_separation(node_a, node_b):
+    """[summary]
+    
+    Arguments:
+        node_a {[type]} -- [description]
+        node_b {[type]} -- [description]
+    
+    Returns:
+        [type] -- [description]
+    """
     if node_a.parent == node_b.parent:
         return 1
     return 2
 
 def equal_separation(node_a, node_b):
+    """[summary]
+    
+    Arguments:
+        node_a {[type]} -- [description]
+        node_b {[type]} -- [description]
+    
+    Returns:
+        [type] -- [description]
+    """
     return 1
 
 class Tree(object):
@@ -108,7 +126,7 @@ class Tree(object):
         return list(self.breadth_first())
     
     @property
-    def leafs(self):
+    def leaves(self):
         """A list of leaf nodes only
         
         Returns:
