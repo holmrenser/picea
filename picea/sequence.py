@@ -35,14 +35,14 @@ class SequenceCollection(dict):
         return self._collection[key]
     @classmethod
     def from_fasta(cls, filename = None, string = None):
-        """[summary]
+        """Parse a fasta formatted string into a SequenceCollection object
         
         Keyword Arguments:
-            filename {[type]} -- [description] (default: {None})
-            string {[type]} -- [description] (default: {None})
+            filename {String} -- filename string (default: {None})
+            string {String} -- fasta formatted string (default: {None})
         
         Returns:
-            [type] -- [description]
+            SequenceCollection -- SequenceCollection instance
         """
         assert(filename or string)
         assert(not filename and string)
