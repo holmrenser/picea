@@ -1,6 +1,6 @@
 import re
 
-def unequal_separation(node_a, node_b):
+def unequal_separation(node_a, node_b, sep_1, sep_2):
     """[summary]
     
     Arguments:
@@ -14,20 +14,30 @@ def unequal_separation(node_a, node_b):
         return 1
     return 2
 
-def equal_separation(node_a, node_b):
+def equal_separation(node_a, node_b, separation = 1):
     """[summary]
     
     Arguments:
         node_a {[type]} -- [description]
         node_b {[type]} -- [description]
     
+    Keyword Arguments:
+        separation {int} -- [description] (default: {1})
+    
     Returns:
         [type] -- [description]
     """
-    return 1
+    return separation
 
 class TreeIndex(object):
     def __init__(self, iterator, eq_func):
+        """[summary]
+        
+        Arguments:
+            object {[type]} -- [description]
+            iterator {[type]} -- [description]
+            eq_func {[type]} -- [description]
+        """
         self.iterator = iterator
         self.eq_func = eq_func
     def __getitem__(self, key):
@@ -37,15 +47,46 @@ class TreeIndex(object):
         raise IndexError(f'{key} is not valid index')
 
 def index_equals(node, index):
+    """[summary]
+    
+    Arguments:
+        node {Tree} -- [description]
+        index {Int} -- [description]
+    
+    Returns:
+        Bool -- [description]
+    """
     return node.ID == index
 
 def name_equals(node, name):
+    """[summary]
+    
+    Arguments:
+        node {Tree} -- [description]
+        name {String} -- [description]
+    
+    Returns:
+        Bool -- [description]
+    """
     return node.name == name
 
 class Tree(object):
     def __init__(self, ID = None, children = list(), x = 0, y = 0, 
                  label = None, length = 0, depth = None, parent = None,
                  cumulative_length = 0):
+        """[summary]
+        
+        Keyword Arguments:
+            ID {[type]} -- [description] (default: {None})
+            children {[type]} -- [description] (default: {list()})
+            x {int} -- [description] (default: {0})
+            y {int} -- [description] (default: {0})
+            label {[type]} -- [description] (default: {None})
+            length {int} -- [description] (default: {0})
+            depth {[type]} -- [description] (default: {None})
+            parent {[type]} -- [description] (default: {None})
+            cumulative_length {int} -- [description] (default: {0})
+        """
         self.ID = ID
         self.children = children
         self.x = x
@@ -65,10 +106,10 @@ class Tree(object):
         """Parse a newick formatted string into a Tree object
         
         Arguments:
-            newick_string {[string]} -- Newick formatted tree string
+            newick_string {string} -- Newick formatted tree string
         
         Returns:
-            [Tree] -- Tree object
+            Tree -- Tree object
         """
         tokens = re.split('\s*(;|\(|\)|,|:)\s*', newick_string)
         ID = 0
@@ -167,7 +208,7 @@ class Tree(object):
         return _links
     
     def breadth_first(self):
-        """[summary]
+        """Generator implementing breadth first search starting at root node
         """
         queue = [self]
         while queue:
@@ -176,10 +217,10 @@ class Tree(object):
             yield node
         
     def depth_first(self, post_order = True):
-        """[summary]
+        """Generator implementing depth first search in either post- or pre-order traversel
         
         Keyword Arguments:
-            post_order {bool} -- [description] (default: {True})
+            post_order {bool} -- Depth first search in post-order traversal or not (default: {True})
         """
         if not post_order:
             yield self
