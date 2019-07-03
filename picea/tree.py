@@ -1,92 +1,107 @@
 import re
+from typing import Iterable, Callable, List
 
-def unequal_separation(node_a, node_b, sep_1, sep_2):
+
+def unequal_separation(
+    node_a: 'Tree',
+    node_b: 'Tree',
+    sep_1: float = 1.0,
+    sep_2: float = 2.0
+) -> float:
     """[summary]
-    
-    Arguments:
-        node_a {[type]} -- [description]
-        node_b {[type]} -- [description]
-    
+
+    Args:
+        node_a (Tree): [description]
+        node_b (Tree): [description]
+        sep_1 (float, optional): [description]. Defaults to 1.0.
+        sep_2 (float, optional): [description]. Defaults to 2.0.
+
     Returns:
-        [type] -- [description]
+        float: [description]
     """
     if node_a.parent == node_b.parent:
-        return 1
-    return 2
+        return sep_1
+    return sep_2
 
-def equal_separation(node_a, node_b, separation = 1):
+
+def equal_separation(
+    node_a: 'Tree',
+    node_b: 'Tree',
+    separation: float = 1.0
+) -> float:
     """[summary]
-    
-    Arguments:
-        node_a {[type]} -- [description]
-        node_b {[type]} -- [description]
-    
-    Keyword Arguments:
-        separation {int} -- [description] (default: {1})
-    
+
+    Args:
+        node_a (Tree): [description]
+        node_b (Tree): [description]
+        separation (float, optional): [description]. Defaults to 1.0.
+
     Returns:
-        [type] -- [description]
+        float: [description]
     """
     return separation
 
-class TreeIndex(object):
-    def __init__(self, iterator, eq_func):
-        """[summary]
-        
-        Arguments:
-            object {[type]} -- [description]
-            iterator {[type]} -- [description]
-            eq_func {[type]} -- [description]
-        """
-        self.iterator = iterator
-        self.eq_func = eq_func
-    def __getitem__(self, key):
-        for element in self.iterator():
-            if self.eq_func(element, key):
-                return element
-        raise IndexError(f'{key} is not valid index')
 
-def index_equals(node, index):
+def index_equals(
+    node: 'Tree',
+    index: int
+) -> bool:
     """[summary]
-    
-    Arguments:
-        node {Tree} -- [description]
-        index {Int} -- [description]
-    
+
+    Args:
+        node (Tree): [description]
+        index (int): [description]
+
     Returns:
-        Bool -- [description]
+        bool: [description]
     """
     return node.ID == index
 
-def name_equals(node, name):
+
+def name_equals(
+    node: 'Tree',
+    name: str
+) -> bool:
     """[summary]
-    
-    Arguments:
-        node {Tree} -- [description]
-        name {String} -- [description]
-    
+
+    Args:
+        node (Tree): [description]
+        name (str): [description]
+
     Returns:
-        Bool -- [description]
+        bool: [description]
     """
     return node.name == name
 
+
 class Tree(object):
-    def __init__(self, ID = None, children = list(), x = 0, y = 0, 
-                 label = None, length = 0, depth = None, parent = None,
-                 cumulative_length = 0):
+    def __init__(
+        self,
+        ID: int = None,
+        children: List['Tree'] = None,
+        x: float = 0.0,
+        y: float = 0.0,
+        label: str = None,
+        length: float = 0.0,
+        depth: float = None,
+        parent: 'Tree' = None,
+        cumulative_length: float = 0.0
+    ):
         """[summary]
-        
-        Keyword Arguments:
-            ID {[type]} -- [description] (default: {None})
-            children {[type]} -- [description] (default: {list()})
-            x {int} -- [description] (default: {0})
-            y {int} -- [description] (default: {0})
-            label {[type]} -- [description] (default: {None})
-            length {int} -- [description] (default: {0})
-            depth {[type]} -- [description] (default: {None})
-            parent {[type]} -- [description] (default: {None})
-            cumulative_length {int} -- [description] (default: {0})
+
+        Args:
+            ID (int, optional): [description]. Defaults to None.
+            children (list, optional): [description]. Defaults to None.
+            x (float, optional): [description]. Defaults to 0.0.
+            y (float, optional): [description]. Defaults to 0.0.
+            label (str, optional): [description]. Defaults to None.
+            length (float, optional): [description]. Defaults to 0.
+            depth (float, optional): [description]. Defaults to None.
+            parent (Tree, optional): [description]. Defaults to None.
+            cumulative_length (int, optional): [description]. Defaults to 0.
         """
+        if not children:
+            children = list()
         self.ID = ID
         self.children = children
         self.x = x
@@ -96,42 +111,114 @@ class Tree(object):
         self.parent = parent
         self.length = length
         self.cumulative_length = cumulative_length
-        self.loc = TreeIndex(iterator = self.depth_first, eq_func = name_equals)
-        self.iloc = TreeIndex(iterator = self.depth_first, eq_func = index_equals)
+
     def __repr__(self):
-        return f'<TreeNode ID={self.ID} depth={self.depth} length={self.length}>'
-    
-    @classmethod
-    def from_newick(cls, newick_string):
-        """Parse a newick formatted string into a Tree object
-        
-        Arguments:
-            newick_string {string} -- Newick formatted tree string
-        
+        return (
+            f'<TreeNode ID={self.ID} depth={self.depth}'
+            f' length={self.length} name={self.name}>'
+        )
+
+    @property
+    def loc(self):
+        """Name based index
+
+        Example:
+            >>> from picea import Tree
+            >>> newick = '(((a,b),(c,d)),e);'
+            >>> tree = Tree.from_newick(newick)
+            >>> tree.loc['a']
+            <TreeNode ID=3 depth=3 length=0.0 name=a>
+
         Returns:
-            Tree -- Tree object
+            Tree: tree node matching name
+
+        Raises:
+            IndexError
+        """
+        return TreeIndex(iterator=self.depth_first, eq_func=name_equals)
+
+    @property
+    def iloc(self):
+        """Index based index
+
+        Example:
+            >>> from picea import Tree
+            >>> newick = '(((a,b),(c,d)),e);'
+            >>> tree = Tree.from_newick(newick)
+            >>> tree.iloc[1]
+            <TreeNode ID=1 depth=1 length=0.0 name=>
+
+        Returns:
+            Tree: tree node matching index
+        """
+        return TreeIndex(iterator=self.depth_first, eq_func=index_equals)
+
+    @property
+    def nodes(self):
+        """A list of all tree nodes in breadth-first order
+
+        Returns:
+            list: A list of all tree nodes
+        """
+        return list(self.breadth_first())
+
+    @property
+    def leaves(self):
+        """A list of leaf nodes only
+
+        Returns:
+            list: A list of leaf nodes only
+        """
+        return [n for n in self.nodes if not n.children]
+
+    @property
+    def links(self):
+        """A list of all (parent, child) combinations
+
+        Returns:
+            list: All (parent,child) combinations
+        """
+        _links = []
+        for node in self.nodes:
+            if node.children:
+                for child in node.children:
+                    _links.append((node, child))
+        return _links
+
+    @classmethod
+    def from_newick(
+        cls,
+        newick_string: str
+    ):
+        """Parse a newick formatted string into a Tree object
+
+        Arguments:
+            newick_string (string): Newick formatted tree string
+
+        Returns:
+            Tree: Tree object
         """
         tokens = re.split('\s*(;|\(|\)|,|:)\s*', newick_string)
         ID = 0
-        tree = cls(ID = ID, length = 0, cumulative_length = 0)
+        tree = cls(ID=ID, length=0.0, cumulative_length=0.0)
         ancestors = list()
-        for i,token in enumerate(tokens):
+        for i, token in enumerate(tokens):
             if token == '(':
                 ID += 1
-                subtree = cls(ID = ID)
+                subtree = cls(ID=ID)
                 tree.children = [subtree]
                 ancestors.append(tree)
                 tree = subtree
             elif token == ',':
                 ID += 1
-                subtree = cls(ID = ID)
+                subtree = cls(ID=ID)
                 ancestors[-1].children.append(subtree)
                 tree = subtree
             elif token == ')':
                 tree = ancestors.pop()
             else:
                 previous_token = tokens[i - 1]
-                if previous_token in ('(',')',','):
+                if previous_token in ('(', ')', ','):
                     tree.name = token
                 elif previous_token == ':':
                     tree.length = float(token)
@@ -142,71 +229,44 @@ class Tree(object):
             for child in node.children:
                 child.parent = node
                 child.depth = node.depth + 1
-                child.cumulative_length = node.cumulative_length + abs(child.length)
+                child.cumulative_length = node.cumulative_length \
+                    + abs(child.length)
             queue += node.children
-        
+
         return tree
-    
-    def to_newick(self, branch_lengths = True):
+
+    def to_newick(
+        self,
+        branch_lengths: bool = True
+    ):
         """Make a Newick formatted string
-        
-        Keyword Arguments:
-            branch_lengths {bool} -- Whether to include branch lengths in the Newick string (default: {True})
-        
+
+        Args:
+            branch_lengths (bool, optional): Whether to include branch lengths in the Newick string. Defaults to True.
+
         Returns:
-            String -- Newick formatted tree string
+            String: Newick formatted tree string
         """
         if self.children:
             subtree_string = ','.join([
-                c.to_newick(branch_lengths = branch_lengths) for c in self.children
+                c.to_newick(branch_lengths=branch_lengths)
+                for c in self.children
             ])
             newick = f'({subtree_string}){self.name}'
         else:
             newick = self.name
-        
+
         if branch_lengths and self.ID != 0:
             length = self.length
             if length == 0:
                 length = int(0)
             newick += f':{length}'
-        
+
         if self.ID == 0:
             newick += ';'
-        
+
         return newick
-    
-    @property
-    def nodes(self):
-        """A list of all tree nodes in breadth-first order
-        
-        Returns:
-            list -- A list of all tree nodes
-        """
-        return list(self.breadth_first())
-    
-    @property
-    def leaves(self):
-        """A list of leaf nodes only
-        
-        Returns:
-            list -- A list of leaf nodes only
-        """
-        return [n for n in self.nodes if not n.children]
-    
-    @property
-    def links(self):
-        """A list of all (parent, child) combinations
-        
-        Returns:
-            list -- All (parent,child) combinations
-        """
-        _links = []
-        for node in self.nodes:
-            if node.children:
-                for child in node.children:
-                    _links.append((node, child))
-        return _links
-    
+
     def breadth_first(self):
         """Generator implementing breadth first search starting at root node
         """
@@ -215,32 +275,48 @@ class Tree(object):
             node = queue.pop(0)
             queue += node.children
             yield node
-        
-    def depth_first(self, post_order = True):
-        """Generator implementing depth first search in either post- or pre-order traversel
-        
+
+    def depth_first(
+        self,
+        post_order: bool = True
+    ):
+        """Generator implementing depth first search in either post- or
+        pre-order traversel
+
         Keyword Arguments:
-            post_order {bool} -- Depth first search in post-order traversal or not (default: {True})
+            post_order (bool, optional): Depth first search in post-order
+            traversal or not. Defaults to True
         """
         if not post_order:
             yield self
         for child in self.children:
-            yield from child.depth_first(post_order = post_order)
+            yield from child.depth_first(post_order=post_order)
         if post_order:
             yield self
-    
-    def layout(self, separation = equal_separation, d_x = 1, d_y = 1, 
-               ltr = True):
-        """Calculate (x,y) position of nodes for plotting, modifies nodes in place
-        
-        Keyword Arguments:
-            separation {function} -- function to calculate separation between leaf nodes (default: {equal_separation})
-            d_x {int} -- [description] (default: {1})
-            d_y {int} -- [description] (default: {1})
-            ltr {bool} -- Left-To-Right layout orientation (default: {True})
+
+    def layout(
+        self,
+        separation: Callable = equal_separation,
+        d_x: float = 1.0,
+        d_y: float = 1.0,
+        ltr: bool = True
+    ):
+        """Calculate (x,y) position of nodes for plotting,
+        modifies nodes in place
+
+        Args:
+            separation (function, optional): function to calculate separation \
+            between leaf nodes. Defaults to equal_separation.
+            d_x (int, optional): x-axis distance between neighbouring nodes. \
+            Defaults to 1.
+            d_y (int, optional): y-axis distance between neighbouring nodes.
+            Defaults to 1.
+            ltr (bool, optional): Left-To-Right layout orientation. Defaults
+            to True.
         
         Returns:
-            Tree -- Original root node with modified (x,y) coordinates according to specified layout properties
+            Tree: Original root node with modified (x,y) coordinates according
+            to specified layout properties
         """
         previous_node = None
         y = 0
@@ -264,3 +340,24 @@ class Tree(object):
             node.x = (self.x - node.x) * d_x
             node.y = (node.y - self.y) * d_y
         return self
+
+class TreeIndex(object):
+    def __init__(
+        self, 
+        iterator: Iterable[Tree], 
+        eq_func: Callable[[int, str],bool]
+    ):
+        """[summary]
+        
+        Args:
+            object ([type]): [description]
+            iterator ([type]): [description]
+            eq_func ([type]): [description]
+        """
+        self.iterator = iterator
+        self.eq_func = eq_func
+    def __getitem__(self, key):
+        for element in self.iterator():
+            if self.eq_func(element, key):
+                return element
+        raise IndexError(f'{key} is not valid index')
