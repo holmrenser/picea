@@ -1,4 +1,4 @@
 __author__ = 'rensholmer'
 
-from .tree import Tree
-from .sequence import SequenceCollection
+from .tree import Tree  # noqa
+from .sequence import SequenceCollection  # noqa

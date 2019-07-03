@@ -198,7 +198,7 @@ class Tree(object):
         Returns:
             Tree: Tree object
         """
-        tokens = re.split('\s*(;|\(|\)|,|:)\s*', newick_string)
+        tokens = re.split(r'\s*(;|\(|\)|,|:)\s*', newick_string)
         ID = 0
         tree = cls(ID=ID, length=0.0, cumulative_length=0.0)
         ancestors = list()
@@ -242,7 +242,8 @@ class Tree(object):
         """Make a Newick formatted string
 
         Args:
-            branch_lengths (bool, optional): Whether to include branch lengths in the Newick string. Defaults to True.
+            branch_lengths (bool, optional): Whether to include branch lengths\
+             in the Newick string. Defaults to True.
 
         Returns:
             String: Newick formatted tree string
@@ -313,18 +314,18 @@ class Tree(object):
             Defaults to 1.
             ltr (bool, optional): Left-To-Right layout orientation. Defaults
             to True.
-        
+
         Returns:
             Tree: Original root node with modified (x,y) coordinates according
             to specified layout properties
         """
         previous_node = None
         y = 0
-        for node in self.depth_first(post_order = True):
+        for node in self.depth_first(post_order=True):
             if node.children:
                 node.y = sum([c.y for c in node.children]) / len(node.children)
                 if ltr:
-                    node.x = 1 + max([c.x for c in node.children]) 
+                    node.x = 1 + max([c.x for c in node.children])
                 else:
                     node.x = min([c.x for c in node.children]) - 1
             else:
@@ -336,19 +337,20 @@ class Tree(object):
                 node.x = 0
                 previous_node = node
 
-        for node in self.depth_first(post_order = True):
+        for node in self.depth_first(post_order=True):
             node.x = (self.x - node.x) * d_x
             node.y = (node.y - self.y) * d_y
         return self
 
+
 class TreeIndex(object):
     def __init__(
-        self, 
-        iterator: Iterable[Tree], 
-        eq_func: Callable[[int, str],bool]
+        self,
+        iterator: Iterable[Tree],
+        eq_func: Callable[[int, str], bool]
     ):
         """[summary]
-        
+
         Args:
             object ([type]): [description]
             iterator ([type]): [description]
@@ -356,6 +358,7 @@ class TreeIndex(object):
         """
         self.iterator = iterator
         self.eq_func = eq_func
+
     def __getitem__(self, key):
         for element in self.iterator():
             if self.eq_func(element, key):

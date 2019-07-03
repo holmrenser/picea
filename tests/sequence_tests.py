@@ -1,18 +1,24 @@
 from picea import SequenceCollection
 
+
 def test_empty_init():
-    seq = SequenceCollection()
+    SequenceCollection()
+
 
 def test_parsing():
     fasta = '>A\nABC\n>B\nDEF'
-    seq = SequenceCollection.from_fasta(string = fasta)
+    SequenceCollection.from_fasta(string=fasta)
+
 
 def test_input_output():
     fasta = '>A\nABC\n>B\nDEF'
-    seq = SequenceCollection.from_fasta(string = fasta)
+    seq = SequenceCollection.from_fasta(string=fasta)
     assert seq.to_fasta() == fasta
 
-'''def test_align():
+
+'''
+def test_align():
     fasta = '>A\nABC\n>B\nDEF'
     seq = SequenceCollection.from_fasta(string = fasta)
-    seq.align()'''
+    seq.align()
+'''

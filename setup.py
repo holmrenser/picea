@@ -1,5 +1,4 @@
 #!/usr/bin/python
-import sys
 from setuptools import setup
 from sphinx.setup_command import BuildDoc
 
@@ -10,13 +9,15 @@ cmdclass = {'build_sphinx': BuildDoc}
 name = 'picea'
 version = '0.0.2'
 
+
 def main():
     setup(
         name=name,
         packages=[name],
         author=__author__,
         author_email='rens.holmer@wur.nl',
-        description='A lightweight python library for working (phylogenetic) trees',
+        description='A lightweight python library for working (phylogenetic) \
+            trees',
         version=version,
         url='https://github.com/holmrenser/picea',
         cmdclass=cmdclass,
@@ -29,6 +30,7 @@ def main():
             }
         }
     )
+
 
 if __name__ == '__main__':
     main()
