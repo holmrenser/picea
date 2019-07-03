@@ -5,7 +5,6 @@ from sphinx.setup_command import BuildDoc
 __author__ = 'Rens Holmer'
 __created__ = '07/06/2019'
 
-cmdclass = {'build_sphinx': BuildDoc}
 name = 'picea'
 version = '0.0.2'
 
@@ -20,7 +19,7 @@ def main():
             trees',
         version=version,
         url='https://github.com/holmrenser/picea',
-        cmdclass=cmdclass,
+        cmdclass={'build_sphinx': BuildDoc},
         command_options={
             'build_sphinx': {
                 'project': ('setup.py', name),
@@ -28,7 +27,8 @@ def main():
                 'source_dir': ('setup.py', 'docs/source'),
                 'build_dir': ('setup.py', 'docs/build')
             }
-        }
+        },
+        install_requires=['sphinx']
     )
 
 
