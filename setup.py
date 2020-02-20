@@ -28,7 +28,10 @@ def main():
                 'build_dir': ('setup.py', 'docs/build')
             }
         },
-        install_requires=['sphinx']
+        install_requires=[
+            'sphinx',
+            'numpy'
+        ]
     )
 
 
