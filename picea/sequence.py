@@ -2,56 +2,87 @@ from warnings import warn
 from itertools import groupby, chain
 from subprocess import Popen, PIPE
 from collections import defaultdict
+from typing import Iterable, List
 import tempfile
 import uuid
+import numpy as np
 
 
-class SequenceCollection(dict):
-    def __init__(self, sequences=None, is_aligned=False,
-                 sequence_annotation=None):
+class SequenceCollection:
+    def __init__(
+        self,
+        sequences: Iterable = None,
+        is_aligned: bool = False,
+        sequence_annotation: 'SequenceAnnotation' = None
+    ):
         """[summary]
 
-        Arguments:
-            dict {[type]} -- [description]
-
-        Keyword Arguments:
-            sequences {[type]} -- [description] (default: {None})
-            is_aligned {bool} -- [description] (default: {False})
+        Args:
+            self ([type]): [description]
+            sequences (Iterable, optional): [description]. Defaults to None.
+            is_aligned (bool, optional): [description]. Defaults to False.
+            sequence_annotation ([type], optional): [description]. Defaults \
+                to None.
         """
         self.is_aligned = is_aligned
-        self._collection = dict()
+        self._collection = np.empty((0, 0), dtype='uint8')
+        self._header_idx = dict()
         if sequences:
             for header, sequence in sequences:
                 self[header] = sequence
+        if sequence_annotation:
+            sequence_annotation.sequence_collection = self
         self.sequence_annotation = sequence_annotation
 
-    def __repr__(self):
-        return self._collection.__repr__()
-
-    def __setitem__(self, key, value):
-        if key in self:
-            warn(f'Turning duplicate key "{key}" into unique key')
-            new_key = key
+    def __setitem__(self, header: str, seq: str):
+        seq = seq.encode()
+        if header in self._header_idx:
+            warn(f'Turning duplicate header "{header}" into unique header')
+            new_header = header
             modifier = 0
-            while new_key in self:
+            while new_header in self._header_idx:
                 modifier += 1
-                new_key = f'{key}_{modifier}'
-            key = new_key
-        self._collection[key] = value
+                new_header = f'{header}_{modifier}'
+            header = new_header
+        n_seq, n_char = self._collection.shape
+        if n_seq == 0:
+            self._collection = np.array([[*seq]], dtype='uint8')
+        else:
+            len_diff = len(seq) - n_char
+
+            filler1 = np.array([[*b'-'] * len_diff], dtype='uint8')
+            arr = np.hstack((
+                self._collection,
+                np.repeat(filler1, n_seq, axis=0)
+            ))
+
+            filler2 = np.array([*b'-'] * -len_diff, dtype='uint8')
+            new_row = np.array([[*seq, *filler2]], dtype='uint8')
+
+            arr = np.vstack((arr, new_row))
+            self._collection = arr
+        self._header_idx[header] = n_seq
+
+    def __getitem__(self, header: str) -> str:
+        idx = self._header_idx[header]
+        n_chars = self._collection.shape[1]
+        seq = self._collection[idx] \
+            .view(f'S{n_chars}')[0] \
+            .decode()
+        if not self.is_aligned:
+            seq = seq.rstrip('-')
+        return seq
 
     @property
-    def headers(self):
-        return self._collection.keys()
+    def headers(self) -> List:
+        return list(self._header_idx.keys())
 
     @property
-    def sequences(self):
-        return self._collection.values()
-
-    def __getitem__(self, key):
-        return self._collection[key]
+    def sequences(self) -> List:
+        return [self[header] for header in self.headers]
 
     @classmethod
-    def from_fasta(cls, filename=None, string=None):
+    def from_fasta(cls, filename: str = None, string: str = None):
         """Parse a fasta formatted string into a SequenceCollection object
 
         Keyword Arguments:
@@ -86,12 +117,12 @@ class SequenceCollection(dict):
             [type] -- [description]
         """
         fasta_lines = []
-        for header, seq in self._collection.items():
+        for header in self.headers:
             fasta_lines.append(f'>{header}')
-            fasta_lines.append(seq)
+            fasta_lines.append(self[header])
         return '\n'.join(fasta_lines)
 
-    def align(self, method='mafft', method_kwargs=dict()):
+    def align(self, method: str = 'mafft', method_kwargs: dict = dict()):
         fasta = self.to_fasta()
         command = [method] + list(chain.from_iterable(method_kwargs.items()))
         process = Popen(
@@ -106,14 +137,19 @@ class SequenceCollection(dict):
             print(stdout)
 
 
-class SequenceAnnotation():
-    def __init__(self, sequence_collection=None):
+class SequenceAnnotation:
+    def __init__(
+        self,
+        sequence_collection: 'SequenceCollection' = None
+    ):
         """[summary]
 
         Args:
             sequence_collection ([type], optional): [description].
                 Defaults to None.
         """
+        if sequence_collection:
+            sequence_collection.sequence_annotation = self
         self.sequence_collection = sequence_collection
         self._intervals = dict()
         self._index = dict()
@@ -168,7 +204,7 @@ class SequenceAnnotation():
         return sequence_annotation
 
 
-class SequenceInterval():
+class SequenceInterval:
     _predefined_attributes = ('ID', 'name', 'alias', 'parent', 'target',
                               'gap', 'derives_from', 'note', 'dbxref',
                               'ontology_term', 'is_circular')

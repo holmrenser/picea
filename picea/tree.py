@@ -74,7 +74,7 @@ def name_equals(
     return node.name == name
 
 
-class Tree(object):
+class Tree:
     def __init__(
         self,
         ID: int = None,
