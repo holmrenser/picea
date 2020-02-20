@@ -6,4 +6,5 @@ from .sequence import (  # noqa
     SequenceCollection,
     SequenceAnnotation,
     SequenceInterval,
+    msa_plot,
 )

@@ -2,29 +2,96 @@ from warnings import warn
 from itertools import groupby, chain
 from subprocess import Popen, PIPE
 from collections import defaultdict
-from typing import Iterable, List
-import tempfile
+from typing import Iterable, List, Tuple, Dict, Callable
 import uuid
 import numpy as np
+from matplotlib import pyplot as plt
+from matplotlib.colors import ListedColormap, BoundaryNorm
+
+
+codes = np.array([*b'AaCcGgNnTt-'], dtype='uint8')
+colors = np.array([
+    *['green'] * 2,
+    *['red'] * 2,
+    *['blue'] * 2,
+    *['gray'] * 2,
+    *['darkorange'] * 2,
+    'black'
+])
+order = np.argsort(codes)
+cmap = ListedColormap(colors[order])
+norm = BoundaryNorm([0, *codes[order]], ncolors=codes.size)
+
+
+def msa_plot(seq, ax=None, figsize=None) -> Callable:
+    """[summary]
+
+    Args:
+        seq ([type]): [description]
+        ax ([type], optional): [description]. Defaults to None.
+        figsize ([type], optional): [description]. Defaults to None.
+
+    Returns:
+        [type]: [description]
+    """
+    if not figsize:
+        figsize = (20, 5)
+    if not ax:
+        fig, ax = plt.subplots(figsize=figsize)
+
+    ax.imshow(norm(seq._collection), cmap=cmap)
+    for i in range(seq.n_chars):
+        for j in range(seq.n_seqs):
+            nuc = seq._collection.view('S1')[j, i].decode()
+            ax.text(i, j, nuc, ha='center', va='center', color='w')
+    ax.set_yticks(np.arange(seq.n_seqs))
+    ax.set_yticklabels(seq.headers)
+    return ax
+
+
+class FastaIter:
+    def __init__(self, string):
+        """[summary]
+
+        Args:
+            string ([type]): [description]
+        """
+        self._iter = (
+            x for _, x in groupby(
+                string.split('\n'),
+                lambda line: line[0] == '>'
+            )
+        )
+
+    def __iter__(self):
+        for header in self._iter:
+            header = next(header)[1:].strip()
+            seq = ''.join(s.strip() for s in next(self._iter))
+            yield header, seq
+
+    def __next__(self):
+        header = next(next(self._iter))[1:].strip()
+        seq = ''.join(s.strip() for s in next(self._iter))
+        return header, seq
 
 
 class SequenceCollection:
     def __init__(
         self,
-        sequences: Iterable = None,
-        is_aligned: bool = False,
+        sequences: Iterable[Tuple[str, str]] = None,
+        aligned: bool = False,
         sequence_annotation: 'SequenceAnnotation' = None
-    ):
+    ) -> None:
         """[summary]
 
         Args:
             self ([type]): [description]
             sequences (Iterable, optional): [description]. Defaults to None.
-            is_aligned (bool, optional): [description]. Defaults to False.
+            aligned (bool, optional): [description]. Defaults to False.
             sequence_annotation ([type], optional): [description]. Defaults \
                 to None.
         """
-        self.is_aligned = is_aligned
+        self.aligned = aligned
         self._collection = np.empty((0, 0), dtype='uint8')
         self._header_idx = dict()
         if sequences:
@@ -34,7 +101,7 @@ class SequenceCollection:
             sequence_annotation.sequence_collection = self
         self.sequence_annotation = sequence_annotation
 
-    def __setitem__(self, header: str, seq: str):
+    def __setitem__(self, header: str, seq: str) -> None:
         seq = seq.encode()
         if header in self._header_idx:
             warn(f'Turning duplicate header "{header}" into unique header')
@@ -69,20 +136,33 @@ class SequenceCollection:
         seq = self._collection[idx] \
             .view(f'S{n_chars}')[0] \
             .decode()
-        if not self.is_aligned:
+        if not self.aligned:
             seq = seq.rstrip('-')
         return seq
 
     @property
-    def headers(self) -> List:
+    def headers(self) -> List[str]:
         return list(self._header_idx.keys())
 
     @property
-    def sequences(self) -> List:
+    def sequences(self) -> List[str]:
         return [self[header] for header in self.headers]
 
+    @property
+    def n_seqs(self) -> int:
+        return self._collection.shape[0]
+
+    @property
+    def n_chars(self) -> int:
+        return self._collection.shape[1]
+
     @classmethod
-    def from_fasta(cls, filename: str = None, string: str = None):
+    def from_fasta(
+        cls,
+        filename: str = None,
+        string: str = None,
+        aligned: bool = False
+    ) -> 'SequenceCollection':
         """Parse a fasta formatted string into a SequenceCollection object
 
         Keyword Arguments:
@@ -94,23 +174,16 @@ class SequenceCollection:
         """
         assert filename or string
         assert not (filename and string)
-        sequencecollection = cls()
+        sequencecollection = cls(aligned=aligned)
         if filename:
             with open(filename) as filehandle:
                 string = filehandle.read()
-        fasta_iter = (
-            x for _, x in groupby(
-                string.split(),
-                lambda line: line[0] == '>'
-            )
-        )
-        for header in fasta_iter:
-            header = next(header)[1:].strip()
-            seq = ''.join(s.strip() for s in next(fasta_iter))
+        fasta_iter = FastaIter(string)
+        for header, seq in fasta_iter:
             sequencecollection[header] = seq
         return sequencecollection
 
-    def to_fasta(self):
+    def to_fasta(self) -> str:
         """[summary]
 
         Returns:
@@ -122,19 +195,35 @@ class SequenceCollection:
             fasta_lines.append(self[header])
         return '\n'.join(fasta_lines)
 
-    def align(self, method: str = 'mafft', method_kwargs: dict = dict()):
+    def align(
+        self,
+        method: str = 'mafft',
+        method_kwargs: Dict[str, str] = dict()
+    ):
+        """[summary]
+
+        Args:
+            method (str, optional): [description]. Defaults to 'mafft'.
+            method_kwargs (Dict[str, str], optional): [description]. \
+                Defaults to dict().
+
+        Returns:
+            [type]: [description]
+        """
         fasta = self.to_fasta()
-        command = [method] + list(chain.from_iterable(method_kwargs.items()))
+        command = [method, *chain(*method_kwargs.items()), '-']
         process = Popen(
             command,
             stdin=PIPE,
             stdout=PIPE,
             stderr=PIPE
         )
-        with tempfile.NamedTemporaryFile() as temp:
-            temp.write(fasta)
-            stdout, stderr = process.communicate(input=temp.name)
-            print(stdout)
+        stdout, stderr = process.communicate(input=fasta.encode())
+        aligned_fasta = stdout.decode().strip()
+        return SequenceCollection.from_fasta(
+            string=aligned_fasta,
+            aligned=True
+        )
 
 
 class SequenceAnnotation:
