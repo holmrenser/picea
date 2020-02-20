@@ -2,7 +2,7 @@
 
 ### Lightweight python library for working with (phylogenetic) trees
 
-[![Build Status](https://travis-ci.org/holmrenser/picea.svg?branch=master)](https://travis-ci.org/holmrenser/picea)
+![tests](https://github.com/holmrenser/picea/workflows/tests/badge.svg)
 [![Coverage Status](https://coveralls.io/repos/github/holmrenser/picea/badge.svg?branch=master)](https://coveralls.io/github/holmrenser/picea?branch=master)
 [![PyPI version](https://badge.fury.io/py/picea.svg)](https://badge.fury.io/py/picea)
 
