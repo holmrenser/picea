@@ -30,7 +30,8 @@ def main():
         },
         install_requires=[
             'sphinx',
-            'numpy'
+            'numpy',
+            'matplotlib'
         ]
     )
 
