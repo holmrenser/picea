@@ -267,16 +267,20 @@ class Tree:
             newick += ';'
 
         return newick
-    
+
     @classmethod
     def from_sklearn(
         cls,
         clustering
     ):
-        """[summary]
-        
+        """Read a tree from sklearn agglomerative clustering
+
         Args:
-            clustering ([type]): [description]
+            clustering (sklearn object): sklearn agglomerative clustering\
+                 object.
+
+        Returns:
+            Tree: Tree object
         """
         nodes = clustering.children_
         n_leaves = nodes.shape[0] + 1
