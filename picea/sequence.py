@@ -140,6 +140,11 @@ class SequenceCollection:
             seq = seq.rstrip('-')
         return seq
 
+    def __delitem__(self, header: str) -> None:
+        idx = self._header_idx[header]
+        self._collection = np.delete(self._collection, idx, axis=0)
+        del 
+
     @property
     def headers(self) -> List[str]:
         return list(self._header_idx.keys())

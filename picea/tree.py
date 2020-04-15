@@ -81,20 +81,20 @@ class Tree:
         children: List['Tree'] = None,
         x: float = 0.0,
         y: float = 0.0,
-        label: str = None,
+        name: str = '',
         length: float = 0.0,
         depth: float = None,
         parent: 'Tree' = None,
         cumulative_length: float = 0.0
     ):
-        """[summary]
+        """Recursive datastructure holding tree objects
 
         Args:
             ID (int, optional): [description]. Defaults to None.
             children (list, optional): [description]. Defaults to None.
             x (float, optional): [description]. Defaults to 0.0.
             y (float, optional): [description]. Defaults to 0.0.
-            label (str, optional): [description]. Defaults to None.
+            name (str, optional): [description]. Defaults to ''.
             length (float, optional): [description]. Defaults to 0.
             depth (float, optional): [description]. Defaults to None.
             parent (Tree, optional): [description]. Defaults to None.
@@ -106,7 +106,7 @@ class Tree:
         self.children = children
         self.x = x
         self.y = y
-        self.label = label
+        self.name = name
         self.depth = depth
         self.parent = parent
         self.length = length
@@ -255,7 +255,7 @@ class Tree:
             ])
             newick = f'({subtree_string}){self.name}'
         else:
-            newick = self.name
+            newick = str(self.name)
 
         if branch_lengths and self.ID != 0:
             length = self.length
@@ -267,6 +267,34 @@ class Tree:
             newick += ';'
 
         return newick
+    
+    @classmethod
+    def from_sklearn(
+        cls,
+        clustering
+    ):
+        """[summary]
+        
+        Args:
+            clustering ([type]): [description]
+        """
+        nodes = clustering.children_
+        n_leaves = nodes.shape[0] + 1
+        tree = cls(ID=nodes.shape[0] * 2)
+
+        queue = [tree]
+        while queue:
+            node = queue.pop(0)
+            if node.ID < n_leaves:
+                node.name = str(node.ID)
+                continue
+            for child_ID in nodes[node.ID - n_leaves]:
+                child = cls(ID=child_ID)
+                child.parent = node
+                node.children.append(child)
+            queue += node.children
+
+        return tree
 
     def breadth_first(self):
         """Generator implementing breadth first search starting at root node
