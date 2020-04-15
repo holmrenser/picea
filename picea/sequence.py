@@ -141,9 +141,14 @@ class SequenceCollection:
         return seq
 
     def __delitem__(self, header: str) -> None:
+        """WIP!
+
+        Args:
+            header (str): [description]
+        """
         idx = self._header_idx[header]
         self._collection = np.delete(self._collection, idx, axis=0)
-        del 
+        # del
 
     @property
     def headers(self) -> List[str]:
