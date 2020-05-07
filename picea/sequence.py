@@ -3,24 +3,11 @@ from itertools import groupby, chain
 from subprocess import Popen, PIPE
 from collections import defaultdict
 from typing import Iterable, List, Tuple, Dict, Callable
+from abc import ABCMeta, abstractmethod, abstractproperty
 import uuid
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.colors import ListedColormap, BoundaryNorm
-
-
-codes = np.array([*b'AaCcGgNnTt-'], dtype='uint8')
-colors = np.array([
-    *['green'] * 2,
-    *['red'] * 2,
-    *['blue'] * 2,
-    *['gray'] * 2,
-    *['darkorange'] * 2,
-    'black'
-])
-order = np.argsort(codes)
-cmap = ListedColormap(colors[order])
-norm = BoundaryNorm([0, *codes[order]], ncolors=codes.size)
 
 
 def msa_plot(seq, ax=None, figsize=None) -> Callable:
@@ -34,6 +21,19 @@ def msa_plot(seq, ax=None, figsize=None) -> Callable:
     Returns:
         [type]: [description]
     """
+    codes = np.array([*b'AaCcGgNnTt-'], dtype='uint8')
+    colors = np.array([
+        *['green'] * 2,
+        *['red'] * 2,
+        *['blue'] * 2,
+        *['gray'] * 2,
+        *['darkorange'] * 2,
+        'black'
+    ])
+    order = np.argsort(codes)
+    cmap = ListedColormap(colors[order])
+    norm = BoundaryNorm([0, *codes[order]], ncolors=codes.size)
+
     if not figsize:
         figsize = (20, 5)
     if not ax:
@@ -75,11 +75,141 @@ class FastaIter:
         return header, seq
 
 
-class SequenceCollection:
+class SequenceCollection(object, metaclass=ABCMeta):
+    @abstractmethod
+    def __init__(
+        self: 'SequenceCollection',
+        sequences: Iterable[Tuple[str, str]] = None,
+        sequence_annotation: 'SequenceAnnotation' = None
+    ):
+        # self._collection = dict()
+        raise NotImplementedError()
+
+    @abstractmethod
+    def __setitem__(self, header: str, seq: str) -> None:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def __getitem__(self, header: str) -> str:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def __delitem__(self, header: str) -> None:
+        raise NotImplementedError()
+
+    @abstractproperty
+    def headers(self) -> List[str]:
+        raise NotImplementedError()
+        #return list(self._header_idx.keys())
+
+    @property
+    def sequences(self) -> List[str]:
+        return [self[header] for header in self.headers]
+
+    @abstractproperty
+    def n_seqs(self) -> int:
+        raise NotImplementedError()
+        # return self._collection.shape[0]
+
+    # @abstractproperty
+    # def n_chars(self) -> int:
+    #     raise NotImplementedError()
+    #     # return self._collection.shape[1]
+
+    @classmethod
+    def from_fasta(
+        cls,
+        filename: str = None,
+        string: str = None,
+    ) -> 'SequenceCollection':
+        """Parse a fasta formatted string into a SequenceCollection object
+
+        Keyword Arguments:
+            filename {String} -- filename string (default: {None})
+            string {String} -- fasta formatted string (default: {None})
+
+        Returns:
+            SequenceCollection -- SequenceCollection instance
+        """
+        assert filename or string
+        assert not (filename and string)
+        sequencecollection = cls()
+        if filename:
+            with open(filename) as filehandle:
+                string = filehandle.read()
+        fasta_iter = FastaIter(string)
+        for header, seq in fasta_iter:
+            sequencecollection[header] = seq
+        return sequencecollection
+
+    def to_fasta(self) -> str:
+        """[summary]
+
+        Returns:
+            [type] -- [description]
+        """
+        fasta_lines = []
+        for header in self.headers:
+            fasta_lines.append(f'>{header}')
+            fasta_lines.append(self[header])
+        return '\n'.join(fasta_lines)
+
+
+class SequenceList(SequenceCollection):
+    def __init__(
+        self: 'SequenceCollection',
+        sequences: Iterable[Tuple[str, str]] = None,
+        sequence_annotation: 'SequenceAnnotation' = None
+    ):
+        self._collection = dict()
+        if sequences:
+            for header, sequence in sequences:
+                self[header] = sequence
+        self.sequence_annotation = sequence_annotation
+
+    def __setitem__(self, header: str, seq: str) -> None:
+        print(header, seq)
+        if header in self.headers:
+            warn(f'Turning duplicate header "{header}" into unique header')
+            new_header = header
+            modifier = 0
+            while new_header in self:
+                modifier += 1
+                new_header = f'{header}_{modifier}'
+            header = new_header
+        self._collection[header] = seq
+
+    def __getitem__(self, header: str) -> str:
+        print(header, self._collection)
+        return self._collection[header]
+
+    def __delitem__(self, header: str) -> None:
+        del self._collection[header]
+
+    @property
+    def headers(self) -> List[str]:
+        return list(self._collection.keys())
+
+    # @property
+    # def sequences(self) -> List[str]:
+    #    return [self[header] for header in self.headers]
+
+    @property
+    def n_seqs(self) -> int:
+        return len(self._collection.keys())
+        # raise NotImplementedError()
+        # return self._collection.shape[0]
+
+    # @abstractproperty
+    # def n_chars(self) -> int:
+    #     raise NotImplementedError()
+    #     # return self._collection.shape[1]
+
+
+class MultipleSequenceAlignment(SequenceCollection):
     def __init__(
         self,
         sequences: Iterable[Tuple[str, str]] = None,
-        aligned: bool = False,
         sequence_annotation: 'SequenceAnnotation' = None
     ) -> None:
         """[summary]
@@ -91,7 +221,6 @@ class SequenceCollection:
             sequence_annotation ([type], optional): [description]. Defaults \
                 to None.
         """
-        self.aligned = aligned
         self._collection = np.empty((0, 0), dtype='uint8')
         self._header_idx = dict()
         if sequences:
@@ -153,10 +282,6 @@ class SequenceCollection:
     @property
     def headers(self) -> List[str]:
         return list(self._header_idx.keys())
-
-    @property
-    def sequences(self) -> List[str]:
-        return [self[header] for header in self.headers]
 
     @property
     def n_seqs(self) -> int:
