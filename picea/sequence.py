@@ -120,6 +120,14 @@ class SequenceCollection(object, metaclass=ABCMeta):
     def __delitem__(self, header: str) -> None:
         raise NotImplementedError()
 
+    def __iter__(self) -> Iterable[Tuple[str, str]]:
+        for header in self.headers:
+            yield header, self[header]
+
+    def __next__(self) -> Tuple[str, str]:
+        header = next(self.headers)
+        return header, self[header]
+
     @abstractproperty
     def headers(self) -> List[str]:
         """List of sequences headers.
