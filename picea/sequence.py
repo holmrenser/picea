@@ -58,7 +58,7 @@ class FastaIter:
         """
         self._iter = (
             x for _, x in groupby(
-                string.split('\n'),
+                string.strip().split('\n'),
                 lambda line: line[0] == '>'
             )
         )

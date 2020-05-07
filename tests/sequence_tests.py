@@ -16,6 +16,12 @@ def test_input_output():
     assert seq.to_fasta() == fasta
 
 
+def test_trailing_newline():
+    fasta = '>A\nABC\n>B\nDEF\n'
+    seq = SequenceList.from_fasta(string=fasta)
+    assert seq.to_fasta() == fasta[:-1]
+
+
 '''
 def test_align():
     fasta = '>A\nABC\n>B\nDEF'
