@@ -207,7 +207,6 @@ class SequenceList(SequenceCollection):
         self.sequence_annotation = sequence_annotation
 
     def __setitem__(self, header: str, seq: str) -> None:
-        print(header, seq)
         if header in self.headers:
             warn(f'Turning duplicate header "{header}" into unique header')
             new_header = header
@@ -219,7 +218,6 @@ class SequenceList(SequenceCollection):
         self._collection[header] = seq
 
     def __getitem__(self, header: str) -> str:
-        print(header, self._collection)
         return self._collection[header]
 
     def __delitem__(self, header: str) -> None:
