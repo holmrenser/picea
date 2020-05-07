@@ -11,7 +11,7 @@ from matplotlib.colors import ListedColormap, BoundaryNorm
 
 
 def msa_plot(seq, ax=None, figsize=None) -> Callable:
-    """[summary]
+    """Multiple sequence alignment plot
 
     Args:
         seq ([type]): [description]
@@ -50,11 +50,11 @@ def msa_plot(seq, ax=None, figsize=None) -> Callable:
 
 
 class FastaIter:
-    def __init__(self, string):
-        """[summary]
+    def __init__(self, string: str) -> None:
+        """Iterator over fasta formatted sequence strings
 
         Args:
-            string ([type]): [description]
+            string (str): Fasta formatted string
         """
         self._iter = (
             x for _, x in groupby(
@@ -63,13 +63,26 @@ class FastaIter:
             )
         )
 
-    def __iter__(self):
+    def __iter__(self) -> Iterable[Tuple[str, str]]:
+        """Iterate over header,sequence tuples
+
+        Returns:
+            Iterable[Tuple[str, str]]: [description]
+
+        Yields:
+            Iterable[Tuple[str, str]]: [description]
+        """
         for header in self._iter:
             header = next(header)[1:].strip()
             seq = ''.join(s.strip() for s in next(self._iter))
             yield header, seq
 
-    def __next__(self):
+    def __next__(self) -> Tuple[str, str]:
+        """Next header and sequence in the iterator
+
+        Returns:
+            Tuple[str, str]: [description]
+        """
         header = next(next(self._iter))[1:].strip()
         seq = ''.join(s.strip() for s in next(self._iter))
         return header, seq
@@ -82,7 +95,17 @@ class SequenceCollection(object, metaclass=ABCMeta):
         sequences: Iterable[Tuple[str, str]] = None,
         sequence_annotation: 'SequenceAnnotation' = None
     ):
-        # self._collection = dict()
+        """[summary]
+
+        Args:
+            sequences (Iterable[Tuple[str, str]], optional): [description]. \
+                 Defaults to None.
+            sequence_annotation ([type], optional): [description]. Defaults \
+                to None.
+
+        Raises:
+            NotImplementedError: [description]
+        """
         raise NotImplementedError()
 
     @abstractmethod
@@ -99,22 +122,38 @@ class SequenceCollection(object, metaclass=ABCMeta):
 
     @abstractproperty
     def headers(self) -> List[str]:
+        """List of sequences headers.
+        Overridden in subclasses.
+
+        Raises:
+            NotImplementedError
+
+        Returns:
+            List[str]: List of sequence headers
+        """
         raise NotImplementedError()
-        #return list(self._header_idx.keys())
 
     @property
     def sequences(self) -> List[str]:
+        """List of sequences without headers
+
+        Returns:
+            List[str]: list of sequences
+        """
         return [self[header] for header in self.headers]
 
     @abstractproperty
     def n_seqs(self) -> int:
-        raise NotImplementedError()
-        # return self._collection.shape[0]
+        """Return the number of sequences in the collection.
+        Overridden in subclasses
 
-    # @abstractproperty
-    # def n_chars(self) -> int:
-    #     raise NotImplementedError()
-    #     # return self._collection.shape[1]
+        Raises:
+            NotImplementedError
+
+        Returns:
+            int: number of sequences
+        """
+        raise NotImplementedError()
 
     @classmethod
     def from_fasta(
@@ -143,10 +182,10 @@ class SequenceCollection(object, metaclass=ABCMeta):
         return sequencecollection
 
     def to_fasta(self) -> str:
-        """[summary]
+        """Get a fasta-formatted string of the sequence collection
 
         Returns:
-            [type] -- [description]
+            str: Multi-line fasta-formatted string
         """
         fasta_lines = []
         for header in self.headers:
@@ -190,20 +229,9 @@ class SequenceList(SequenceCollection):
     def headers(self) -> List[str]:
         return list(self._collection.keys())
 
-    # @property
-    # def sequences(self) -> List[str]:
-    #    return [self[header] for header in self.headers]
-
     @property
     def n_seqs(self) -> int:
         return len(self._collection.keys())
-        # raise NotImplementedError()
-        # return self._collection.shape[0]
-
-    # @abstractproperty
-    # def n_chars(self) -> int:
-    #     raise NotImplementedError()
-    #     # return self._collection.shape[1]
 
 
 class MultipleSequenceAlignment(SequenceCollection):
