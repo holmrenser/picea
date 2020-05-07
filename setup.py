@@ -6,7 +6,7 @@ __author__ = 'Rens Holmer'
 __created__ = '07/06/2019'
 
 name = 'picea'
-version = '0.0.3_beta1'
+version = '0.0.3'
 
 
 def main():
