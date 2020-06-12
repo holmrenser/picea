@@ -219,7 +219,7 @@ class SequenceList(SequenceCollection):
             warn(f'Turning duplicate header "{header}" into unique header')
             new_header = header
             modifier = 0
-            while new_header in self:
+            while new_header in self.headers:
                 modifier += 1
                 new_header = f'{header}_{modifier}'
             header = new_header
@@ -238,6 +238,33 @@ class SequenceList(SequenceCollection):
     @property
     def n_seqs(self) -> int:
         return len(self._collection.keys())
+    
+    def align(
+        self,
+        method: str = 'mafft',
+        method_kwargs: Dict[str, str] = dict()
+    ):
+        """[summary]
+
+        Args:
+            method (str, optional): [description]. Defaults to 'mafft'.
+            method_kwargs (Dict[str, str], optional): [description]. \
+                Defaults to dict().
+
+        Returns:
+            [type]: [description]
+        """
+        fasta = self.to_fasta()
+        command = [method, *chain(*method_kwargs.items()), '-']
+        process = Popen(
+            command,
+            stdin=PIPE,
+            stdout=PIPE,
+            stderr=PIPE
+        )
+        stdout, stderr = process.communicate(input=fasta.encode())
+        aligned_fasta = stdout.decode().strip()
+        return MultipleSequenceAlignment.from_fasta(string=aligned_fasta)
 
 
 class MultipleSequenceAlignment(SequenceCollection):
@@ -325,12 +352,15 @@ class MultipleSequenceAlignment(SequenceCollection):
     def n_chars(self) -> int:
         return self._collection.shape[1]
 
+    @property
+    def shape(self) -> int:
+        return self._collection.shape
+
     @classmethod
     def from_fasta(
         cls,
         filename: str = None,
         string: str = None,
-        aligned: bool = False
     ) -> 'SequenceCollection':
         """Parse a fasta formatted string into a SequenceCollection object
 
@@ -343,7 +373,7 @@ class MultipleSequenceAlignment(SequenceCollection):
         """
         assert filename or string
         assert not (filename and string)
-        sequencecollection = cls(aligned=aligned)
+        sequencecollection = cls()
         if filename:
             with open(filename) as filehandle:
                 string = filehandle.read()
@@ -363,36 +393,6 @@ class MultipleSequenceAlignment(SequenceCollection):
             fasta_lines.append(f'>{header}')
             fasta_lines.append(self[header])
         return '\n'.join(fasta_lines)
-
-    def align(
-        self,
-        method: str = 'mafft',
-        method_kwargs: Dict[str, str] = dict()
-    ):
-        """[summary]
-
-        Args:
-            method (str, optional): [description]. Defaults to 'mafft'.
-            method_kwargs (Dict[str, str], optional): [description]. \
-                Defaults to dict().
-
-        Returns:
-            [type]: [description]
-        """
-        fasta = self.to_fasta()
-        command = [method, *chain(*method_kwargs.items()), '-']
-        process = Popen(
-            command,
-            stdin=PIPE,
-            stdout=PIPE,
-            stderr=PIPE
-        )
-        stdout, stderr = process.communicate(input=fasta.encode())
-        aligned_fasta = stdout.decode().strip()
-        return SequenceCollection.from_fasta(
-            string=aligned_fasta,
-            aligned=True
-        )
 
 
 class SequenceAnnotation:
