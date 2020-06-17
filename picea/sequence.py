@@ -2,13 +2,40 @@ from warnings import warn
 from itertools import groupby, chain
 from subprocess import Popen, PIPE
 from collections import defaultdict
-from typing import Iterable, List, Tuple, Dict, Callable
+from typing import Iterable, List, Tuple, Dict, Callable, Any, Optional
 from abc import ABCMeta, abstractmethod, abstractproperty
 import uuid
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.colors import ListedColormap, BoundaryNorm
+# from urllib.parse import quote, unquote
+import json
+from functools import reduce
+import re
 
+# (character, code) tuples for encoding special characters in gff3
+# percent (%) MUST GO FIRST
+ENCODE_SPECIAL_CHARACTERS = (
+    ('%', '%25'),
+    ('[   |\t]', '%09'),
+    ('\n', '%0A'),
+    (';', '%3B'),
+    ('=', '%3D'),
+    ('&', '%26'),
+    (',', '%2C')
+)
+
+# (code, character) tuples for decoding special characters in gff3
+# percent (%) MUST GO LAST
+DECODE_SPECIAL_CHARACTERS = (
+    ('%2C', ','),
+    ('%26', '&'),
+    ('%3D', '='),
+    ('%3B', ';'),
+    ('%0A', '\n'),
+    ('%09', '\t'),
+    ('%25', '%')
+)
 
 def msa_plot(seq, ax=None, figsize=None) -> Callable:
     """Multiple sequence alignment plot
@@ -91,16 +118,16 @@ class FastaIter:
 class SequenceCollection(object, metaclass=ABCMeta):
     @abstractmethod
     def __init__(
-        self: 'SequenceCollection',
-        sequences: Iterable[Tuple[str, str]] = None,
-        sequence_annotation: 'SequenceAnnotation' = None
-    ):
+        self,
+        sequences: Optional[Iterable[Tuple[str, str]]] = None,
+        sequence_annotation: Optional['SequenceAnnotation'] = None
+    ) -> None:
         """[summary]
 
         Args:
-            sequences (Iterable[Tuple[str, str]], optional): [description]. \
-                 Defaults to None.
-            sequence_annotation ([type], optional): [description]. Defaults \
+            sequences (Optional[Iterable[Tuple[str, str]]], optional):
+                [description]. Defaults to None.
+            sequence_annotation (Optional[, optional): [description]. Defaults
                 to None.
 
         Raises:
@@ -238,7 +265,7 @@ class SequenceList(SequenceCollection):
     @property
     def n_seqs(self) -> int:
         return len(self._collection.keys())
-    
+
     def align(
         self,
         method: str = 'mafft',
@@ -270,16 +297,15 @@ class SequenceList(SequenceCollection):
 class MultipleSequenceAlignment(SequenceCollection):
     def __init__(
         self,
-        sequences: Iterable[Tuple[str, str]] = None,
-        sequence_annotation: 'SequenceAnnotation' = None
+        sequences: Optional[Iterable[Tuple[str, str]]] = None,
+        sequence_annotation: Optional['SequenceAnnotation'] = None
     ) -> None:
         """[summary]
 
         Args:
-            self ([type]): [description]
-            sequences (Iterable, optional): [description]. Defaults to None.
-            aligned (bool, optional): [description]. Defaults to False.
-            sequence_annotation ([type], optional): [description]. Defaults \
+            sequences (Optional[Iterable[Tuple[str, str]]], optional):
+                [description]. Defaults to None.
+            sequence_annotation (Optional[, optional): [description]. Defaults
                 to None.
         """
         self._collection = np.empty((0, 0), dtype='uint8')
@@ -356,61 +382,23 @@ class MultipleSequenceAlignment(SequenceCollection):
     def shape(self) -> int:
         return self._collection.shape
 
-    @classmethod
-    def from_fasta(
-        cls,
-        filename: str = None,
-        string: str = None,
-    ) -> 'SequenceCollection':
-        """Parse a fasta formatted string into a SequenceCollection object
-
-        Keyword Arguments:
-            filename {String} -- filename string (default: {None})
-            string {String} -- fasta formatted string (default: {None})
-
-        Returns:
-            SequenceCollection -- SequenceCollection instance
-        """
-        assert filename or string
-        assert not (filename and string)
-        sequencecollection = cls()
-        if filename:
-            with open(filename) as filehandle:
-                string = filehandle.read()
-        fasta_iter = FastaIter(string)
-        for header, seq in fasta_iter:
-            sequencecollection[header] = seq
-        return sequencecollection
-
-    def to_fasta(self) -> str:
-        """[summary]
-
-        Returns:
-            [type] -- [description]
-        """
-        fasta_lines = []
-        for header in self.headers:
-            fasta_lines.append(f'>{header}')
-            fasta_lines.append(self[header])
-        return '\n'.join(fasta_lines)
-
 
 class SequenceAnnotation:
     def __init__(
         self,
-        sequence_collection: 'SequenceCollection' = None
-    ):
+        sequence_collection: Optional['SequenceCollection'] = None
+    ) -> None:
         """[summary]
 
         Args:
-            sequence_collection ([type], optional): [description].
-                Defaults to None.
+            sequence_collection (Optional[, optional): [description]. Defaults
+                to None.
         """
         if sequence_collection:
             sequence_collection.sequence_annotation = self
         self.sequence_collection = sequence_collection
         self._intervals = dict()
-        self._index = dict()
+        self._gff_headers = list()
 
     def __getitem__(self, key):
         return self._intervals[key]
@@ -424,8 +412,12 @@ class SequenceAnnotation:
         yield from self._intervals.values()
 
     @classmethod
-    def from_gff(cls, filename=None, string=None,
-                 sequence_collection=None):
+    def from_gff(
+        cls,
+        filename: Optional[str] = None,
+        string: Optional[str] = None,
+        sequence_collection: Optional['SequenceCollection'] = None
+    ) -> 'SequenceAnnotation':
         """[summary]
 
         Args:
@@ -440,6 +432,7 @@ class SequenceAnnotation:
         assert filename or string
         assert not (filename and string)
         sequence_annotation = cls(sequence_collection=sequence_collection)
+        header = True
         if filename:
             with open(filename) as filehandle:
                 string = filehandle.read()
@@ -448,45 +441,93 @@ class SequenceAnnotation:
             if not line:
                 continue
             if line[0] == '#':
+                if header:
+                    sequence_annotation._gff_headers.append(line)
                 continue
+            else:
+                header = False
             interval = SequenceInterval.from_gff_line(gff_line=line,
                                                       line_number=line_number)
+            interval._container = sequence_annotation
             sequence_annotation._intervals[interval.ID] = interval
-
         for interval in sequence_annotation:
             if interval.parent:
                 for parent_ID in interval.parent:
-                    parent = sequence_annotation[parent_ID]
-                    parent.children.append(interval.ID)
+                    try:
+                        parent = sequence_annotation[parent_ID]
+                    except IndexError:
+                        raise IndexError(
+                            'Interval {interval.ID} is listing {parent_ID} '
+                            'as Parent, but parent could not be found.'
+                        )
+                    parent._children.append(interval.ID)
 
         return sequence_annotation
 
+    def to_gff(self) -> str:
+        """[summary]
+
+        Returns:
+            str: [description]
+        """
+        gff_lines = [
+            interval.to_gff_line() for interval in self._intervals.values()
+        ]
+        return '\n'.join(gff_lines)
+
+    def to_json(self) -> str:
+        return json.dumps([
+            interval.to_dict() for interval in self._intervals.values()
+        ])
+
 
 class SequenceInterval:
-    _predefined_attributes = ('ID', 'name', 'alias', 'parent', 'target',
-                              'gap', 'derives_from', 'note', 'dbxref',
-                              'ontology_term', 'is_circular')
+    _predefined_gff3_attributes = (
+        'ID', 'name', 'alias', 'parent', 'target', 'gap', 'derives_from',
+        'note', 'dbxref', 'ontology_term', 'is_circular'
+    )
+    _fixed_gff3_fields = (
+        'seqid', 'source', 'interval_type', 'start', 'end', 'score', 'strand',
+        'phase'
+    )
 
-    def __init__(self, seqid=None, source=None, interval_type=None,
-                 start=None, end=None, score=None, strand=None, phase=None,
-                 attributes=None, children=None, **kwargs):
+    def __init__(
+        self,
+        ID: Optional[str] = None,
+        seqid: Optional[str] = None,
+        source: Optional[str] = None,
+        interval_type: Optional[str] = None,
+        start: Optional[int] = None,
+        end: Optional[int] = None,
+        score: Optional[float] = None,
+        strand: Optional[str] = None,
+        phase: Optional[str] = None,
+        children: Optional[List[str]] = None,
+        container: Optional[SequenceAnnotation] = None,
+        **kwargs
+    ):
         """[summary]
 
         Args:
-            seqid ([type], optional): [description]. Defaults to None.
-            source ([type], optional): [description]. Defaults to None.
-            interval_type ([type], optional): [description]. Defaults to None.
-            start ([type], optional): [description]. Defaults to None.
-            end ([type], optional): [description]. Defaults to None.
-            score ([type], optional): [description]. Defaults to None.
-            strand ([type], optional): [description]. Defaults to None.
-            phase ([type], optional): [description]. Defaults to None.
-            attributes ([type], optional): [description]. Defaults to None.
-            children ([type], optional): [description]. Defaults to None.
-
-        Raises:
-            NotImplementedError: [description]
+            ID (Optional[str], optional): [description]. Defaults to None.
+            seqid (Optional[str], optional): [description]. Defaults to None.
+            source (Optional[str], optional): [description]. Defaults to None.
+            interval_type (Optional[str], optional): [description]. Defaults
+                to None.
+            start (Optional[int], optional): [description]. Defaults to None.
+            end (Optional[int], optional): [description]. Defaults to None.
+            score (Optional[float], optional): [description]. Defaults to None.
+            strand (Optional[str], optional): [description]. Defaults to None.
+            phase (Optional[str], optional): [description]. Defaults to
+                None.
+            children (Optional[List], optional): [description]. Defaults to
+                None.
+            container (Optional[SequenceAnnotation], optional): [description].
+                Defaults to None.
         """
+        # interval ID
+        self.ID = ID
+
         # Standard gff fields
         self.seqid = seqid
         self.source = source
@@ -496,27 +537,29 @@ class SequenceInterval:
         self.score = score
         self.strand = strand
         self.phase = phase
-        self.attributes = attributes
 
-        # Attributes with predefined meanings in the gff spec
-        for attr in self._predefined_attributes:
+        # Set attributes with predefined meanings in the gff spec to None
+        for attr in self._predefined_gff3_attributes:
+            if attr == 'ID':
+                continue
             self[attr] = kwargs.get(attr, None)
 
-        for key in kwargs.keys():
-            if key not in self._predefined_attributes:
-                raise NotImplementedError(f'{key} is not a valid attribute')
+        # Any additional attributes
+        for key, value in kwargs.items():
+            self[key] = value
 
         # Additional fields, used internally
+        self._container = container
         if children is None:
             children = []
-        self.children = children
+        self._children = children
 
     def __repr__(self):
         return (
-            f'<{self.interval_type} SequenceInterval '
-            f'{self.ID} '
-            f'{self.start}..{self.end}..{self.strand} '
-            f'at {hex(id(self))}'
+            f'<SequenceInterval type={self.interval_type} '
+            f'ID={self.ID} '
+            f'loc={self.seqid}..{self.start}..{self.end}..{self.strand} '
+            f'at {hex(id(self))}>'
         )
 
     def __getitem__(self, key):
@@ -525,13 +568,33 @@ class SequenceInterval:
     def __setitem__(self, key, value):
         self.__dict__[key] = value
 
+    @property
+    def attributes(self):
+        return {
+            attr: self[attr]
+            for attr in self.__dict__
+            if attr not in self._fixed_gff3_fields  # column 1-8 in gff3
+            and attr not in ('_children', '_container')  # internal use only
+            and self[attr] is not None  # no empty attributes
+        }
+
+    @property
+    def children(self) -> List['SequenceInterval']:
+        return list(self._get_children())
+
     @classmethod
-    def from_gff_line(cls, gff_line=None, line_number=None):
+    def from_gff_line(
+        cls,
+        gff_line: Optional[str] = None,
+        line_number: Optional[int] = None
+    ):
         """[summary]
 
         Args:
-            gff_line ([type], optional): [description]. Defaults to None.
-            line_number ([type], optional): [description]. Defaults to None.
+            gff_line (Optional[str], optional): [description]. Defaults
+                to None.
+            line_number (Optional[int], optional): [description]. Defaults
+                to None.
 
         Raises:
             ValueError: [description]
@@ -576,6 +639,8 @@ class SequenceInterval:
             if line_number:
                 error = f'{error}, gff line {line_number}'
             raise ValueError(error)
+        elif phase != '.':
+            phase = int(phase)
 
         # Disable phase checking of CDS for now...
         # if interval_type == 'CDS' and phase not in ('0', '1', '2'):
@@ -585,32 +650,141 @@ class SequenceInterval:
         #         error = f'{error}, gff line {line_number}'
         #         raise ValueError(error)
 
-        interval = cls(seqid=seqid, source=source, interval_type=interval_type,
-                       start=start, end=end, score=score, strand=strand,
-                       phase=phase)
-
         attributes = parse_gff_attribute_string(gff_parts[8])
 
-        for attr_key in cls._predefined_attributes:
-            attr_value = attributes[attr_key]
+        ID = attributes.pop('ID', [str(uuid.uuid4())])[0]
 
-            # ID must always be a single value, use random number if not set
-            if attr_key == 'ID':
-                if not attr_value:
-                    attr_value = str(uuid.uuid4())
-                else:
-                    attr_value = attr_value[0]
+        return cls(seqid=seqid, source=source, interval_type=interval_type,
+                   start=start, end=end, score=score, strand=strand,
+                   phase=phase, ID=ID, **attributes)
 
-            if attr_value:
-                interval[attr_key] = attr_value
-            del attributes[attr_key]
+    def to_gff_line(self) -> str:
+        """[summary]
 
-        interval.attributes = attributes
+        Returns:
+            str: [description]
+        """
+        attributes = defaultdict(list)
+        attributes.update(self.attributes)
+        for attr in self._predefined_gff3_attributes:
+            if self[attr] is not None:
+                attributes[attr] = self[attr]
+        attributes['ID'] = [attributes['ID']]
 
-        return interval
+        return '\t'.join([
+            self.seqid, self.source, self.interval_type, str(self.start),
+            str(self.end), str(self.score), self.strand, str(self.phase),
+            format_gff_attribute_string(attributes)
+        ])
+
+    @classmethod
+    def from_dict(cls, interval_dict: Dict[str, Any]) -> 'SequenceInterval':
+        """[summary]
+        Args:
+            interval_dict
+
+        Returns:
+            [type]: [description]
+        """
+        attributes = interval_dict.pop('attributes', dict())
+        return cls(**interval_dict, **attributes)
+
+    def to_dict(self) -> Dict[str, Any]:
+        """[summary]
+
+        Returns:
+            Dict[str, Any]: [description]
+        """
+        attributes = dict(**self.attributes)
+        attributes.pop('ID')
+        return dict(
+            ID=self.ID, seqid=self.seqid, source=self.source,
+            interval_type=self.interval_type, start=self.start,
+            end=self.end, score=self.score, strand=self.strand,
+            phase=self.phase, attributes=attributes
+        )
+
+    def _get_children(self):
+        yield self
+        if not self._children:
+            return
+        for child_ID in self._children:
+            child = self._container[child_ID]
+            yield from child._get_children()
 
 
-def parse_gff_attribute_string(gff_attribute_string):
+def quote_gff3(attribute_value: str) -> str:
+    '''pattern, repl = ENCODE_SPECIAL_CHARACTERS[0]
+    quoted_value = re.sub(pattern, repl, attribute_value)
+    for pattern, repl in ENCODE_SPECIAL_CHARACTERS[1:]:
+        quoted_value = re.sub(pattern, repl, attribute_value)
+    return quoted_value'''
+    return reduce(
+        lambda acc, code: re.sub(code[0], code[1], acc),  # func
+        ENCODE_SPECIAL_CHARACTERS,  # iterable
+        attribute_value  # initial
+    )
+
+
+def encode_attribute_value(attribute_value: List[str]) -> str:
+    """[summary]
+
+    Args:
+        attribute_value (List[str]): [description]
+
+    Returns:
+        str: [description]
+    """
+    return ','.join([quote_gff3(v) for v in attribute_value])
+
+
+def format_gff_attribute_string(attributes: Dict[str, List[str]]) -> str:
+    """[summary]
+
+    Args:
+        attributes (Dict[str, List[str]]): [description]
+
+    Returns:
+        str: [description]
+    """
+    return ';'.join([
+        f'{key}={encode_attribute_value(value)}'
+        for key, value in attributes.items()
+    ])
+
+
+def unquote_gff3(attribute_value: str) -> str:
+    """[summary]
+
+    Args:
+        attribute_value (str): [description]
+
+    Returns:
+        str: [description]
+    """
+    return reduce(
+        lambda acc, code: re.sub(code[0], code[1], acc),  # func
+        DECODE_SPECIAL_CHARACTERS,  # iterable
+        attribute_value  # initial
+    )
+
+
+def decode_attribute_value(attribute_value: str) -> List[str]:
+    """[summary]
+
+    Args:
+        attribute_value (str): [description]
+
+    Returns:
+        List[str]: [description]
+    """
+    return [unquote_gff3(v) for v in attribute_value.split(',')]
+
+
+def parse_gff_attribute_string(
+        gff_attribute_string: str,
+        case_sensitive_attribute_keys: bool = False
+    ) -> Dict[str, List[str]]:
     """[summary]
     https://github.com/The-Sequence-Ontology/Specifications/blob/master/gff3.md
     See "Column 9: Attributes"
@@ -633,6 +807,6 @@ def parse_gff_attribute_string(gff_attribute_string):
         # EXCEPT FOR THE ID ATTRIBUTE, since lowercase id is reserved in python
         if key != 'ID':
             key = key.lower()
-        for value_part in value.split(','):
+        for value_part in decode_attribute_value(value):
             attributes[key].append(value_part)
     return attributes
