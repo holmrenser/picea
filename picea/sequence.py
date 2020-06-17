@@ -689,7 +689,7 @@ class SequenceInterval:
         attributes = interval_dict.pop('attributes', dict())
         return cls(**interval_dict, **attributes)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self, include_children: bool = False) -> Dict[str, Any]:
         """[summary]
 
         Returns:
@@ -697,12 +697,27 @@ class SequenceInterval:
         """
         attributes = dict(**self.attributes)
         attributes.pop('ID')
-        return dict(
+        interval_dict = dict(
             ID=self.ID, seqid=self.seqid, source=self.source,
             interval_type=self.interval_type, start=self.start,
             end=self.end, score=self.score, strand=self.strand,
             phase=self.phase, attributes=attributes
         )
+        if include_children:
+            children = [child.to_dict() for child in self.children[1:]]
+            interval_dict['children'] = children
+        return interval_dict
+
+    def to_json(self, include_children: bool = False) -> str:
+        """[summary]
+
+        Args:
+            include_children (bool, optional): [description]. Defaults to False.
+
+        Returns:
+            str: [description]
+        """
+        return json.dumps(self.to_dict(include_children=include_children))
 
     def _get_children(self):
         yield self

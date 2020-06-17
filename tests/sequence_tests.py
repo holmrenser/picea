@@ -28,6 +28,7 @@ def test_sequence_iter():
     for h, s in seq:
         pass
 
+
 '''
 def test_align():
     fasta = '>A\nABC\n>B\nDEF'
