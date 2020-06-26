@@ -37,6 +37,7 @@ DECODE_SPECIAL_CHARACTERS = (
     ('%25', '%')
 )
 
+
 def msa_plot(seq, ax=None, figsize=None) -> Callable:
     """Multiple sequence alignment plot
 
@@ -207,10 +208,10 @@ class SequenceCollection(object, metaclass=ABCMeta):
         """
         assert filename or string
         assert not (filename and string)
-        sequencecollection = cls()
         if filename:
             with open(filename) as filehandle:
                 string = filehandle.read()
+        sequencecollection = cls()
         fasta_iter = FastaIter(string)
         for header, seq in fasta_iter:
             sequencecollection[header] = seq
@@ -227,6 +228,42 @@ class SequenceCollection(object, metaclass=ABCMeta):
             fasta_lines.append(f'>{header}')
             fasta_lines.append(self[header])
         return '\n'.join(fasta_lines)
+
+    @classmethod
+    def from_json(
+        cls,
+        filename: Optional[str] = None,
+        string: Optional[str] = None
+    ) -> 'SequenceCollection':
+        """[summary]
+
+        Keyword Arguments:
+            string {String} -- JSON formatted string
+
+        Returns:
+            SequenceCollection -- SequenceCollection instance
+        """
+        assert filename or string
+        assert not (filename and string)
+        if filename:
+            with open(filename) as filehandle:
+                string = filehandle.read()
+        sequencecollection = cls()
+        for entry in json.loads(string):
+            sequencecollection[entry['header']] = entry['sequence']
+        return sequencecollection
+
+    def to_json(self, indent: Optional[int] = None) -> str:
+        """[summary]
+
+        Returns:
+            str: [description]
+        """
+        gene_dicts = [
+            dict(header=header, sequence=self[header])
+            for header in self.headers
+        ]
+        return json.dumps(gene_dicts, indent=indent)
 
 
 class SequenceList(SequenceCollection):
@@ -349,12 +386,9 @@ class MultipleSequenceAlignment(SequenceCollection):
     def __getitem__(self, header: str) -> str:
         idx = self._header_idx[header]
         n_chars = self._collection.shape[1]
-        seq = self._collection[idx] \
+        return self._collection[idx] \
             .view(f'S{n_chars}')[0] \
             .decode()
-        if not self.aligned:
-            seq = seq.rstrip('-')
-        return seq
 
     def __delitem__(self, header: str) -> None:
         """WIP!
@@ -410,6 +444,10 @@ class SequenceAnnotation:
 
     def __iter__(self):
         yield from self._intervals.values()
+
+    @property
+    def intervals(self):
+        return list(self._intervals.values())
 
     @classmethod
     def from_gff(
@@ -475,10 +513,60 @@ class SequenceAnnotation:
         ]
         return '\n'.join(gff_lines)
 
-    def to_json(self) -> str:
-        return json.dumps([
+    @classmethod
+    def from_json(
+        cls,
+        filename: Optional[str] = None,
+        string: Optional[str] = None,
+        sequence_collection: Optional['SequenceCollection'] = None
+    ) -> 'SequenceAnnotation':
+        """[summary]
+        """
+        assert filename or string
+        assert not (filename and string)
+        if filename:
+            with open(filename) as filehandle:
+                string = filehandle.read()
+
+        sequence_annotation = cls(sequence_collection=sequence_collection)
+
+        gene_dicts = json.loads(string)
+        assert isinstance(gene_dicts, list)
+
+        for top_dict in gene_dicts:
+            child_dicts = top_dict.pop('children', list())
+            top_interval = SequenceInterval.from_dict(interval_dict=top_dict)
+            top_interval._container = sequence_annotation
+            sequence_annotation._intervals[top_interval.ID] = top_interval
+            for child_dict in child_dicts:
+                child_interval = SequenceInterval.from_dict(
+                    interval_dict=child_dict)
+                child_interval._container = sequence_annotation
+                sequence_annotation._intervals[child_interval.ID] = \
+                    child_interval
+        for interval in sequence_annotation:
+            if interval.parent:
+                for parent_ID in interval.parent:
+                    try:
+                        parent = sequence_annotation[parent_ID]
+                    except IndexError:
+                        raise IndexError(
+                            'Interval {interval.ID} is listing {parent_ID} '
+                            'as Parent, but parent could not be found.'
+                        )
+                    parent._children.append(interval.ID)
+        return sequence_annotation
+
+    def to_json(self, indent: Optional[int] = None) -> str:
+        """[summary]
+
+        Returns:
+            str: [description]
+        """
+        interval_dicts = [
             interval.to_dict() for interval in self._intervals.values()
-        ])
+        ]
+        return json.dumps(interval_dicts, indent=indent)
 
 
 class SequenceInterval:
@@ -573,7 +661,7 @@ class SequenceInterval:
         return {
             attr: self[attr]
             for attr in self.__dict__
-            if attr not in self._fixed_gff3_fields  # column 1-8 in gff3
+            if attr not in self._fixed_gff3_fields  # skip column 1-8 in gff3
             and attr not in ('_children', '_container')  # internal use only
             and self[attr] is not None  # no empty attributes
         }
@@ -708,24 +796,36 @@ class SequenceInterval:
             interval_dict['children'] = children
         return interval_dict
 
-    def to_json(self, include_children: bool = False) -> str:
+    def to_json(
+        self,
+        include_children: bool = False,
+        indent: Optional[int] = None
+    ) -> str:
         """[summary]
 
         Args:
-            include_children (bool, optional): [description]. Defaults to False.
+            include_children (bool, optional): [description]. Defaults to \
+                False.
 
         Returns:
             str: [description]
         """
-        return json.dumps(self.to_dict(include_children=include_children))
+        return json.dumps(
+            self.to_dict(include_children=include_children),
+            indent=indent
+        )
 
-    def _get_children(self):
-        yield self
+    def _get_children(self, _visited: Optional[set] = None):
+        if _visited is None:
+            _visited = set()
+        if self not in _visited:
+            yield self
+            _visited.add(self)
         if not self._children:
             return
         for child_ID in self._children:
             child = self._container[child_ID]
-            yield from child._get_children()
+            yield from child._get_children(_visited=_visited)
 
 
 def quote_gff3(attribute_value: str) -> str:
@@ -797,9 +897,9 @@ def decode_attribute_value(attribute_value: str) -> List[str]:
 
 
 def parse_gff_attribute_string(
-        gff_attribute_string: str,
-        case_sensitive_attribute_keys: bool = False
-    ) -> Dict[str, List[str]]:
+    gff_attribute_string: str,
+    case_sensitive_attribute_keys: bool = False
+) -> Dict[str, List[str]]:
     """[summary]
     https://github.com/The-Sequence-Ontology/Specifications/blob/master/gff3.md
     See "Column 9: Attributes"

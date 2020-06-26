@@ -1,5 +1,6 @@
 import re
-from typing import Iterable, Callable, List
+from typing import Iterable, Callable, List, Optional
+import json
 
 
 def unequal_separation(
@@ -79,8 +80,8 @@ class Tree:
         self,
         ID: int = None,
         children: List['Tree'] = None,
-        x: float = 0.0,
-        y: float = 0.0,
+        # x: float = 0.0,
+        # y: float = 0.0,
         name: str = '',
         length: float = 0.0,
         depth: float = None,
@@ -104,8 +105,8 @@ class Tree:
             children = list()
         self.ID = ID
         self.children = children
-        self.x = x
-        self.y = y
+        # self.x = x
+        # self.y = y
         self.name = name
         self.depth = depth
         self.parent = parent
@@ -115,7 +116,7 @@ class Tree:
     def __repr__(self):
         return (
             f'<TreeNode ID={self.ID} depth={self.depth}'
-            f' length={self.length} name={self.name}>'
+            f' length={self.length} name="{self.name}">'
         )
 
     @property
@@ -188,7 +189,8 @@ class Tree:
     @classmethod
     def from_newick(
         cls,
-        newick_string: str
+        string: Optional[str] = None,
+        filename: Optional[str] = None
     ):
         """Parse a newick formatted string into a Tree object
 
@@ -198,7 +200,12 @@ class Tree:
         Returns:
             Tree: Tree object
         """
-        tokens = re.split(r'\s*(;|\(|\)|,|:)\s*', newick_string)
+        assert filename or string
+        assert not (filename and string)
+        if filename:
+            with open(filename) as filehandle:
+                string = filehandle.read()
+        tokens = re.split(r'\s*(;|\(|\)|,|:)\s*', string)
         ID = 0
         tree = cls(ID=ID, length=0.0, cumulative_length=0.0)
         ancestors = list()
@@ -299,6 +306,29 @@ class Tree:
             queue += node.children
 
         return tree
+
+    def to_sklearn(self):
+        # TODO
+        raise NotImplementedError()
+
+    @classmethod
+    def from_json(cls):
+        # TODO
+        raise NotImplementedError()
+
+    def to_json(self, indent: Optional[int] = None):
+        return json.dumps(self.to_dict(), indent=indent)
+
+    @classmethod
+    def from_dict(cls):
+        # TODO
+        raise NotImplementedError()
+
+    def to_dict(self):
+        return dict(
+            ID=self.ID, name=self.name, length=self.length,
+            children=[child.to_dict() for child in self.children]
+        )
 
     def breadth_first(self):
         """Generator implementing breadth first search starting at root node
