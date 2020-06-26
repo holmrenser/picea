@@ -116,7 +116,7 @@ class Tree:
     def __repr__(self):
         return (
             f'<TreeNode ID={self.ID} depth={self.depth}'
-            f' length={self.length} name="{self.name}">'
+            f' length={self.length} name={str(self.name)}>'
         )
 
     @property
