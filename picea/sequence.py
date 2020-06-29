@@ -8,7 +8,6 @@ import uuid
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.colors import ListedColormap, BoundaryNorm
-# from urllib.parse import quote, unquote
 import json
 from functools import reduce
 import re
@@ -116,25 +115,32 @@ class FastaIter:
         return header, seq
 
 
-class SequenceCollection(object, metaclass=ABCMeta):
+class SequenceCollection(metaclass=ABCMeta):
+    """
+    (Partially) Abstract Base Class for sequence collections.
+    Classes extending from this baseclass should override
+    `__setitem__`, `__getitem__`, `__delitem__`, `headers`, and `n_seqs`.
+
+    If the above methods are implemented, this automatically enables the
+    following methods: `from_fasta`, `to_fasta`, `from_json`, `to_json`.
+
+    Args:
+        sequences (Optional[Iterable[Tuple[str, str]]], optional):
+            Iterable of (header, sequence) tuples. Defaults to None.
+        sequence_annotation (Optional[SequenceAnnotation]):
+                picea SequenceAnnotation object. Defaults to None.
+
+    Raises:
+        NotImplementedError: Abstract Base Class can not be initialized
+            and serves as a template only
+    """
     @abstractmethod
     def __init__(
         self,
         sequences: Optional[Iterable[Tuple[str, str]]] = None,
         sequence_annotation: Optional['SequenceAnnotation'] = None
     ) -> None:
-        """[summary]
-
-        Args:
-            sequences (Optional[Iterable[Tuple[str, str]]], optional):
-                [description]. Defaults to None.
-            sequence_annotation (Optional[, optional): [description]. Defaults
-                to None.
-
-        Raises:
-            NotImplementedError: [description]
-        """
-        raise NotImplementedError()
+        raise NotImplementedError('Not implemented in base class')
 
     @abstractmethod
     def __setitem__(self, header: str, seq: str) -> None:
@@ -267,6 +273,9 @@ class SequenceCollection(object, metaclass=ABCMeta):
 
 
 class SequenceList(SequenceCollection):
+    """
+    A container for multiple (unaligned) DNA or amino acid sequences
+    """
     def __init__(
         self: 'SequenceCollection',
         sequences: Iterable[Tuple[str, str]] = None,
@@ -337,13 +346,8 @@ class MultipleSequenceAlignment(SequenceCollection):
         sequences: Optional[Iterable[Tuple[str, str]]] = None,
         sequence_annotation: Optional['SequenceAnnotation'] = None
     ) -> None:
-        """[summary]
-
-        Args:
-            sequences (Optional[Iterable[Tuple[str, str]]], optional):
-                [description]. Defaults to None.
-            sequence_annotation (Optional[, optional): [description]. Defaults
-                to None.
+        """
+        A container for multiple aligned DNA or amino acid sequences
         """
         self._collection = np.empty((0, 0), dtype='uint8')
         self._header_idx = dict()
@@ -425,8 +429,8 @@ class SequenceAnnotation:
         """[summary]
 
         Args:
-            sequence_collection (Optional[, optional): [description]. Defaults
-                to None.
+            sequence_collection (Optional['SequenceCollection']): \
+                [description]. Defaults to None.
         """
         if sequence_collection:
             sequence_collection.sequence_annotation = self

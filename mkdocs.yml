@@ -1,0 +1,16 @@
+site_name: Picea documentation
+repo_url: https://github.com/holmrenser/picea
+plugins: 
+    - search
+    - mkapi
+markdown_extensions:
+    - admonition
+    - codehilite
+    - toc
+theme:
+    name: material
+nav:
+    - index.md
+    - API:
+        - API/sequence.md
+        - API/tree.md
