@@ -1,0 +1,1248 @@
+
+
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      <link rel="shortcut icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-5.3.3">
+    
+    
+      
+        <title>Sequence containers - Picea documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.fe0cca5b.min.css">
+      
+      
+    
+    
+    
+      
+        <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>body,input{font-family:"Roboto",-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono",SFMono-Regular,Consolas,Menlo,monospace}</style>
+      
+    
+    
+    
+      <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.8.1/css/all.css">
+    
+      <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.8.1/css/v4-shims.css">
+    
+      <link rel="stylesheet" href="../../css/mkapi-common.css">
+    
+    
+      
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#sequence-containers" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header-nav md-grid" aria-label="Header">
+    <a href="../.." title="Picea documentation" class="md-header-nav__button md-logo" aria-label="Picea documentation">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 003-3 3 3 0 00-3-3 3 3 0 00-3 3 3 3 0 003 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    <label class="md-header-nav__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header-nav__title" data-md-component="header-title">
+      
+        <div class="md-header-nav__ellipsis">
+          <span class="md-header-nav__topic md-ellipsis">
+            Picea documentation
+          </span>
+          <span class="md-header-nav__topic md-ellipsis">
+            
+              Sequence containers
+            
+          </span>
+        </div>
+      
+    </div>
+    
+      <label class="md-header-nav__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0116 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 019.5 16 6.5 6.5 0 013 9.5 6.5 6.5 0 019.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active">
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0116 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 019.5 16 6.5 6.5 0 013 9.5 6.5 6.5 0 019.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" data-md-component="search-reset" tabindex="-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header-nav__source">
+        
+<a href="https://github.com/holmrenser/picea/" title="Go to repository" class="md-source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05L244 40.45a28.87 28.87 0 00-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 01-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 000 40.81l195.61 195.6a28.86 28.86 0 0040.8 0l194.69-194.69a28.86 28.86 0 000-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+        
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              <div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Picea documentation" class="md-nav__button md-logo" aria-label="Picea documentation">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 003-3 3 3 0 00-3-3 3 3 0 00-3 3 3 3 0 003 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    Picea documentation
+  </label>
+  
+    <div class="md-nav__source">
+      
+<a href="https://github.com/holmrenser/picea/" title="Go to repository" class="md-source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05L244 40.45a28.87 28.87 0 00-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 01-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 000 40.81l195.61 195.6a28.86 28.86 0 0040.8 0l194.69-194.69a28.86 28.86 0 000-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../.." title="_picea_" class="md-nav__link">
+      _picea_
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2" type="checkbox" id="nav-2" checked>
+    
+    <label class="md-nav__link" for="nav-2">
+      API
+      <span class="md-nav__icon md-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59 16.58L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.42z"/></svg>
+      </span>
+    </label>
+    <nav class="md-nav" aria-label="API" data-md-level="1">
+      <label class="md-nav__title" for="nav-2">
+        <span class="md-nav__icon md-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+        </span>
+        API
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active">
+    
+    <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+    
+      
+    
+    
+    <a href="./" title="Sequence containers" class="md-nav__link md-nav__link--active">
+      Sequence containers
+    </a>
+    
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../tree/" title="Tree containers" class="md-nav__link">
+      Tree containers
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                  <a href="https://github.com/holmrenser/picea/edit/master/docs/API/sequence.md" title="Edit this page" class="md-content__button md-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
+                  </a>
+                
+                
+                  
+                
+                
+                <h1 id="sequence-containers">Sequence containers</h1>
+<div class="mkapi-node" id="picea.sequence.SequenceCollection">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object abstract-class code top">
+    <div class="mkapi-object-kind abstract-class top">abstract class</div>
+    <div class="mkapi-object-body abstract-class top"><code class="mkapi-object-prefix">picea.sequence.</code><code class="mkapi-object-name">SequenceCollection</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">sequences=None</code>, <code class="mkapi-object-signature">sequence_annotation=None</code><code class="mkapi-object-parenthesis">)</code></div>
+  </div>
+  
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>(Partially) Abstract Base Class for sequence collections.
+Classes extending from this baseclass should override
+<code>__setitem__</code>, <code>__getitem__</code>, <code>__delitem__</code>, <code>headers</code>, and <code>n_seqs</code>.</p>
+<p>If the above methods are implemented, this automatically enables the
+following methods: <code>from_fasta</code>, <code>to_fasta</code>, <code>from_json</code>, <code>to_json</code>.</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">sequences</code>
+<span class="mkapi-item-type">(Optional[Iterable[Tuple[str, str]]], optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Iterable of (header, sequence) tuples. Defaults to None.</span></li>
+
+<li><code class="mkapi-item-name">sequence_annotation</code>
+<span class="mkapi-item-type">(Optional[SequenceAnnotation])</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">picea SequenceAnnotation object. Defaults to None.</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section attributes">
+      <div class="mkapi-section-name attributes">
+          <span class="mkapi-section-name-body attributes">Attributes</span> 
+        </div>
+      <div class="mkapi-section-body attributes"><ul class="mkapi-items">
+<li class="abstract-readonly-property"><code class="mkapi-item-name">headers</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">List of sequences headers.
+Overridden in subclasses.</span></li>
+
+<li class="abstract-readonly-property"><code class="mkapi-item-name">n_seqs</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Return the number of sequences in the collection.
+Overridden in subclasses</span></li>
+
+<li class="readonly-property"><code class="mkapi-item-name">sequences</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">List of sequences without headers</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section raises">
+      <div class="mkapi-section-name raises">
+          <span class="mkapi-section-name-body raises">Raises</span> 
+        </div>
+      <div class="mkapi-section-body raises"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">NotImplementedError</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Abstract Base Class can not be initialized
+and serves as a template only</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section methods">
+      <div class="mkapi-section-name methods">
+          <span class="mkapi-section-name-body methods">Methods</span> 
+        </div>
+      <div class="mkapi-section-body methods"><ul class="mkapi-items">
+<li class="classmethod"><code class="mkapi-item-name"><a href="#picea.sequence.SequenceCollection.from_fasta">from_fasta</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">filename</code>, <code class="mkapi-object-signature">string</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(SequenceCollection)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Parse a fasta formatted string into a SequenceCollection object</span></li>
+
+<li class="classmethod"><code class="mkapi-item-name"><a href="#picea.sequence.SequenceCollection.from_json">from_json</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">filename</code>, <code class="mkapi-object-signature">string</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(SequenceCollection)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[summary]</span></li>
+
+<li class="method"><code class="mkapi-item-name"><a href="#picea.sequence.SequenceCollection.to_fasta">to_fasta</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(str)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Get a fasta-formatted string of the sequence collection</span></li>
+
+<li class="method"><code class="mkapi-item-name"><a href="#picea.sequence.SequenceCollection.to_json">to_json</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">indent</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(str)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[summary]</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+  <div class="mkapi-members">
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="picea.sequence.SequenceCollection.from_fasta">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object classmethod code">
+    <div class="mkapi-object-kind classmethod">classmethod</div>
+    <div class="mkapi-object-body classmethod"><code class="mkapi-object-name">from_fasta</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">filename=None</code>, <code class="mkapi-object-signature">string=None</code><code class="mkapi-object-parenthesis">)</code></div>
+  </div>
+  
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Parse a fasta formatted string into a SequenceCollection object</p>
+<p>Keyword Arguments:
+    filename {String} -- filename string (default: {None})
+    string {String} -- fasta formatted string (default: {None})</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">filename</code>
+<span class="mkapi-item-type">(str, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description"></span></li>
+
+<li><code class="mkapi-item-name">string</code>
+<span class="mkapi-item-type">(str, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description"></span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(SequenceCollection)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>SequenceCollection -- SequenceCollection instance</p></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="picea.sequence.SequenceCollection.to_fasta">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object method code">
+    <div class="mkapi-object-kind method">method</div>
+    <div class="mkapi-object-body method"><code class="mkapi-object-name">to_fasta</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code></div>
+  </div>
+  
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Get a fasta-formatted string of the sequence collection</p></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(str)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>Multi-line fasta-formatted string</p></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="picea.sequence.SequenceCollection.from_json">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object classmethod code">
+    <div class="mkapi-object-kind classmethod">classmethod</div>
+    <div class="mkapi-object-body classmethod"><code class="mkapi-object-name">from_json</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">filename=None</code>, <code class="mkapi-object-signature">string=None</code><code class="mkapi-object-parenthesis">)</code></div>
+  </div>
+  
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>[summary]</p>
+<p>Keyword Arguments:
+    string {String} -- JSON formatted string</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">filename</code>
+<span class="mkapi-item-type">(str, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description"></span></li>
+
+<li><code class="mkapi-item-name">string</code>
+<span class="mkapi-item-type">(str, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description"></span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(SequenceCollection)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>SequenceCollection -- SequenceCollection instance</p></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="picea.sequence.SequenceCollection.to_json">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object method code">
+    <div class="mkapi-object-kind method">method</div>
+    <div class="mkapi-object-body method"><code class="mkapi-object-name">to_json</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">indent=None</code><code class="mkapi-object-parenthesis">)</code></div>
+  </div>
+  
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>[summary]</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">indent</code>
+<span class="mkapi-item-type">(int, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description"></span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(str)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>[description]</p></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="picea.sequence.SequenceList">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object class code top">
+    <div class="mkapi-object-kind class top">class</div>
+    <div class="mkapi-object-body class top"><code class="mkapi-object-prefix">picea.sequence.</code><code class="mkapi-object-name">SequenceList</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">sequences=None</code>, <code class="mkapi-object-signature">sequence_annotation=None</code><code class="mkapi-object-parenthesis">)</code></div>
+  </div>
+  
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section bases">
+      <div class="mkapi-section-name bases">
+          <span class="mkapi-section-name-body bases">Bases</span> 
+        </div>
+      <div class="mkapi-section-body bases">
+<span class="mkapi-base">picea.sequence.SequenceCollection</span>
+</div>
+    </div>
+  <div class="mkapi-section">
+      <div class="mkapi-section-body"><p>A container for multiple (unaligned) DNA or amino acid sequences</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">sequences</code>
+<span class="mkapi-item-type">(iterable of (str, str), optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Iterable of (header, sequence) tuples. Defaults to None.</span></li>
+
+<li><code class="mkapi-item-name">sequence_annotation</code>
+<span class="mkapi-item-type">(SequenceAnnotation, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">picea SequenceAnnotation object. Defaults to None.</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section attributes">
+      <div class="mkapi-section-name attributes">
+          <span class="mkapi-section-name-body attributes">Attributes</span> 
+        </div>
+      <div class="mkapi-section-body attributes"><ul class="mkapi-items">
+
+
+<li class="readonly-property"><code class="mkapi-item-name">sequences</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">List of sequences without headers</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section methods">
+      <div class="mkapi-section-name methods">
+          <span class="mkapi-section-name-body methods">Methods</span> 
+        </div>
+      <div class="mkapi-section-body methods"><ul class="mkapi-items">
+<li class="method"><code class="mkapi-item-name"><a href="#picea.sequence.SequenceList.align">align</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">method</code>, <code class="mkapi-object-signature">method_kwargs</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">([type])</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[summary]</span></li>
+
+<li class="classmethod"><code class="mkapi-item-name"><a href="#picea.sequence.SequenceCollection.from_fasta">from_fasta</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">filename</code>, <code class="mkapi-object-signature">string</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(SequenceCollection)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Parse a fasta formatted string into a SequenceCollection object</span></li>
+
+<li class="classmethod"><code class="mkapi-item-name"><a href="#picea.sequence.SequenceCollection.from_json">from_json</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">filename</code>, <code class="mkapi-object-signature">string</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(SequenceCollection)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[summary]</span></li>
+
+<li class="method"><code class="mkapi-item-name"><a href="#picea.sequence.SequenceCollection.to_fasta">to_fasta</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(str)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Get a fasta-formatted string of the sequence collection</span></li>
+
+<li class="method"><code class="mkapi-item-name"><a href="#picea.sequence.SequenceCollection.to_json">to_json</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">indent</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(str)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[summary]</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+  <div class="mkapi-members">
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="picea.sequence.SequenceCollection.from_fasta">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object classmethod code">
+    <div class="mkapi-object-kind classmethod">classmethod</div>
+    <div class="mkapi-object-body classmethod"><code class="mkapi-object-name">from_fasta</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">filename=None</code>, <code class="mkapi-object-signature">string=None</code><code class="mkapi-object-parenthesis">)</code></div>
+  </div>
+  
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Parse a fasta formatted string into a SequenceCollection object</p>
+<p>Keyword Arguments:
+    filename {String} -- filename string (default: {None})
+    string {String} -- fasta formatted string (default: {None})</p></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(SequenceCollection)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>SequenceCollection -- SequenceCollection instance</p></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="picea.sequence.SequenceCollection.to_fasta">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object method code">
+    <div class="mkapi-object-kind method">method</div>
+    <div class="mkapi-object-body method"><code class="mkapi-object-name">to_fasta</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code></div>
+  </div>
+  
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Get a fasta-formatted string of the sequence collection</p></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(str)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>Multi-line fasta-formatted string</p></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="picea.sequence.SequenceCollection.from_json">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object classmethod code">
+    <div class="mkapi-object-kind classmethod">classmethod</div>
+    <div class="mkapi-object-body classmethod"><code class="mkapi-object-name">from_json</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">filename=None</code>, <code class="mkapi-object-signature">string=None</code><code class="mkapi-object-parenthesis">)</code></div>
+  </div>
+  
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>[summary]</p>
+<p>Keyword Arguments:
+    string {String} -- JSON formatted string</p></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(SequenceCollection)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>SequenceCollection -- SequenceCollection instance</p></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="picea.sequence.SequenceCollection.to_json">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object method code">
+    <div class="mkapi-object-kind method">method</div>
+    <div class="mkapi-object-body method"><code class="mkapi-object-name">to_json</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">indent=None</code><code class="mkapi-object-parenthesis">)</code></div>
+  </div>
+  
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>[summary]</p></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(str)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>[description]</p></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="picea.sequence.SequenceList.align">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object method code">
+    <div class="mkapi-object-kind method">method</div>
+    <div class="mkapi-object-body method"><code class="mkapi-object-name">align</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">method=&#39;mafft&#39;</code>, <code class="mkapi-object-signature">method_kwargs={}</code><code class="mkapi-object-parenthesis">)</code></div>
+  </div>
+  
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>[summary]</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">method</code>
+<span class="mkapi-item-type">(str, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[description]. Defaults to 'mafft'.</span></li>
+
+<li><code class="mkapi-item-name">method_kwargs</code>
+<span class="mkapi-item-type">(Dict[str, str], optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[description].                 Defaults to dict().</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">([type])</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>[description]</p></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="picea.sequence.MultipleSequenceAlignment">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object class code top">
+    <div class="mkapi-object-kind class top">class</div>
+    <div class="mkapi-object-body class top"><code class="mkapi-object-prefix">picea.sequence.</code><code class="mkapi-object-name">MultipleSequenceAlignment</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">sequences=None</code>, <code class="mkapi-object-signature">sequence_annotation=None</code><code class="mkapi-object-parenthesis">)</code></div>
+  </div>
+  
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section bases">
+      <div class="mkapi-section-name bases">
+          <span class="mkapi-section-name-body bases">Bases</span> 
+        </div>
+      <div class="mkapi-section-body bases">
+<span class="mkapi-base">picea.sequence.SequenceCollection</span>
+</div>
+    </div>
+  <div class="mkapi-section">
+      <div class="mkapi-section-body"><p>(Partially) Abstract Base Class for sequence collections.
+Classes extending from this baseclass should override
+<code>__setitem__</code>, <code>__getitem__</code>, <code>__delitem__</code>, <code>headers</code>, and <code>n_seqs</code>.</p>
+<p>If the above methods are implemented, this automatically enables the
+following methods: <code>from_fasta</code>, <code>to_fasta</code>, <code>from_json</code>, <code>to_json</code>.</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">sequences</code>
+<span class="mkapi-item-type">(Optional[Iterable[Tuple[str, str]]], optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Iterable of (header, sequence) tuples. Defaults to None.</span></li>
+
+<li><code class="mkapi-item-name">sequence_annotation</code>
+<span class="mkapi-item-type">(Optional[SequenceAnnotation])</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">picea SequenceAnnotation object. Defaults to None.</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section attributes">
+      <div class="mkapi-section-name attributes">
+          <span class="mkapi-section-name-body attributes">Attributes</span> 
+        </div>
+      <div class="mkapi-section-body attributes"><ul class="mkapi-items">
+
+
+
+<li class="readonly-property"><code class="mkapi-item-name">sequences</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">List of sequences without headers</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section raises">
+      <div class="mkapi-section-name raises">
+          <span class="mkapi-section-name-body raises">Raises</span> 
+        </div>
+      <div class="mkapi-section-body raises"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">NotImplementedError</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Abstract Base Class can not be initialized
+and serves as a template only</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section methods">
+      <div class="mkapi-section-name methods">
+          <span class="mkapi-section-name-body methods">Methods</span> 
+        </div>
+      <div class="mkapi-section-body methods"><ul class="mkapi-items">
+<li class="method"><code class="mkapi-item-name"><a href="#picea.sequence.MultipleSequenceAlignment.__delitem__">__delitem__</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">header</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">WIP!</span></li>
+
+<li class="classmethod"><code class="mkapi-item-name"><a href="#picea.sequence.SequenceCollection.from_fasta">from_fasta</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">filename</code>, <code class="mkapi-object-signature">string</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(SequenceCollection)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Parse a fasta formatted string into a SequenceCollection object</span></li>
+
+<li class="classmethod"><code class="mkapi-item-name"><a href="#picea.sequence.SequenceCollection.from_json">from_json</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">filename</code>, <code class="mkapi-object-signature">string</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(SequenceCollection)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[summary]</span></li>
+
+<li class="method"><code class="mkapi-item-name"><a href="#picea.sequence.SequenceCollection.to_fasta">to_fasta</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(str)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Get a fasta-formatted string of the sequence collection</span></li>
+
+<li class="method"><code class="mkapi-item-name"><a href="#picea.sequence.SequenceCollection.to_json">to_json</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">indent</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(str)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[summary]</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+  <div class="mkapi-members">
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="picea.sequence.SequenceCollection.from_fasta">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object classmethod code">
+    <div class="mkapi-object-kind classmethod">classmethod</div>
+    <div class="mkapi-object-body classmethod"><code class="mkapi-object-name">from_fasta</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">filename=None</code>, <code class="mkapi-object-signature">string=None</code><code class="mkapi-object-parenthesis">)</code></div>
+  </div>
+  
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Parse a fasta formatted string into a SequenceCollection object</p>
+<p>Keyword Arguments:
+    filename {String} -- filename string (default: {None})
+    string {String} -- fasta formatted string (default: {None})</p></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(SequenceCollection)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>SequenceCollection -- SequenceCollection instance</p></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="picea.sequence.SequenceCollection.to_fasta">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object method code">
+    <div class="mkapi-object-kind method">method</div>
+    <div class="mkapi-object-body method"><code class="mkapi-object-name">to_fasta</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code></div>
+  </div>
+  
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Get a fasta-formatted string of the sequence collection</p></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(str)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>Multi-line fasta-formatted string</p></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="picea.sequence.SequenceCollection.from_json">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object classmethod code">
+    <div class="mkapi-object-kind classmethod">classmethod</div>
+    <div class="mkapi-object-body classmethod"><code class="mkapi-object-name">from_json</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">filename=None</code>, <code class="mkapi-object-signature">string=None</code><code class="mkapi-object-parenthesis">)</code></div>
+  </div>
+  
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>[summary]</p>
+<p>Keyword Arguments:
+    string {String} -- JSON formatted string</p></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(SequenceCollection)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>SequenceCollection -- SequenceCollection instance</p></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="picea.sequence.SequenceCollection.to_json">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object method code">
+    <div class="mkapi-object-kind method">method</div>
+    <div class="mkapi-object-body method"><code class="mkapi-object-name">to_json</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">indent=None</code><code class="mkapi-object-parenthesis">)</code></div>
+  </div>
+  
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>[summary]</p></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(str)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>[description]</p></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="picea.sequence.MultipleSequenceAlignment.__delitem__">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object method code">
+    <div class="mkapi-object-kind method">method</div>
+    <div class="mkapi-object-body method"><code class="mkapi-object-name">__delitem__</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">header</code><code class="mkapi-object-parenthesis">)</code></div>
+  </div>
+  
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>WIP!</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">header</code>
+<span class="mkapi-item-type">(str)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[description]</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="picea.sequence.SequenceAnnotation">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object class code top">
+    <div class="mkapi-object-kind class top">class</div>
+    <div class="mkapi-object-body class top"><code class="mkapi-object-prefix">picea.sequence.</code><code class="mkapi-object-name">SequenceAnnotation</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">sequence_collection=None</code><code class="mkapi-object-parenthesis">)</code></div>
+  </div>
+  
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>[summary]</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">sequence_collection</code>
+<span class="mkapi-item-type">(Optional['SequenceCollection'])</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[description]. Defaults to None.</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section methods">
+      <div class="mkapi-section-name methods">
+          <span class="mkapi-section-name-body methods">Methods</span> 
+        </div>
+      <div class="mkapi-section-body methods"><ul class="mkapi-items">
+<li class="classmethod"><code class="mkapi-item-name"><a href="#picea.sequence.SequenceAnnotation.from_gff">from_gff</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">filename</code>, <code class="mkapi-object-signature">string</code>, <code class="mkapi-object-signature">sequence_collection</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">([type])</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[summary]</span></li>
+
+<li class="classmethod"><code class="mkapi-item-name"><a href="#picea.sequence.SequenceAnnotation.from_json">from_json</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">filename</code>, <code class="mkapi-object-signature">string</code>, <code class="mkapi-object-signature">sequence_collection</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(SequenceAnnotation)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[summary]</span></li>
+
+<li class="method"><code class="mkapi-item-name"><a href="#picea.sequence.SequenceAnnotation.to_gff">to_gff</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(str)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[summary]</span></li>
+
+<li class="method"><code class="mkapi-item-name"><a href="#picea.sequence.SequenceAnnotation.to_json">to_json</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">indent</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(str)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[summary]</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+  <div class="mkapi-members">
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="picea.sequence.SequenceAnnotation.from_gff">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object classmethod code">
+    <div class="mkapi-object-kind classmethod">classmethod</div>
+    <div class="mkapi-object-body classmethod"><code class="mkapi-object-name">from_gff</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">filename=None</code>, <code class="mkapi-object-signature">string=None</code>, <code class="mkapi-object-signature">sequence_collection=None</code><code class="mkapi-object-parenthesis">)</code></div>
+  </div>
+  
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>[summary]</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">filename</code>
+<span class="mkapi-item-type">([type], optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[description]. Defaults to None.</span></li>
+
+<li><code class="mkapi-item-name">string</code>
+<span class="mkapi-item-type">([type], optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[description]. Defaults to None.</span></li>
+
+<li><code class="mkapi-item-name">sequence_collection</code>
+<span class="mkapi-item-type">([type], optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[description].
+Defaults to None.</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">([type])</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>[description]</p></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="picea.sequence.SequenceAnnotation.to_gff">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object method code">
+    <div class="mkapi-object-kind method">method</div>
+    <div class="mkapi-object-body method"><code class="mkapi-object-name">to_gff</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code></div>
+  </div>
+  
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>[summary]</p></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(str)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>[description]</p></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="picea.sequence.SequenceAnnotation.from_json">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object classmethod code">
+    <div class="mkapi-object-kind classmethod">classmethod</div>
+    <div class="mkapi-object-body classmethod"><code class="mkapi-object-name">from_json</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">filename=None</code>, <code class="mkapi-object-signature">string=None</code>, <code class="mkapi-object-signature">sequence_collection=None</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; SequenceAnnotation</span></div>
+  </div>
+  
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>[summary]</p></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="picea.sequence.SequenceAnnotation.to_json">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object method code">
+    <div class="mkapi-object-kind method">method</div>
+    <div class="mkapi-object-body method"><code class="mkapi-object-name">to_json</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">indent=None</code><code class="mkapi-object-parenthesis">)</code></div>
+  </div>
+  
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>[summary]</p></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(str)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>[description]</p></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+  </div>
+
+</div>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <div class="md-footer-nav">
+      <nav class="md-footer-nav__inner md-grid" aria-label="Footer">
+        
+          <a href="../.." title="_picea_" class="md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+            <div class="md-footer-nav__button md-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+            </div>
+            <div class="md-footer-nav__title">
+              <div class="md-ellipsis">
+                <span class="md-footer-nav__direction">
+                  Previous
+                </span>
+                _picea_
+              </div>
+            </div>
+          </a>
+        
+        
+          <a href="../tree/" title="Tree containers" class="md-footer-nav__link md-footer-nav__link--next" rel="next">
+            <div class="md-footer-nav__title">
+              <div class="md-ellipsis">
+                <span class="md-footer-nav__direction">
+                  Next
+                </span>
+                Tree containers
+              </div>
+            </div>
+            <div class="md-footer-nav__button md-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    </div>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs
+        </a>
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    
+      <script src="../../assets/javascripts/vendor.d710d30a.min.js"></script>
+      <script src="../../assets/javascripts/bundle.4a5ba8d6.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents"}</script>
+      
+      <script>
+        app = initialize({
+          base: "../..",
+          features: [],
+          search: Object.assign({
+            worker: "../../assets/javascripts/worker/search.9b3611bd.min.js"
+          }, typeof search !== "undefined" && search)
+        })
+      </script>
+      
+        <script src="../../js/mkapi.js"></script>
+      
+    
+  </body>
+</html>
