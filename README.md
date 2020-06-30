@@ -10,7 +10,7 @@
 pip install picea
 ```
 
-![example figure](https://github.com/holmrenser/picea/blob/master/docs/example1.png)
+![example figure](https://github.com/holmrenser/picea/raw/master/docs/example1.png)
 
 The above figure can be generated with the following code
 

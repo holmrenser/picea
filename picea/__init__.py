@@ -1,8 +1,9 @@
-__author__ = 'rensholmer'
-__version__ = '0.0.3_beta1'
+__author__ = 'Rens Holmer'
+__version__ = '0.0.8'
 
 from .tree import Tree  # noqa
 from .sequence import (  # noqa
+    SequenceCollection,
     SequenceList,
     MultipleSequenceAlignment,
     SequenceAnnotation,

@@ -1,19 +1,18 @@
 #!/usr/bin/python
 from setuptools import setup
 from sphinx.setup_command import BuildDoc
-
-__author__ = 'Rens Holmer'
-__created__ = '07/06/2019'
+import picea
 
 name = 'picea'
-version = '0.0.7'
+version = picea.__version__
+author = picea.__author__
 
 
 def main():
     setup(
         name=name,
         packages=[name],
-        author=__author__,
+        author=author,
         author_email='rens.holmer@wur.nl',
         description='A lightweight python library for working with \
             trees and sequence collections',
