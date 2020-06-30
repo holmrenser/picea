@@ -14,4 +14,4 @@ jobs:
         uses: mhausenblas/mkdocs-deploy-gh-pages@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ARCHFLAGS: -Wno-error=unused-command-line-argument-hard-error-in-future
+          REQUIREMENTS: docs/requirements.txt
