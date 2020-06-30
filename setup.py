@@ -6,7 +6,7 @@ __author__ = 'Rens Holmer'
 __created__ = '07/06/2019'
 
 name = 'picea'
-version = '0.0.6'
+version = '0.0.7'
 
 
 def main():
@@ -15,8 +15,8 @@ def main():
         packages=[name],
         author=__author__,
         author_email='rens.holmer@wur.nl',
-        description='A lightweight python library for working (phylogenetic) \
-            trees',
+        description='A lightweight python library for working with \
+            trees and sequence collections',
         version=version,
         url='https://github.com/holmrenser/picea',
         cmdclass={'build_sphinx': BuildDoc},
