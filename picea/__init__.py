@@ -1,5 +1,5 @@
 __author__ = 'Rens Holmer'
-__version__ = '0.0.9'
+__version__ = '0.0.10'
 
 from .tree import Tree  # noqa
 from .sequence import (  # noqa
