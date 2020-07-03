@@ -380,11 +380,11 @@
         </div>
       <div class="mkapi-section-body methods"><ul class="mkapi-items">
 <li class="generator"><code class="mkapi-item-name"><a href="#picea.tree.Tree.breadth_first">breadth_first</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code>
-
+<span class="mkapi-item-type">(generator(Tree))</span>
 <span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Generator implementing breadth first search starting at root node</span></li>
 
 <li class="generator"><code class="mkapi-item-name"><a href="#picea.tree.Tree.depth_first">depth_first</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">post_order</code><code class="mkapi-object-parenthesis">)</code>
-
+<span class="mkapi-item-type">(generator(Tree))</span>
 <span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Generator implementing depth first search in either post- or
 pre-order traversel</span></li>
 
@@ -400,6 +400,10 @@ pre-order traversel</span></li>
 <span class="mkapi-item-type">(Tree)</span>
 <span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Calculate (x,y) position of nodes for plotting,
 modifies nodes in place</span></li>
+
+<li class="method"><code class="mkapi-item-name"><a href="#picea.tree.Tree.to_dict">to_dict</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(TreeDict)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[summary]</span></li>
 
 <li class="method"><code class="mkapi-item-name"><a href="#picea.tree.Tree.to_newick">to_newick</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">branch_lengths</code><code class="mkapi-object-parenthesis">)</code>
 <span class="mkapi-item-type">(String)</span>
@@ -523,11 +527,35 @@ modifies nodes in place</span></li>
     </div>
   
     <div class="mkapi-member">
+      <div class="mkapi-node" id="picea.tree.Tree.to_dict">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object method code">
+    <div class="mkapi-object-kind method">method</div>
+    <div class="mkapi-object-body method"><code class="mkapi-object-name">to_dict</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code></div>
+  </div>
+  
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>[summary]</p></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(TreeDict)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>[description]</p></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+    <div class="mkapi-member">
       <div class="mkapi-node" id="picea.tree.Tree.breadth_first">
 <div class='mkapi-object-container'>
   <div class="mkapi-object generator code">
     <div class="mkapi-object-kind generator">generator</div>
-    <div class="mkapi-object-body generator"><code class="mkapi-object-name">breadth_first</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code></div>
+    <div class="mkapi-object-body generator"><code class="mkapi-object-name">breadth_first</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; generator(Tree)</span></div>
   </div>
   
 </div>
@@ -545,7 +573,7 @@ modifies nodes in place</span></li>
 <div class='mkapi-object-container'>
   <div class="mkapi-object generator code">
     <div class="mkapi-object-kind generator">generator</div>
-    <div class="mkapi-object-body generator"><code class="mkapi-object-name">depth_first</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">post_order=True</code><code class="mkapi-object-parenthesis">)</code></div>
+    <div class="mkapi-object-body generator"><code class="mkapi-object-name">depth_first</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">post_order=True</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; generator(Tree)</span></div>
   </div>
   
 </div>
@@ -567,7 +595,7 @@ pre-order traversel</p>
 <div class='mkapi-object-container'>
   <div class="mkapi-object method code">
     <div class="mkapi-object-kind method">method</div>
-    <div class="mkapi-object-body method"><code class="mkapi-object-name">layout</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">separation=&lt;function equal_separation at 0x1a1d7100e0&gt;</code>, <code class="mkapi-object-signature">d_x=1.0</code>, <code class="mkapi-object-signature">d_y=1.0</code>, <code class="mkapi-object-signature">ltr=True</code><code class="mkapi-object-parenthesis">)</code></div>
+    <div class="mkapi-object-body method"><code class="mkapi-object-name">layout</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">separation=&lt;function equal_separation at 0x1a1daa6170&gt;</code>, <code class="mkapi-object-signature">d_x=1.0</code>, <code class="mkapi-object-signature">d_y=1.0</code>, <code class="mkapi-object-signature">ltr=True</code><code class="mkapi-object-parenthesis">)</code></div>
   </div>
   
 </div>

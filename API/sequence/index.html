@@ -290,6 +290,234 @@
                 
                 
                 <h1 id="sequence-containers">Sequence containers</h1>
+<div class="mkapi-node" id="picea.sequence.Alphabet">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object class code top">
+    <div class="mkapi-object-kind class top">class</div>
+    <div class="mkapi-object-body class top"><code class="mkapi-object-prefix">picea.sequence.</code><code class="mkapi-object-name">Alphabet</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">iterable</code>, <code class="mkapi-object-signature">name</code><code class="mkapi-object-parenthesis">)</code></div>
+  </div>
+  
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section bases">
+      <div class="mkapi-section-name bases">
+          <span class="mkapi-section-name-body bases">Bases</span> 
+        </div>
+      <div class="mkapi-section-body bases">
+<span class="mkapi-base">set</span>
+</div>
+    </div>
+  <div class="mkapi-section">
+      <div class="mkapi-section-body"><p>set() -&gt; new empty set object
+set(iterable) -&gt; new set object</p>
+<p>Build an unordered collection of unique elements.</p></div>
+    </div>
+  <div class="mkapi-section methods">
+      <div class="mkapi-section-name methods">
+          <span class="mkapi-section-name-body methods">Methods</span> 
+        </div>
+      <div class="mkapi-section-body methods"><ul class="mkapi-items">
+<li class="method"><code class="mkapi-item-name"><a href="#picea.sequence.Alphabet.score">score</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">sequence</code>, <code class="mkapi-object-signature">match</code>, <code class="mkapi-object-signature">mismatch</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(float)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Scores how well a sequence matches an alphabet by summing         (mis)matches of sequence letters that are not in the alphabet         and (mis)matches of alphabet letters that are not in the sequence.</span></li>
+
+<li class="method"><code class="mkapi-item-name"><a href="#picea.sequence.Alphabet.validate">validate</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">sequence</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(bool)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Determine whether a sequence strictly fits an alphabet</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+  <div class="mkapi-members">
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="picea.sequence.Alphabet.score">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object method code">
+    <div class="mkapi-object-kind method">method</div>
+    <div class="mkapi-object-body method"><code class="mkapi-object-name">score</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">sequence</code>, <code class="mkapi-object-signature">match=1.0</code>, <code class="mkapi-object-signature">mismatch=-1.0</code><code class="mkapi-object-parenthesis">)</code></div>
+  </div>
+  
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Scores how well a sequence matches an alphabet by summing         (mis)matches of sequence letters that are not in the alphabet         and (mis)matches of alphabet letters that are not in the sequence.</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">sequence</code>
+<span class="mkapi-item-type">(str)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Sequence string for which to determine how well                 it fits the alphabet</span></li>
+
+<li><code class="mkapi-item-name">match</code>
+<span class="mkapi-item-type">(float, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">match score. Defaults to 1.0.</span></li>
+
+<li><code class="mkapi-item-name">mismatch</code>
+<span class="mkapi-item-type">(float, optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">mismatch score. Defaults to -1.0.</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(float)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>Score of how well a sequence matches the alphabet</p></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="picea.sequence.Alphabet.validate">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object method code">
+    <div class="mkapi-object-kind method">method</div>
+    <div class="mkapi-object-body method"><code class="mkapi-object-name">validate</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">sequence</code><code class="mkapi-object-parenthesis">)</code></div>
+  </div>
+  
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Determine whether a sequence strictly fits an alphabet</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">sequence</code>
+<span class="mkapi-item-type">(str)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Sequence string</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(bool)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>true if all characters in sequence are in the alphabet</p></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+  </div>
+
+</div>
+
+<div class="mkapi-node" id="picea.sequence.Sequence">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object dataclass code top">
+    <div class="mkapi-object-kind dataclass top">dataclass</div>
+    <div class="mkapi-object-body dataclass top"><code class="mkapi-object-prefix">picea.sequence.</code><code class="mkapi-object-name">Sequence</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">header=None</code>, <code class="mkapi-object-signature">sequence=None</code>, <code class="mkapi-object-signature">alphabet=None</code><code class="mkapi-object-parenthesis">)</code></div>
+  </div>
+  
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Container for a single biological sequence</p></div>
+    </div>
+  <div class="mkapi-section examples">
+      <div class="mkapi-section-name examples">
+          <span class="mkapi-section-name-body examples">Examples</span> 
+        </div>
+      <div class="mkapi-section-body examples"><div class="codehilite"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="n">s1</span> <span class="o">=</span> <span class="n">Sequence</span><span class="p">(</span><span class="s1">&#39;test_dna&#39;</span><span class="p">,</span> <span class="s1">&#39;ACGATCGACTAGCA&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">s1</span>
+<span class="n">Sequence</span><span class="p">(</span><span class="n">header</span><span class="o">=</span><span class="s1">&#39;test_dna&#39;</span><span class="p">,</span> <span class="n">sequence</span><span class="o">=</span><span class="s1">&#39;ACGATCGACTAGCA&#39;</span><span class="p">,</span> <span class="n">alphabet</span><span class="o">=</span><span class="n">Alphabet</span><span class="p">(</span><span class="n">DNA</span><span class="p">,</span> <span class="p">{</span><span class="o">-</span><span class="err">?</span><span class="n">ACGNT</span><span class="p">}))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">s2</span> <span class="o">=</span> <span class="n">Sequence</span><span class="p">(</span><span class="s1">&#39;test_aa&#39;</span><span class="p">,</span> <span class="s1">&#39;QAPISAIWPOIWQ*&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">s2</span>
+<span class="n">Sequence</span><span class="p">(</span><span class="n">header</span><span class="o">=</span><span class="s1">&#39;test_aa&#39;</span><span class="p">,</span> <span class="n">sequence</span><span class="o">=</span><span class="s1">&#39;QAPISAIWPOIWQ*&#39;</span><span class="p">,</span> <span class="n">alphabet</span><span class="o">=</span><span class="n">Alphabet</span><span class="p">(</span><span class="n">Amino</span> <span class="n">Acid</span><span class="p">,</span> <span class="p">{</span><span class="o">*-</span><span class="err">?</span><span class="n">ACDEFGHIKLMNPQRSTVWXY</span><span class="p">}))</span>
+</code></pre></div></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">([type])</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>[description]</p></div>
+    </div>
+  <div class="mkapi-section methods">
+      <div class="mkapi-section-name methods">
+          <span class="mkapi-section-name-body methods">Methods</span> 
+        </div>
+      <div class="mkapi-section-body methods"><ul class="mkapi-items">
+<li class="method"><code class="mkapi-item-name"><a href="#picea.sequence.Sequence.to_dict">to_dict</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Dict[str, str])</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Make dictionary with header and sequence elements</span></li>
+
+<li class="method"><code class="mkapi-item-name"><a href="#picea.sequence.Sequence.to_fasta">to_fasta</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(str)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Make fasta formatted sequence entry</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+  <div class="mkapi-members">
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="picea.sequence.Sequence.to_dict">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object method code">
+    <div class="mkapi-object-kind method">method</div>
+    <div class="mkapi-object-body method"><code class="mkapi-object-name">to_dict</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code></div>
+  </div>
+  
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Make dictionary with header and sequence elements</p></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Dict[str, str])</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>sequence dictionary</p></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="picea.sequence.Sequence.to_fasta">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object method code">
+    <div class="mkapi-object-kind method">method</div>
+    <div class="mkapi-object-body method"><code class="mkapi-object-name">to_fasta</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code></div>
+  </div>
+  
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Make fasta formatted sequence entry</p></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(str)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>sequence in fasta format</p></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+  </div>
+
+</div>
+
 <div class="mkapi-node" id="picea.sequence.SequenceCollection">
 <div class='mkapi-object-container'>
   <div class="mkapi-object abstract-class code top">
@@ -401,22 +629,6 @@ and serves as a template only</span></li>
     filename {String} -- filename string (default: {None})
     string {String} -- fasta formatted string (default: {None})</p></div>
     </div>
-  <div class="mkapi-section parameters">
-      <div class="mkapi-section-name parameters">
-          <span class="mkapi-section-name-body parameters">Parameters</span> 
-        </div>
-      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
-<li><code class="mkapi-item-name">filename</code>
-<span class="mkapi-item-type">(str, optional)</span>
-<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description"></span></li>
-
-<li><code class="mkapi-item-name">string</code>
-<span class="mkapi-item-type">(str, optional)</span>
-<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description"></span></li>
-
-
-</ul></div>
-    </div>
   <div class="mkapi-section returns">
       <div class="mkapi-section-name returns">
           <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(SequenceCollection)</span>
@@ -467,22 +679,6 @@ and serves as a template only</span></li>
 <p>Keyword Arguments:
     string {String} -- JSON formatted string</p></div>
     </div>
-  <div class="mkapi-section parameters">
-      <div class="mkapi-section-name parameters">
-          <span class="mkapi-section-name-body parameters">Parameters</span> 
-        </div>
-      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
-<li><code class="mkapi-item-name">filename</code>
-<span class="mkapi-item-type">(str, optional)</span>
-<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description"></span></li>
-
-<li><code class="mkapi-item-name">string</code>
-<span class="mkapi-item-type">(str, optional)</span>
-<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description"></span></li>
-
-
-</ul></div>
-    </div>
   <div class="mkapi-section returns">
       <div class="mkapi-section-name returns">
           <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(SequenceCollection)</span>
@@ -506,18 +702,6 @@ and serves as a template only</span></li>
 <div class="mkapi-docstring">
 <div class="mkapi-section">
       <div class="mkapi-section-body"><p>[summary]</p></div>
-    </div>
-  <div class="mkapi-section parameters">
-      <div class="mkapi-section-name parameters">
-          <span class="mkapi-section-name-body parameters">Parameters</span> 
-        </div>
-      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
-<li><code class="mkapi-item-name">indent</code>
-<span class="mkapi-item-type">(int, optional)</span>
-<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description"></span></li>
-
-
-</ul></div>
     </div>
   <div class="mkapi-section returns">
       <div class="mkapi-section-name returns">
