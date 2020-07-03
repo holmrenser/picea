@@ -37,19 +37,24 @@ DECODE_SPECIAL_CHARACTERS = (
 )
 
 
+@dataclass
 class Alphabet(set):
-    def __init__(self, iterable: Iterable[str], name: str):
-        """Alphabet of arbitrary biological sequences
+    """Alphabet of arbitrary biological sequences
 
-        Args:
-            iterable (Iterable[str]): Letters of the alphabet
-            name (str): Alphabet name
-        """
-        super().__init__(iterable)
-        self.name = name
+    Examples:
+        >>> DNA = Alphabet('DNA', 'ACGT')
+        >>> DNA
+        Alphabet(name='DNA', members='ACGT')
 
-    def __repr__(self):
-        return f'Alphabet({self.name}, {{{"".join(sorted(self))}}})'
+    Args:
+        name (str): Alphabet name
+        members (Iterable[str]): Letters of the alphabet
+    """
+    name: str
+    members: Iterable[str]
+
+    def __post_init__(self):
+        super().__init__(self.members)
 
     def __deepcopy__(self, memo):
         return Alphabet(self, self.name)
@@ -89,8 +94,8 @@ class Alphabet(set):
 
 
 alphabets = DNA, AMINO_ACID = (
-    Alphabet('-?ACGNT', 'DNA'),
-    Alphabet('*-?ACDEFGHIKLMNPQRSTVWXY', 'Amino Acid')
+    Alphabet('DNA', '-?ACGNT'),
+    Alphabet('Amino Acid', '*-?ACDEFGHIKLMNPQRSTVWXY')
 )
 
 
@@ -102,11 +107,11 @@ class Sequence:
         >>> s1 = Sequence('test_dna', 'ACGATCGACTAGCA')
         >>> s1
         Sequence(header='test_dna', sequence='ACGATCGACTAGCA', \
-alphabet=Alphabet(DNA, {-?ACGNT}))
+alphabet=Alphabet(name='DNA', members='-?ACGNT'))
         >>> s2 = Sequence('test_aa', 'QAPISAIWPOIWQ*')
         >>> s2
         Sequence(header='test_aa', sequence='QAPISAIWPOIWQ*', \
-alphabet=Alphabet(Amino Acid, {*-?ACDEFGHIKLMNPQRSTVWXY}))
+alphabet=Alphabet(name='Amino Acid', members='*-?ACDEFGHIKLMNPQRSTVWXY'))
 
     Returns:
         [type]: [description]
