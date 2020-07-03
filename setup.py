@@ -31,6 +31,19 @@ def main():
             'sphinx',
             'numpy',
             'matplotlib'
+        ],
+        license='MIT',
+        platforms=['Windows', 'Windows Cygwin', 'GNU/Linux', 'MacOS'],
+        classifiers=[
+            'Natural Language :: English',
+            'Operating System :: MacOS',
+            'Operating System :: Microsoft :: Windows',
+            'Operating System :: POSIX',
+            'Operating System :: Unix',
+            'Programming Language :: Python :: 3.7',
+            'Programming Language :: Python :: 3.8',
+            'Topic :: Bioinformatics',
+            'Topic :: Utilities'
         ]
     )
 
