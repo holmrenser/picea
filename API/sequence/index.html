@@ -292,9 +292,9 @@
                 <h1 id="sequence-containers">Sequence containers</h1>
 <div class="mkapi-node" id="picea.sequence.Alphabet">
 <div class='mkapi-object-container'>
-  <div class="mkapi-object class code top">
-    <div class="mkapi-object-kind class top">class</div>
-    <div class="mkapi-object-body class top"><code class="mkapi-object-prefix">picea.sequence.</code><code class="mkapi-object-name">Alphabet</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">iterable</code>, <code class="mkapi-object-signature">name</code><code class="mkapi-object-parenthesis">)</code></div>
+  <div class="mkapi-object dataclass code top">
+    <div class="mkapi-object-kind dataclass top">dataclass</div>
+    <div class="mkapi-object-body dataclass top"><code class="mkapi-object-prefix">picea.sequence.</code><code class="mkapi-object-name">Alphabet</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">name</code>, <code class="mkapi-object-signature">members</code><code class="mkapi-object-parenthesis">)</code></div>
   </div>
   
 </div>
@@ -308,9 +308,48 @@
 </div>
     </div>
   <div class="mkapi-section">
-      <div class="mkapi-section-body"><p>set() -&gt; new empty set object
-set(iterable) -&gt; new set object</p>
-<p>Build an unordered collection of unique elements.</p></div>
+      <div class="mkapi-section-body"><p>Alphabet of arbitrary biological sequences</p></div>
+    </div>
+  <div class="mkapi-section attributes">
+      <div class="mkapi-section-name attributes">
+          <span class="mkapi-section-name-body attributes">Attributes</span> 
+        </div>
+      <div class="mkapi-section-body attributes"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">members</code>
+<span class="mkapi-item-type">(iterable of str)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Letters of the alphabet</span></li>
+
+<li><code class="mkapi-item-name">name</code>
+<span class="mkapi-item-type">(str)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Alphabet name</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section examples">
+      <div class="mkapi-section-name examples">
+          <span class="mkapi-section-name-body examples">Examples</span> 
+        </div>
+      <div class="mkapi-section-body examples"><div class="codehilite"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="n">DNA</span> <span class="o">=</span> <span class="n">Alphabet</span><span class="p">(</span><span class="s1">&#39;DNA&#39;</span><span class="p">,</span> <span class="s1">&#39;ACGT&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">DNA</span>
+<span class="n">Alphabet</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;DNA&#39;</span><span class="p">,</span> <span class="n">members</span><span class="o">=</span><span class="s1">&#39;ACGT&#39;</span><span class="p">)</span>
+</code></pre></div></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">name</code>
+<span class="mkapi-item-type">(str)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Alphabet name</span></li>
+
+<li><code class="mkapi-item-name">members</code>
+<span class="mkapi-item-type">(Iterable[str])</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Letters of the alphabet</span></li>
+
+
+</ul></div>
     </div>
   <div class="mkapi-section methods">
       <div class="mkapi-section-name methods">
@@ -434,10 +473,10 @@ set(iterable) -&gt; new set object</p>
         </div>
       <div class="mkapi-section-body examples"><div class="codehilite"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="n">s1</span> <span class="o">=</span> <span class="n">Sequence</span><span class="p">(</span><span class="s1">&#39;test_dna&#39;</span><span class="p">,</span> <span class="s1">&#39;ACGATCGACTAGCA&#39;</span><span class="p">)</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">s1</span>
-<span class="n">Sequence</span><span class="p">(</span><span class="n">header</span><span class="o">=</span><span class="s1">&#39;test_dna&#39;</span><span class="p">,</span> <span class="n">sequence</span><span class="o">=</span><span class="s1">&#39;ACGATCGACTAGCA&#39;</span><span class="p">,</span> <span class="n">alphabet</span><span class="o">=</span><span class="n">Alphabet</span><span class="p">(</span><span class="n">DNA</span><span class="p">,</span> <span class="p">{</span><span class="o">-</span><span class="err">?</span><span class="n">ACGNT</span><span class="p">}))</span>
+<span class="n">Sequence</span><span class="p">(</span><span class="n">header</span><span class="o">=</span><span class="s1">&#39;test_dna&#39;</span><span class="p">,</span> <span class="n">sequence</span><span class="o">=</span><span class="s1">&#39;ACGATCGACTAGCA&#39;</span><span class="p">,</span> <span class="n">alphabet</span><span class="o">=</span><span class="n">Alphabet</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;DNA&#39;</span><span class="p">,</span> <span class="n">members</span><span class="o">=</span><span class="s1">&#39;-?ACGNT&#39;</span><span class="p">))</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">s2</span> <span class="o">=</span> <span class="n">Sequence</span><span class="p">(</span><span class="s1">&#39;test_aa&#39;</span><span class="p">,</span> <span class="s1">&#39;QAPISAIWPOIWQ*&#39;</span><span class="p">)</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">s2</span>
-<span class="n">Sequence</span><span class="p">(</span><span class="n">header</span><span class="o">=</span><span class="s1">&#39;test_aa&#39;</span><span class="p">,</span> <span class="n">sequence</span><span class="o">=</span><span class="s1">&#39;QAPISAIWPOIWQ*&#39;</span><span class="p">,</span> <span class="n">alphabet</span><span class="o">=</span><span class="n">Alphabet</span><span class="p">(</span><span class="n">Amino</span> <span class="n">Acid</span><span class="p">,</span> <span class="p">{</span><span class="o">*-</span><span class="err">?</span><span class="n">ACDEFGHIKLMNPQRSTVWXY</span><span class="p">}))</span>
+<span class="n">Sequence</span><span class="p">(</span><span class="n">header</span><span class="o">=</span><span class="s1">&#39;test_aa&#39;</span><span class="p">,</span> <span class="n">sequence</span><span class="o">=</span><span class="s1">&#39;QAPISAIWPOIWQ*&#39;</span><span class="p">,</span> <span class="n">alphabet</span><span class="o">=</span><span class="n">Alphabet</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Amino Acid&#39;</span><span class="p">,</span> <span class="n">members</span><span class="o">=</span><span class="s1">&#39;*-?ACDEFGHIKLMNPQRSTVWXY&#39;</span><span class="p">))</span>
 </code></pre></div></div>
     </div>
   <div class="mkapi-section returns">
