@@ -19,7 +19,7 @@ def main():
         author_email='rens.holmer@wur.nl',
         description='A lightweight python library for working with \
             trees and sequence collections',
-        long_description=long_description,
+        # long_description=long_description,
         version=version,
         url='https://github.com/holmrenser/picea',
         cmdclass={'build_sphinx': BuildDoc},
