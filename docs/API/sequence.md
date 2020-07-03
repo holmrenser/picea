@@ -1,6 +1,10 @@
 # Sequence containers
 
-![mkapi](picea.sequence.SequenceCollection|strict)
+![mkapi](picea.Alphabet)
+
+![mkapi](picea.Sequence)
+
+![mkapi](picea.SequenceCollection)
 
 ![mkapi](picea.SequenceList)
 

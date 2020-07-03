@@ -1,6 +1,7 @@
 from unittest import TestCase
 
-from picea import SequenceList, MultipleSequenceAlignment
+from picea import Sequence, SequenceReader, SequenceList,\
+    MultipleSequenceAlignment, DNA, AMINO_ACID
 
 
 class SequenceTests(TestCase):
@@ -10,6 +11,28 @@ class SequenceTests(TestCase):
             '[{"header":"A","sequence":"ABC"},'
             '{"header":"B","sequence":"DEF"}]'
         )
+
+    def test_empty_init_sequencereader(self):
+        self.assertRaises(AssertionError, SequenceReader)
+
+    def test_fasta_sequencereader(self):
+        for _ in SequenceReader(string=self.fasta, filetype='fasta'):
+            pass
+
+    def test_json_sequencereader(self):
+        for _ in SequenceReader(string=self.json, filetype='json'):
+            pass
+
+    def test_empty_init_sequence(self):
+        Sequence()
+
+    def test_sequence_detect_dna(self):
+        s = Sequence('test', 'ACGATCGACTCGAACT')
+        self.assertEqual(s.alphabet, DNA)
+
+    def test_sequence_detect_aminoacid(self):
+        s = Sequence('test', 'KUDHLSKJSPOIJKMSLKM')
+        self.assertEqual(s.alphabet, AMINO_ACID)
 
     def test_empty_init_sequencelist(self):
         SequenceList()
@@ -48,11 +71,9 @@ class SequenceTests(TestCase):
         self.assertEqual(seq.to_fasta(), fasta[:-1])
 
     def test_sequence_iter_sequencelist(self):
-        seq = SequenceList.from_fasta(string=self.fasta)
-        for h, s in seq:
+        for _ in SequenceList.from_fasta(string=self.fasta):
             pass
 
     def test_sequence_iter_msa(self):
-        seq = MultipleSequenceAlignment.from_fasta(string=self.fasta)
-        for h, s in seq:
+        for _ in MultipleSequenceAlignment.from_fasta(string=self.fasta):
             pass

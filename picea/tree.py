@@ -1,6 +1,9 @@
 import re
-from typing import Iterable, Callable, List, Optional
+from typing import \
+    Iterable, Callable, List, Optional, Generator, Dict, Union, Tuple
 import json
+
+TreeDict = Dict[str, Union[str, int, float, List[Optional['TreeDict']]]]
 
 
 def unequal_separation(
@@ -78,14 +81,14 @@ def name_equals(
 class Tree:
     def __init__(
         self,
-        ID: int = None,
-        children: List['Tree'] = None,
+        ID: Optional[int] = None,
+        children: Optional[List['Tree']] = None,
         # x: float = 0.0,
         # y: float = 0.0,
         name: str = '',
         length: float = 0.0,
-        depth: float = None,
-        parent: 'Tree' = None,
+        depth: Optional[int] = None,
+        parent: Optional['Tree'] = None,
         cumulative_length: float = 0.0
     ):
         """Recursive datastructure holding tree objects
@@ -120,7 +123,7 @@ class Tree:
         )
 
     @property
-    def loc(self):
+    def loc(self) -> 'Tree':
         """Name based index
 
         Example:
@@ -139,7 +142,7 @@ class Tree:
         return TreeIndex(iterator=self.depth_first, eq_func=name_equals)
 
     @property
-    def iloc(self):
+    def iloc(self) -> 'Tree':
         """Index based index
 
         Example:
@@ -155,7 +158,7 @@ class Tree:
         return TreeIndex(iterator=self.depth_first, eq_func=index_equals)
 
     @property
-    def nodes(self):
+    def nodes(self) -> List['Tree']:
         """A list of all tree nodes in breadth-first order
 
         Returns:
@@ -164,7 +167,7 @@ class Tree:
         return list(self.breadth_first())
 
     @property
-    def leaves(self):
+    def leaves(self) -> List['Tree']:
         """A list of leaf nodes only
 
         Returns:
@@ -173,7 +176,7 @@ class Tree:
         return [n for n in self.nodes if not n.children]
 
     @property
-    def links(self):
+    def links(self) -> List[Tuple['Tree', 'Tree']]:
         """A list of all (parent, child) combinations
 
         Returns:
@@ -191,7 +194,7 @@ class Tree:
         cls,
         string: Optional[str] = None,
         filename: Optional[str] = None
-    ):
+    ) -> 'Tree':
         """Parse a newick formatted string into a Tree object
 
         Arguments:
@@ -245,7 +248,7 @@ class Tree:
     def to_newick(
         self,
         branch_lengths: bool = True
-    ):
+    ) -> str:
         """Make a Newick formatted string
 
         Args:
@@ -279,7 +282,7 @@ class Tree:
     def from_sklearn(
         cls,
         clustering
-    ):
+    ) -> 'Tree':
         """Read a tree from sklearn agglomerative clustering
 
         Args:
@@ -316,7 +319,7 @@ class Tree:
         # TODO
         raise NotImplementedError()
 
-    def to_json(self, indent: Optional[int] = None):
+    def to_json(self, indent: Optional[int] = None) -> str:
         return json.dumps(self.to_dict(), indent=indent)
 
     @classmethod
@@ -324,13 +327,18 @@ class Tree:
         # TODO
         raise NotImplementedError()
 
-    def to_dict(self):
+    def to_dict(self) -> TreeDict:
+        """[summary]
+
+        Returns:
+            TreeDict: [description]
+        """
         return dict(
             ID=self.ID, name=self.name, length=self.length,
             children=[child.to_dict() for child in self.children]
         )
 
-    def breadth_first(self):
+    def breadth_first(self) -> Generator['Tree', None, None]:
         """Generator implementing breadth first search starting at root node
         """
         queue = [self]
@@ -342,7 +350,7 @@ class Tree:
     def depth_first(
         self,
         post_order: bool = True
-    ):
+    ) -> Generator['Tree', None, None]:
         """Generator implementing depth first search in either post- or
         pre-order traversel
 

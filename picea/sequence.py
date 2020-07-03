@@ -2,15 +2,15 @@ from warnings import warn
 from itertools import groupby, chain
 from subprocess import Popen, PIPE
 from collections import defaultdict
-from typing import Iterable, List, Tuple, Dict, Callable, Any, Optional
+from typing import Iterable, List, Tuple, Dict, Any, Optional
 from abc import ABCMeta, abstractmethod, abstractproperty
 import uuid
 import numpy as np
-from matplotlib import pyplot as plt
-from matplotlib.colors import ListedColormap, BoundaryNorm
 import json
 from functools import reduce
 import re
+from dataclasses import dataclass
+
 
 # (character, code) tuples for encoding special characters in gff3
 # percent (%) MUST GO FIRST
@@ -37,60 +37,141 @@ DECODE_SPECIAL_CHARACTERS = (
 )
 
 
-def msa_plot(seq, ax=None, figsize=None) -> Callable:
-    """Multiple sequence alignment plot
+class Alphabet(set):
+    def __init__(self, iterable: Iterable[str], name: str):
+        """Alphabet of arbitrary biological sequences
 
-    Args:
-        seq ([type]): [description]
-        ax ([type], optional): [description]. Defaults to None.
-        figsize ([type], optional): [description]. Defaults to None.
+        Args:
+            iterable (Iterable[str]): Letters of the alphabet
+            name (str): Alphabet name
+        """
+        super().__init__(iterable)
+        self.name = name
+
+    def __repr__(self):
+        return f'Alphabet({self.name}, {{{"".join(sorted(self))}}})'
+
+    def __deepcopy__(self, memo):
+        return Alphabet(self, self.name)
+
+    def score(
+        self,
+        sequence: str,
+        match: float = 1.0,
+        mismatch: float = -1.0
+    ) -> float:
+        """Scores how well a sequence matches an alphabet by summing \
+        (mis)matches of sequence letters that are not in the alphabet \
+        and (mis)matches of alphabet letters that are not in the sequence.
+
+        Args:
+            sequence (str): Sequence string for which to determine how well \
+                it fits the alphabet
+            match (float, optional): match score. Defaults to 1.0.
+            mismatch (float, optional): mismatch score. Defaults to -1.0.
+
+        Returns:
+            (float): Score of how well a sequence matches the alphabet
+        """
+        return sum(match if s in self else mismatch for s in sequence) \
+            + sum(match if s in sequence else mismatch for s in self)
+
+    def validate(self, sequence: str) -> bool:
+        """Determine whether a sequence strictly fits an alphabet
+
+        Args:
+            sequence (str): Sequence string
+
+        Returns:
+            bool: true if all characters in sequence are in the alphabet
+        """
+        return sum(1 if s not in self else 0 for s in sequence) == 0
+
+
+alphabets = DNA, AMINO_ACID = (
+    Alphabet('-?ACGNT', 'DNA'),
+    Alphabet('*-?ACDEFGHIKLMNPQRSTVWXY', 'Amino Acid')
+)
+
+
+@dataclass
+class Sequence:
+    """Container for a single biological sequence
+
+    Examples:
+        >>> s1 = Sequence('test_dna', 'ACGATCGACTAGCA')
+        >>> s1
+        Sequence(header='test_dna', sequence='ACGATCGACTAGCA', \
+alphabet=Alphabet(DNA, {-?ACGNT}))
+        >>> s2 = Sequence('test_aa', 'QAPISAIWPOIWQ*')
+        >>> s2
+        Sequence(header='test_aa', sequence='QAPISAIWPOIWQ*', \
+alphabet=Alphabet(Amino Acid, {*-?ACDEFGHIKLMNPQRSTVWXY}))
 
     Returns:
         [type]: [description]
     """
-    codes = np.array([*b'AaCcGgNnTt-'], dtype='uint8')
-    colors = np.array([
-        *['green'] * 2,
-        *['red'] * 2,
-        *['blue'] * 2,
-        *['gray'] * 2,
-        *['darkorange'] * 2,
-        'black'
-    ])
-    order = np.argsort(codes)
-    cmap = ListedColormap(colors[order])
-    norm = BoundaryNorm([0, *codes[order]], ncolors=codes.size)
+    header: str = None
+    sequence: str = None
+    alphabet: Alphabet = None
 
-    if not figsize:
-        figsize = (20, 5)
-    if not ax:
-        fig, ax = plt.subplots(figsize=figsize)
+    def __post_init__(self):
+        if self.sequence is None:
+            self.alphabet = alphabets[0]
+        else:
+            self.alphabet = sorted(
+                alphabets,
+                key=lambda alphabet: alphabet.score(self.sequence)
+            ).pop()
 
-    ax.imshow(norm(seq._collection), cmap=cmap)
-    for i in range(seq.n_chars):
-        for j in range(seq.n_seqs):
-            nuc = seq._collection.view('S1')[j, i].decode()
-            ax.text(i, j, nuc, ha='center', va='center', color='w')
-    ax.set_yticks(np.arange(seq.n_seqs))
-    ax.set_yticklabels(seq.headers)
-    return ax
+    def to_dict(self) -> Dict[str, str]:
+        """Make dictionary with header and sequence elements
+
+        Returns:
+            Dict[str, str]: sequence dictionary
+        """
+        return dict(
+            header=self.header,
+            sequence=self.sequence
+        )
+
+    def to_fasta(self) -> str:
+        """Make fasta formatted sequence entry
+
+        Returns:
+            str: sequence in fasta format
+        """
+        return f'>{self.header}\n{self.sequence}'
 
 
-class FastaIter:
-    def __init__(self, string: str) -> None:
-        """Iterator over fasta formatted sequence strings
+class SequenceReader:
+    def __init__(
+        self,
+        string: str = None,
+        filename: str = None,
+        filetype: str = None
+    ) -> None:
+        """Iterator over fasta/json formatted sequence strings
 
         Args:
             string (str): Fasta formatted string
         """
-        self._iter = (
-            x for _, x in groupby(
-                string.strip().split('\n'),
-                lambda line: line[0] == '>'
-            )
-        )
+        assert bool(string) ^ bool(filename), \
+            'Must specify exactly one of string or filename'  # exclusive OR
+        if filename:
+            with open(filename, 'r') as filehandle:
+                string = filehandle.read().strip()
 
-    def __iter__(self) -> Iterable[Tuple[str, str]]:
+        self.string = string
+
+        if filetype == 'fasta':
+            self._iter = self._fasta_iter
+        elif filetype == 'json':
+            self._iter = self._json_iter
+        else:
+            raise Exception(f'filetype "{filetype}" is not supported')
+
+    def __iter__(self) -> Iterable[Sequence]:
         """Iterate over header,sequence tuples
 
         Returns:
@@ -99,12 +180,9 @@ class FastaIter:
         Yields:
             Iterable[Tuple[str, str]]: [description]
         """
-        for header in self._iter:
-            header = next(header)[1:].strip()
-            seq = ''.join(s.strip() for s in next(self._iter))
-            yield header, seq
+        yield from self._iter()
 
-    def __next__(self) -> Tuple[str, str]:
+    def __next__(self) -> Sequence:
         """Next header and sequence in the iterator
 
         Returns:
@@ -112,7 +190,23 @@ class FastaIter:
         """
         header = next(next(self._iter))[1:].strip()
         seq = ''.join(s.strip() for s in next(self._iter))
-        return header, seq
+        return Sequence(header, seq)
+
+    def _fasta_iter(self):
+        fasta_iter = (
+            x for _, x in groupby(
+                self.string.strip().split('\n'),
+                lambda line: line[0] == '>'
+            )
+        )
+        for header in fasta_iter:
+            header = next(header)[1:].strip()
+            seq = ''.join(s.strip() for s in next(fasta_iter))
+            yield Sequence(header, seq)
+
+    def _json_iter(self):
+        for entry in json.loads(self.string):
+            yield Sequence(entry['header'], entry['sequence'])
 
 
 class SequenceCollection(metaclass=ABCMeta):
@@ -137,7 +231,7 @@ class SequenceCollection(metaclass=ABCMeta):
     @abstractmethod
     def __init__(
         self,
-        sequences: Optional[Iterable[Tuple[str, str]]] = None,
+        sequences: Optional[Iterable[Sequence]] = None,
         sequence_annotation: Optional['SequenceAnnotation'] = None
     ) -> None:
         raise NotImplementedError('Not implemented in base class')
@@ -147,20 +241,20 @@ class SequenceCollection(metaclass=ABCMeta):
         raise NotImplementedError()
 
     @abstractmethod
-    def __getitem__(self, header: str) -> str:
+    def __getitem__(self, header: str) -> Sequence:
         raise NotImplementedError()
 
     @abstractmethod
     def __delitem__(self, header: str) -> None:
         raise NotImplementedError()
 
-    def __iter__(self) -> Iterable[Tuple[str, str]]:
+    def __iter__(self) -> Iterable[Sequence]:
         for header in self.headers:
-            yield header, self[header]
+            yield self[header]
 
-    def __next__(self) -> Tuple[str, str]:
+    def __next__(self) -> Sequence:
         header = next(self.headers)
-        return header, self[header]
+        return self[header]
 
     @abstractproperty
     def headers(self) -> List[str]:
@@ -212,15 +306,12 @@ class SequenceCollection(metaclass=ABCMeta):
         Returns:
             SequenceCollection -- SequenceCollection instance
         """
-        assert filename or string
-        assert not (filename and string)
-        if filename:
-            with open(filename) as filehandle:
-                string = filehandle.read()
         sequencecollection = cls()
-        fasta_iter = FastaIter(string)
-        for header, seq in fasta_iter:
-            sequencecollection[header] = seq
+
+        for seq in SequenceReader(
+            string=string, filename=filename, filetype='fasta'
+        ):
+            sequencecollection[seq.header] = seq.sequence
         return sequencecollection
 
     def to_fasta(self) -> str:
@@ -229,11 +320,7 @@ class SequenceCollection(metaclass=ABCMeta):
         Returns:
             str: Multi-line fasta-formatted string
         """
-        fasta_lines = []
-        for header in self.headers:
-            fasta_lines.append(f'>{header}')
-            fasta_lines.append(self[header])
-        return '\n'.join(fasta_lines)
+        return '\n'.join([seq.to_fasta() for seq in self])
 
     @classmethod
     def from_json(
@@ -249,14 +336,13 @@ class SequenceCollection(metaclass=ABCMeta):
         Returns:
             SequenceCollection -- SequenceCollection instance
         """
-        assert filename or string
-        assert not (filename and string)
-        if filename:
-            with open(filename) as filehandle:
-                string = filehandle.read()
         sequencecollection = cls()
-        for entry in json.loads(string):
-            sequencecollection[entry['header']] = entry['sequence']
+
+        for seq in SequenceReader(
+            string=string, filename=filename, filetype='json'
+        ):
+            sequencecollection[seq.header] = seq.sequence
+
         return sequencecollection
 
     def to_json(self, indent: Optional[int] = None) -> str:
@@ -265,10 +351,7 @@ class SequenceCollection(metaclass=ABCMeta):
         Returns:
             str: [description]
         """
-        gene_dicts = [
-            dict(header=header, sequence=self[header])
-            for header in self.headers
-        ]
+        gene_dicts = [seq.to_dict() for seq in self]
         return json.dumps(gene_dicts, indent=indent)
 
 
@@ -298,8 +381,9 @@ class SequenceList(SequenceCollection):
             header = new_header
         self._collection[header] = seq
 
-    def __getitem__(self, header: str) -> str:
-        return self._collection[header]
+    def __getitem__(self, header: str) -> Sequence:
+        sequence = self._collection[header]
+        return Sequence(header, sequence)
 
     def __delitem__(self, header: str) -> None:
         del self._collection[header]
@@ -343,7 +427,7 @@ class SequenceList(SequenceCollection):
 class MultipleSequenceAlignment(SequenceCollection):
     def __init__(
         self,
-        sequences: Optional[Iterable[Tuple[str, str]]] = None,
+        sequences: Optional[Iterable[Sequence]] = None,
         sequence_annotation: Optional['SequenceAnnotation'] = None
     ) -> None:
         """
@@ -352,8 +436,8 @@ class MultipleSequenceAlignment(SequenceCollection):
         self._collection = np.empty((0, 0), dtype='uint8')
         self._header_idx = dict()
         if sequences:
-            for header, sequence in sequences:
-                self[header] = sequence
+            for seq in sequences:
+                self[seq.header] = seq.sequence
         if sequence_annotation:
             sequence_annotation.sequence_collection = self
         self.sequence_annotation = sequence_annotation
@@ -387,12 +471,13 @@ class MultipleSequenceAlignment(SequenceCollection):
             self._collection = arr
         self._header_idx[header] = n_seq
 
-    def __getitem__(self, header: str) -> str:
+    def __getitem__(self, header: str) -> Sequence:
         idx = self._header_idx[header]
         n_chars = self._collection.shape[1]
-        return self._collection[idx] \
+        sequence = self._collection[idx] \
             .view(f'S{n_chars}')[0] \
             .decode()
+        return Sequence(header, sequence)
 
     def __delitem__(self, header: str) -> None:
         """WIP!
