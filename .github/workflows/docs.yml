@@ -14,6 +14,7 @@ jobs:
 
       - name: Install picea
         run: |
+          pip3 install setuptools
           pip3 install -e .
 
       - name: Deploy docs
