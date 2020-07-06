@@ -12,6 +12,10 @@ jobs:
       - name: Checkout master
         uses: actions/checkout@v1
 
+      - name: Install picea
+        run: |
+          pip install -e .
+
       - name: Deploy docs
         uses: mhausenblas/mkdocs-deploy-gh-pages@master
         env:

@@ -1,6 +1,7 @@
-# _picea_
+_picea_
+=======
 
-### Lightweight python library for working with trees and sequence collections
+Lightweight python library for working with trees and sequence collections
 
 ![tests](https://github.com/holmrenser/picea/workflows/tests/badge.svg)
 [![Coverage Status](https://coveralls.io/repos/github/holmrenser/picea/badge.svg?branch=master)](https://coveralls.io/github/holmrenser/picea?branch=master)
