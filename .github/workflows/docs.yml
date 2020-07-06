@@ -14,10 +14,10 @@ jobs:
 
       - name: Install picea
         run: |
-          pip install -e .
+          pip3 install -e .
 
       - name: Deploy docs
         uses: mhausenblas/mkdocs-deploy-gh-pages@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REQUIREMENTS: docs/requirements.txt
+          # REQUIREMENTS: docs/requirements.txt
