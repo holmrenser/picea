@@ -1,14 +1,14 @@
 #!/usr/bin/python
 from setuptools import setup
-from sphinx.setup_command import BuildDoc
+# from sphinx.setup_command import BuildDoc
 import picea
 
 name = 'picea'
 version = picea.__version__
 author = picea.__author__
 
-with open('./README.md') as filehandle:
-    long_description = filehandle.read()
+# with open('./README.md') as filehandle:
+#     long_description = filehandle.read()
 
 
 def main():
@@ -22,15 +22,6 @@ def main():
         # long_description=long_description,
         version=version,
         url='https://github.com/holmrenser/picea',
-        cmdclass={'build_sphinx': BuildDoc},
-        command_options={
-            'build_sphinx': {
-                'project': ('setup.py', name),
-                'version': ('setup.py', version),
-                'source_dir': ('setup.py', 'docs/source'),
-                'build_dir': ('setup.py', 'docs/build')
-            }
-        },
         install_requires=[
             'sphinx',
             'numpy',
@@ -57,3 +48,13 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+#         cmdclass={'build_sphinx': BuildDoc},
+#         command_options={
+#             'build_sphinx': {
+#                 'project': ('setup.py', name),
+#                 'version': ('setup.py', version),
+#                 'source_dir': ('setup.py', 'docs/source'),
+#                 'build_dir': ('setup.py', 'docs/build')
+#             }
+#         },
