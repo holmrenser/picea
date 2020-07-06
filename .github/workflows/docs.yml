@@ -15,14 +15,19 @@ jobs:
       - name: Checkout master
         uses: actions/checkout@v1
 
-      - name: Install picea
+      - name: Install picea / Deploy docs
         run: |
           pip3 install setuptools
           pip3 install -r requirements.txt
           pip3 install -e .
+          git config --global user.name "${GITHUB_ACTOR}"
+          git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+          git remote rm origin
+          git remote add origin https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
+          mkdocs gh-deploy --config-file "${GITHUB_WORKSPACE}/mkdocs.yml" --force
 
-      - name: Deploy docs
-        uses: mhausenblas/mkdocs-deploy-gh-pages@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#      - name: Deploy docs
+#        uses: mhausenblas/mkdocs-deploy-gh-pages@master
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # REQUIREMENTS: docs/requirements.txt
