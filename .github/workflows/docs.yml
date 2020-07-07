@@ -8,16 +8,18 @@ jobs:
   build:
     name: Deploy docs
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: [3.8]
+
     steps:
       - name: Checkout master
         uses: actions/checkout@v1
 
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.8
+
       - name: Install picea / Deploy docs
         run: |
-          pip3 install setuptools
           pip3 install mkdocs
           pip3 install -r requirements.txt
           pip3 install -e .
