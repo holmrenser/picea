@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 from picea import Sequence, SequenceReader, SequenceList,\
-    MultipleSequenceAlignment, DNA, AMINO_ACID
+    MultipleSequenceAlignment, alphabets
 
 
 class SequenceTests(TestCase):
@@ -28,11 +28,11 @@ class SequenceTests(TestCase):
 
     def test_sequence_detect_dna(self):
         s = Sequence('test', 'ACGATCGACTCGAACT')
-        self.assertEqual(s.alphabet, DNA)
+        self.assertEqual(s.alphabet, alphabets.DNA)
 
     def test_sequence_detect_aminoacid(self):
         s = Sequence('test', 'KUDHLSKJSPOIJKMSLKM')
-        self.assertEqual(s.alphabet, AMINO_ACID)
+        self.assertEqual(s.alphabet, alphabets.AminoAcid)
 
     def test_empty_init_sequencelist(self):
         SequenceList()

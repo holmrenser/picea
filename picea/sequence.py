@@ -9,7 +9,7 @@ import numpy as np
 import json
 from functools import reduce
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 # (character, code) tuples for encoding special characters in gff3
@@ -37,7 +37,7 @@ DECODE_SPECIAL_CHARACTERS = (
 )
 
 
-@dataclass
+@dataclass(frozen=True)
 class Alphabet(set):
     """Alphabet of arbitrary biological sequences
 
@@ -93,10 +93,23 @@ class Alphabet(set):
         return sum(1 if s not in self else 0 for s in sequence) == 0
 
 
-alphabets = DNA, AMINO_ACID = (
-    Alphabet('DNA', '-?ACGNT'),
-    Alphabet('Amino Acid', '*-?ACDEFGHIKLMNPQRSTVWXY')
-)
+def alphabet_factory(alphabet):
+    return dict(
+        DNA=lambda: Alphabet('DNA', '-?ACGNT'),
+        AminoAcid=lambda: Alphabet('AminoAcid', '*-?ACDEFGHIKLMNPQRSTVWXY')
+    )[alphabet]
+
+
+@dataclass(frozen=True)
+class Alphabets:
+    DNA: Alphabet = field(default_factory=alphabet_factory('DNA'))
+    AminoAcid: Alphabet = field(default_factory=alphabet_factory('AminoAcid'))
+
+    def __iter__(self):
+        return iter(self.__dict__.values())
+
+
+alphabets = Alphabets()
 
 
 @dataclass
@@ -111,7 +124,7 @@ alphabet=Alphabet(name='DNA', members='-?ACGNT'))
         >>> s2 = Sequence('test_aa', 'QAPISAIWPOIWQ*')
         >>> s2
         Sequence(header='test_aa', sequence='QAPISAIWPOIWQ*', \
-alphabet=Alphabet(name='Amino Acid', members='*-?ACDEFGHIKLMNPQRSTVWXY'))
+alphabet=Alphabet(name='AminoAcid', members='*-?ACDEFGHIKLMNPQRSTVWXY'))
 
     Returns:
         [type]: [description]
@@ -121,8 +134,10 @@ alphabet=Alphabet(name='Amino Acid', members='*-?ACDEFGHIKLMNPQRSTVWXY'))
     alphabet: Alphabet = None
 
     def __post_init__(self):
+        if self.alphabet is not None:
+            return
         if self.sequence is None:
-            self.alphabet = alphabets[0]
+            self.alphabet = alphabets.DNA
         else:
             self.alphabet = sorted(
                 alphabets,
@@ -139,6 +154,27 @@ alphabet=Alphabet(name='Amino Acid', members='*-?ACDEFGHIKLMNPQRSTVWXY'))
             header=self.header,
             sequence=self.sequence
         )
+
+    @classmethod
+    def from_fasta(cls, string: str) -> 'Sequence':
+        """Create a sequence object from a fasta formatted file. _single sequence only_
+
+        Examples:
+            >>> fasta_string = '>test\\nACGT'
+            >>> Sequence.from_fasta(fasta_string)
+            Sequence(header='test', sequence='ACGT', \
+alphabet=Alphabet(name='DNA', members='-?ACGNT'))
+
+        Arguments:
+            string (str)
+
+        Returns:
+            Sequence
+        """
+        lines = string.strip().split('\n')
+        header = lines[0][1:]
+        sequence = ''.join(lines[1:])
+        return cls(header, sequence)
 
     def to_fasta(self) -> str:
         """Make fasta formatted sequence entry
@@ -159,7 +195,17 @@ class SequenceReader:
         """Iterator over fasta/json formatted sequence strings
 
         Args:
-            string (str): Fasta formatted string
+            string (str): fasta/json formatted string
+            filename (str): fasta/json file name
+            filetype (str): fasta or json
+
+        Examples:
+            >>> fasta_string = '>1\\nACGC\\n>2\\nTGTGTA\\n'
+            >>> fasta_reader = SequenceReader(string=fasta_string, \
+filetype='fasta')
+            >>> next(fasta_reader)
+            Sequence(header='1', sequence='ACGC', \
+alphabet=Alphabet(name='DNA', members='-?ACGNT'))
         """
         assert bool(string) ^ bool(filename), \
             'Must specify exactly one of string or filename'  # exclusive OR
@@ -193,9 +239,10 @@ class SequenceReader:
         Returns:
             Tuple[str, str]: [description]
         """
-        header = next(next(self._iter))[1:].strip()
-        seq = ''.join(s.strip() for s in next(self._iter))
-        return Sequence(header, seq)
+        #header = next(next(self._iter))[1:].strip()
+        #seq = ''.join(s.strip() for s in next(self._iter))
+        #return Sequence(header, seq)
+        return next(self._iter())
 
     def _fasta_iter(self):
         fasta_iter = (

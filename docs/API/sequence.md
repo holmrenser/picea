@@ -3,6 +3,9 @@
 ## Alphabet
 ![mkapi](picea.Alphabet)
 
+## alphabets
+![mkapi](picea.sequence.Alphabets)
+
 ## Sequence
 ![mkapi](picea.Sequence)
 

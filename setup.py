@@ -1,14 +1,13 @@
 #!/usr/bin/python
 from setuptools import setup
-# from sphinx.setup_command import BuildDoc
 import picea
 
 name = 'picea'
 version = picea.__version__
 author = picea.__author__
 
-# with open('./README.md') as filehandle:
-#     long_description = filehandle.read()
+with open('./README.md') as filehandle:
+    long_description = filehandle.read()
 
 
 def main():
@@ -17,9 +16,12 @@ def main():
         packages=[name],
         author=author,
         author_email='rens.holmer@wur.nl',
-        description='A lightweight python library for working with \
-            trees and sequence collections',
-        # long_description=long_description,
+        description=(
+            'A lightweight python library for working with trees and '
+            'biological sequence collections'
+        ),
+        long_description=long_description,
+        long_description_content_type="text/markdown",
         version=version,
         url='https://github.com/holmrenser/picea',
         install_requires=[
@@ -48,13 +50,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-#         cmdclass={'build_sphinx': BuildDoc},
-#         command_options={
-#             'build_sphinx': {
-#                 'project': ('setup.py', name),
-#                 'version': ('setup.py', version),
-#                 'source_dir': ('setup.py', 'docs/source'),
-#                 'build_dir': ('setup.py', 'docs/build')
-#             }
-#         },
