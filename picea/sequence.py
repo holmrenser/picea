@@ -53,10 +53,10 @@ class Alphabet(set):
     name: str
     members: Iterable[str]
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         super().__init__(self.members)
 
-    def __deepcopy__(self, memo):
+    def __deepcopy__(self, memo) -> 'Alphabet':
         return Alphabet(self, self.name)
 
     def score(
@@ -220,16 +220,16 @@ alphabet=Alphabet(name='DNA', members='-?ACGNT'))
         elif filetype == 'json':
             self._iter = self._json_iter
         else:
-            raise Exception(f'filetype "{filetype}" is not supported')
+            raise ValueError(f'filetype "{filetype}" is not supported')
 
     def __iter__(self) -> Iterable[Sequence]:
         """Iterate over header,sequence tuples
 
         Returns:
-            Iterable[Tuple[str, str]]: [description]
+            Iterable[Sequence]: [description]
 
         Yields:
-            Iterable[Tuple[str, str]]: [description]
+            Iterable[Sequence]: [description]
         """
         yield from self._iter()
 
@@ -239,16 +239,13 @@ alphabet=Alphabet(name='DNA', members='-?ACGNT'))
         Returns:
             Tuple[str, str]: [description]
         """
-        #header = next(next(self._iter))[1:].strip()
-        #seq = ''.join(s.strip() for s in next(self._iter))
-        #return Sequence(header, seq)
         return next(self._iter())
 
-    def _fasta_iter(self):
+    def _fasta_iter(self) -> Iterable[Sequence]:
         fasta_iter = (
             x for _, x in groupby(
                 self.string.strip().split('\n'),
-                lambda line: line[0] == '>'
+                lambda line: line[:1] == '>'
             )
         )
         for header in fasta_iter:
@@ -256,7 +253,7 @@ alphabet=Alphabet(name='DNA', members='-?ACGNT'))
             seq = ''.join(s.strip() for s in next(fasta_iter))
             yield Sequence(header, seq)
 
-    def _json_iter(self):
+    def _json_iter(self) -> Iterable[Sequence]:
         for entry in json.loads(self.string):
             yield Sequence(entry['header'], entry['sequence'])
 
