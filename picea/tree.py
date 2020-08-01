@@ -329,7 +329,6 @@ class Tree:
         # start building the tree
         tree: 'Tree' = cls(ID=root_id)
         queue: List['Tree'] = [tree]
-        node: [None, int] = None
         while queue:
             node = queue.pop(0)
             if node.ID in tree_dict:
