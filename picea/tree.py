@@ -333,7 +333,7 @@ class Tree:
             node = queue.pop(0)
             if node.ID in tree_dict:
                 for child_ID in tree_dict[node.ID]:
-                    child = cls(ID=child_ID)
+                    child = cls(ID=child_ID, depth=node.depth+1)
                     child.parent = node
                     node.children.append(child)
                 queue += node.children
@@ -341,6 +341,16 @@ class Tree:
                 continue
 
         return tree
+
+    @classmethod
+    def from_edge_list(cls, edge_list: List[Tuple[int, int]]) -> 'Tree':
+        edge_dict: Dict[int, List[int]] = dict()
+        for n1, n2 in edge_list:
+            if n1 not in edge_dict:
+                edge_dict[n1] = [n2]
+            else:
+                edge_dict[n1].append(n2)
+        return cls.from_dict(edge_dict)
 
     @classmethod
     def from_json(cls):
