@@ -2,6 +2,8 @@ import re
 from typing import \
     Iterable, Callable, List, Optional, Generator, Dict, Union, Tuple
 import json
+import numpy as np
+
 
 TreeDict = Dict[str, Union[str, int, float, List[Optional['TreeDict']]]]
 
@@ -292,7 +294,19 @@ class Tree:
         Returns:
             Tree: Tree object
         """
-        nodes = clustering.children_
+        return cls.from_edgelist(clustering.children_)
+
+    @classmethod
+    def from_edgelist(cls, edge_list: List[Tuple[str, str]]) -> 'Tree':
+        """Read a tree from list of edges
+
+                Args:
+                    edge_list: list of edges where each edge is a pair of node ids.
+
+                Returns:
+                    Tree: Tree object
+                """
+        nodes = np.array(edge_list, dtype=int)
         n_leaves = nodes.shape[0] + 1
         tree = cls(ID=nodes.shape[0] * 2)
 
