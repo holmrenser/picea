@@ -322,7 +322,7 @@ class Tree:
         # Find the root node
         nodes_with_parents: Set[int] = set(itertools.chain.from_iterable(tree_dict.values()))
         parent_nodes: Set[int] = set(tree_dict.keys())
-        nodes_without_parents: Set[int] = nodes_with_parents - parent_nodes
+        nodes_without_parents: Set[int] = parent_nodes - nodes_with_parents
         assert len(nodes_without_parents) == 1, "Not a tree structure, multiple roots found."
         root_id: int = list(nodes_without_parents)[0]
 
