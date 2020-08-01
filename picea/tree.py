@@ -327,14 +327,14 @@ class Tree:
         root_id: int = list(nodes_without_parents)[0]
 
         # start building the tree
-        tree: 'Tree' = Tree(ID=root_id)
+        tree: 'Tree' = cls(ID=root_id)
         queue: List['Tree'] = [tree]
         node: [None, int] = None
         while queue:
             node = queue.pop(0)
             if node.ID in tree_dict:
                 for child_ID in tree_dict[node.ID]:
-                    child = Tree(ID=child_ID)
+                    child = cls(ID=child_ID)
                     child.parent = node
                     node.children.append(child)
                 queue += node.children
