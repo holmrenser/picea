@@ -355,11 +355,6 @@ class Tree:
     def to_json(self, indent: Optional[int] = None) -> str:
         return json.dumps(self.to_dict(), indent=indent)
 
-    @classmethod
-    def from_dict(cls):
-        # TODO
-        raise NotImplementedError()
-
     def to_dict(self) -> TreeDict:
         """[summary]
 
