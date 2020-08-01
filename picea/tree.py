@@ -1,7 +1,8 @@
 import re
 from typing import \
-    Iterable, Callable, List, Optional, Generator, Dict, Union, Tuple
+    Iterable, Callable, List, Optional, Generator, Dict, Union, Tuple, Set
 import json
+import itertools
 import numpy as np
 
 
@@ -312,13 +313,39 @@ class Tree:
 
         return tree
 
-    @classmethod
-    def from_edgelist(cls, edgelist: List[Tuple[int, int]]) -> 'Tree':
-        pass
-
     def to_sklearn(self):
         # TODO
         raise NotImplementedError()
+
+    @classmethod
+    def from_dict(cls, tree_dict: Dict[int, List[int]]) -> 'Tree':
+        # Find the root node
+        nodes_with_parents: Set[int] = set(itertools.chain.from_iterable(tree_dict.values()))
+        parent_nodes: Set[int] = set(tree_dict.keys())
+        nodes_without_parents: Set[int] = nodes_with_parents - parent_nodes
+        assert len(nodes_without_parents) == 1, "Not a tree structure, multiple roots found."
+        root_id: int = list(nodes_without_parents)[0]
+
+        # start building the tree
+        tree: 'Tree' = Tree(ID=root_id)
+        queue: List['Tree'] = [tree]
+        node: [None, int] = None
+        while queue:
+            node = queue.pop(0)
+            if node.ID in tree_dict:
+                for child_ID in tree_dict[node.ID]:
+                    child = Tree(ID=child_ID)
+                    child.parent = node
+                    node.children.append(child)
+                queue += node.children
+            else:
+                continue
+
+        # go back to root and return
+        if node is not None:
+            while node.parent is not None:
+                node = node.parent
+        return node
 
     @classmethod
     def from_json(cls):
