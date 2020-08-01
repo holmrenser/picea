@@ -294,19 +294,7 @@ class Tree:
         Returns:
             Tree: Tree object
         """
-        return cls.from_edgelist(clustering.children_)
-
-    @classmethod
-    def from_edgelist(cls, edge_list: List[Tuple[str, str]]) -> 'Tree':
-        """Read a tree from list of edges
-
-                Args:
-                    edge_list: list of edges where each edge is a pair of node ids.
-
-                Returns:
-                    Tree: Tree object
-                """
-        nodes = np.array(edge_list, dtype=int)
+        nodes = clustering.children_
         n_leaves = nodes.shape[0] + 1
         tree = cls(ID=nodes.shape[0] * 2)
 
@@ -323,6 +311,10 @@ class Tree:
             queue += node.children
 
         return tree
+
+    @classmethod
+    def from_edgelist(cls, edgelist: List[Tuple[int, int]]) -> 'Tree':
+        pass
 
     def to_sklearn(self):
         # TODO
