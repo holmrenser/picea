@@ -341,11 +341,7 @@ class Tree:
             else:
                 continue
 
-        # go back to root and return
-        if node is not None:
-            while node.parent is not None:
-                node = node.parent
-        return node
+        return tree
 
     @classmethod
     def from_json(cls):
