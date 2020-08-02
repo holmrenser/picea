@@ -135,65 +135,25 @@
 <h1 id="tree-containers">Tree containers</h1>
 <div class="mkapi-node" id="picea.tree.Tree">
 <div class='mkapi-object-container'>
-  <div class="mkapi-object class code top">
-    <div class="mkapi-object-kind class top">class</div>
-    <div class="mkapi-object-body class top"><code class="mkapi-object-prefix">picea.tree.</code><code class="mkapi-object-name">Tree</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">ID=None</code>, <code class="mkapi-object-signature">children=None</code>, <code class="mkapi-object-signature">name=&#39;&#39;</code>, <code class="mkapi-object-signature">length=0.0</code>, <code class="mkapi-object-signature">depth=None</code>, <code class="mkapi-object-signature">parent=None</code>, <code class="mkapi-object-signature">cumulative_length=0.0</code><code class="mkapi-object-parenthesis">)</code></div>
+  <div class="mkapi-object dataclass code top">
+    <div class="mkapi-object-kind dataclass top">dataclass</div>
+    <div class="mkapi-object-body dataclass top"><code class="mkapi-object-prefix">picea.tree.</code><code class="mkapi-object-name">Tree</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">name=None</code>, <code class="mkapi-object-signature">length=0.0</code>, <code class="mkapi-object-signature">children=&lt;factory&gt;</code>, <code class="mkapi-object-signature">ID=None</code>, <code class="mkapi-object-signature">depth=None</code>, <code class="mkapi-object-signature">parent=None</code>, <code class="mkapi-object-signature">cumulative_length=0.0</code><code class="mkapi-object-parenthesis">)</code></div>
   </div>
   
 </div>
 <div class="mkapi-docstring">
 <div class="mkapi-section">
-      <div class="mkapi-section-body"><p>Recursive datastructure holding tree objects</p></div>
-    </div>
-  <div class="mkapi-section parameters">
-      <div class="mkapi-section-name parameters">
-          <span class="mkapi-section-name-body parameters">Parameters</span> 
-        </div>
-      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
-<li><code class="mkapi-item-name">ID</code>
-<span class="mkapi-item-type">(int, optional)</span>
-<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[description]. Defaults to None.</span></li>
-
-<li><code class="mkapi-item-name">children</code>
-<span class="mkapi-item-type">(list, optional)</span>
-<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[description]. Defaults to None.</span></li>
-
-<li><code class="mkapi-item-name">name</code>
-<span class="mkapi-item-type">(str, optional)</span>
-<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[description]. Defaults to ''.</span></li>
-
-<li><code class="mkapi-item-name">length</code>
-<span class="mkapi-item-type">(float, optional)</span>
-<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[description]. Defaults to 0.</span></li>
-
-<li><code class="mkapi-item-name">depth</code>
-<span class="mkapi-item-type">(float, optional)</span>
-<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[description]. Defaults to None.</span></li>
-
-<li><code class="mkapi-item-name">parent</code>
-<span class="mkapi-item-type">(Tree, optional)</span>
-<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[description]. Defaults to None.</span></li>
-
-<li><code class="mkapi-item-name">cumulative_length</code>
-<span class="mkapi-item-type">(int, optional)</span>
-<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[description]. Defaults to 0.</span></li>
-
-<li><code class="mkapi-item-name">x</code>
-<span class="mkapi-item-type">(float, optional)</span>
-<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[description]. Defaults to 0.0.</span></li>
-
-<li><code class="mkapi-item-name">y</code>
-<span class="mkapi-item-type">(float, optional)</span>
-<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[description]. Defaults to 0.0.</span></li>
-
-
-</ul></div>
+      <div class="mkapi-section-body"><p>Tree(name: Union[str, NoneType] = None, length: float = 0.0, children: Union[List[ForwardRef('Tree')], NoneType] = <factory>, ID: dataclasses.InitVar[typing.Union[int, NoneType]] = None, depth: dataclasses.InitVar[typing.Union[int, NoneType]] = None, parent: dataclasses.InitVar[typing.Union[ForwardRef('Tree'), NoneType]] = None, cumulative_length: dataclasses.InitVar[float] = 0.0)</p></div>
     </div>
   <div class="mkapi-section attributes">
       <div class="mkapi-section-name attributes">
           <span class="mkapi-section-name-body attributes">Attributes</span> 
         </div>
       <div class="mkapi-section-body attributes"><ul class="mkapi-items">
+
+
+
+
 <li class="readonly-property"><code class="mkapi-item-name">iloc</code>
 
 <span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Index based index</span></li>
@@ -201,6 +161,7 @@
 <li class="readonly-property"><code class="mkapi-item-name">leaves</code>
 
 <span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A list of leaf nodes only</span></li>
+
 
 <li class="readonly-property"><code class="mkapi-item-name">links</code>
 
@@ -210,9 +171,15 @@
 
 <span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Name based index</span></li>
 
+
 <li class="readonly-property"><code class="mkapi-item-name">nodes</code>
 
 <span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A list of all tree nodes in breadth-first order</span></li>
+
+
+<li class="readonly-property"><code class="mkapi-item-name">root</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Root node of the (sub)tree</span></li>
 
 
 </ul></div>
@@ -238,11 +205,6 @@ pre-order traversel</span></li>
 <li class="classmethod"><code class="mkapi-item-name"><a href="#picea.tree.Tree.from_sklearn">from_sklearn</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">clustering</code><code class="mkapi-object-parenthesis">)</code>
 <span class="mkapi-item-type">(Tree)</span>
 <span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Read a tree from sklearn agglomerative clustering</span></li>
-
-<li class="method"><code class="mkapi-item-name"><a href="#picea.tree.Tree.layout">layout</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">separation</code>, <code class="mkapi-object-signature">d_x</code>, <code class="mkapi-object-signature">d_y</code>, <code class="mkapi-object-signature">ltr</code><code class="mkapi-object-parenthesis">)</code>
-<span class="mkapi-item-type">(Tree)</span>
-<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Calculate (x,y) position of nodes for plotting,
-modifies nodes in place</span></li>
 
 <li class="method"><code class="mkapi-item-name"><a href="#picea.tree.Tree.to_dict">to_dict</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code>
 <span class="mkapi-item-type">(TreeDict)</span>
@@ -427,58 +389,6 @@ pre-order traversel</p>
 <p>Keyword Arguments:
     post_order (bool, optional): Depth first search in post-order
     traversal or not. Defaults to True</p></div>
-    </div>
-  </div>
-
-</div>
-    </div>
-  
-    <div class="mkapi-member">
-      <div class="mkapi-node" id="picea.tree.Tree.layout">
-<div class='mkapi-object-container'>
-  <div class="mkapi-object method code">
-    <div class="mkapi-object-kind method">method</div>
-    <div class="mkapi-object-body method"><code class="mkapi-object-name">layout</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">separation=&lt;function equal_separation at 0x7fdc9aa73310&gt;</code>, <code class="mkapi-object-signature">d_x=1.0</code>, <code class="mkapi-object-signature">d_y=1.0</code>, <code class="mkapi-object-signature">ltr=True</code><code class="mkapi-object-parenthesis">)</code></div>
-  </div>
-  
-</div>
-<div class="mkapi-docstring">
-<div class="mkapi-section">
-      <div class="mkapi-section-body"><p>Calculate (x,y) position of nodes for plotting,
-modifies nodes in place</p></div>
-    </div>
-  <div class="mkapi-section parameters">
-      <div class="mkapi-section-name parameters">
-          <span class="mkapi-section-name-body parameters">Parameters</span> 
-        </div>
-      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
-<li><code class="mkapi-item-name">separation</code>
-<span class="mkapi-item-type">(function, optional)</span>
-<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">function to calculate separation             between leaf nodes. Defaults to equal_separation.</span></li>
-
-<li><code class="mkapi-item-name">d_x</code>
-<span class="mkapi-item-type">(int, optional)</span>
-<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">x-axis distance between neighbouring nodes.             Defaults to 1.</span></li>
-
-<li><code class="mkapi-item-name">d_y</code>
-<span class="mkapi-item-type">(int, optional)</span>
-<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">y-axis distance between neighbouring nodes.</span></li>
-
-<li><code class="mkapi-item-name">ltr</code>
-<span class="mkapi-item-type">(bool, optional)</span>
-<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Left-To-Right layout orientation. Defaults</span></li>
-
-
-
-
-</ul></div>
-    </div>
-  <div class="mkapi-section returns">
-      <div class="mkapi-section-name returns">
-          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Tree)</span>
-        </div>
-      <div class="mkapi-section-body returns"><p>Original root node with modified (x,y) coordinates according
-to specified layout properties</p></div>
     </div>
   </div>
 
