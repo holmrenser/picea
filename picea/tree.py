@@ -334,7 +334,7 @@ class Tree:
         raise NotImplementedError()
 
     @classmethod
-    def from_dict(cls, tree_dict: Dict[int, List[int]], names: [None, Dict[int, str]] = None) -> 'Tree':
+    def from_edge_dict(cls, tree_dict: Dict[int, List[int]], names: [None, Dict[int, str]] = None) -> 'Tree':
         if names is None:
             names = dict()
         # Find the root node
@@ -371,7 +371,7 @@ class Tree:
                 edge_dict[n1] = [n2]
             else:
                 edge_dict[n1].append(n2)
-        return cls.from_dict(edge_dict, names=names)
+        return cls.from_edge_dict(edge_dict, names=names)
 
     @classmethod
     def from_json(cls):
