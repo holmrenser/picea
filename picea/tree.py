@@ -5,7 +5,7 @@ import json
 import itertools
 import numpy as np
 
-from dataclasses import dataclass, field, InitVar, asdict
+from dataclasses import dataclass, field, InitVar, asdict, replace
 from collections import defaultdict
 from matplotlib import pyplot as plt
 
@@ -47,17 +47,16 @@ def name_equals(
 
 @dataclass
 class Tree:
-    name: Optional[str] = None
-    length: float = 0.0
-    children: Optional[List['Tree']] = field(default_factory=list)
-
-    ID: InitVar[[None, int]] = None
-    depth: InitVar[[None, int]] = None
+    ID: int
+    depth: int = 0
+    name: str = ""
+    length: float = 0.
+    cumulative_length: float = 0.
+    children: [None, List['Tree']] = None
     parent: InitVar[[None, 'Tree']] = None
-    cumulative_length: InitVar[[None, float]] = 0.0
 
-    def __post_init__(self, ID, *args, **kwargs):
-        self.ID = ID
+    def __post_init__(self, parent: [None, 'Tree']):
+        self.parent = parent
 
     @property
     def loc(self) -> 'Tree':
@@ -119,7 +118,7 @@ children=[]), Tree(name='b', length=0.0, children=[])])
     @property
     def leaves(self) -> Iterable['Tree']:
         """A list of leaf nodes only
-
+dict_factory function
         Returns:
             list: A list of leaf nodes only
         """
@@ -166,18 +165,18 @@ children=[]), Tree(name='b', length=0.0, children=[])])
                 string = filehandle.read()
         tokens = re.split(r'\s*(;|\(|\)|,|:)\s*', string)
         ID = 0
-        tree = cls(ID=ID, length=0.0, cumulative_length=0.0)
+        tree = cls(ID=ID, depth=0, length=0.0, cumulative_length=0.0)
         ancestors = list()
         for i, token in enumerate(tokens):
             if token == '(':
                 ID += 1
-                subtree = cls(ID=ID)
+                subtree = cls(ID=ID, depth=0)
                 tree.children = [subtree]
                 ancestors.append(tree)
                 tree = subtree
             elif token == ',':
                 ID += 1
-                subtree = cls(ID=ID)
+                subtree = cls(ID=ID, depth=0)
                 ancestors[-1].children.append(subtree)
                 tree = subtree
             elif token == ')':
@@ -255,7 +254,7 @@ children=[]), Tree(name='b', length=0.0, children=[])])
         """
         nodes = clustering.children_
         n_leaves = nodes.shape[0] + 1
-        tree = cls(ID=nodes.shape[0] * 2)
+        tree = cls(ID=nodes.shape[0] * 2, depth=0)
 
         queue = [tree]
         while queue:
@@ -264,7 +263,7 @@ children=[]), Tree(name='b', length=0.0, children=[])])
                 node.name = str(node.ID)
                 continue
             for child_ID in nodes[node.ID - n_leaves]:
-                child = cls(ID=child_ID)
+                child = cls(ID=child_ID, depth=node.depth + 1)
                 child.parent = node
                 node.children.append(child)
             queue += node.children
@@ -287,7 +286,7 @@ children=[]), Tree(name='b', length=0.0, children=[])])
         root_id: int = list(nodes_without_parents)[0]
 
         # start building the tree
-        tree: 'Tree' = cls(ID=root_id, name="root")
+        tree: 'Tree' = cls(ID=root_id, depth=0, name="root")
         tree.depth = 0
         queue: List['Tree'] = [tree]
         while queue:
@@ -295,17 +294,22 @@ children=[]), Tree(name='b', length=0.0, children=[])])
             if node.ID in tree_dict:
                 for child_ID in tree_dict[node.ID]:
                     if child_ID in names:
-                        child = cls(ID=child_ID, name=names[child_ID])
+                        child = cls(ID=child_ID, name=names[child_ID], depth=node.depth + 1)
                     else:
-                        child = cls(ID=child_ID)
-                    child.depth = node.depth + 1
+                        child = cls(ID=child_ID, depth=node.depth + 1)
                     child.parent = node
-                    node.children.append(child)
+                    node.add_as_child(child)
                 queue += node.children
             else:
                 continue
 
         return tree
+
+    def add_as_child(self, node: 'Tree'):
+        if not self.children:
+            self.children = [node]
+        else:
+            self.children.append(node)
 
     @classmethod
     def from_edge_list(cls, edge_list: List[Tuple[int, int]], names: [None, Dict[int, str]] = None) -> 'Tree':
@@ -329,7 +333,7 @@ children=[]), Tree(name='b', length=0.0, children=[])])
     def from_dict(cls, tree_dict):
         # TODO
         # raise NotImplementedError()
-        tree = cls()
+        tree = cls(0, 0)
         return tree
 
     def to_dict(self) -> TreeDict:
@@ -500,7 +504,11 @@ def treeplot(
 def main():
     newick = '(((a,b),(c,d)),e)'
     tree = Tree.from_edge_dict({1: [2, 3, 4], 2: [5, 6]}, {3: "a", 4: "b", 5: "c", 6: "d"})
-    print(list(tree.leaves))
+    print(tree.parent)
+    print(tree.children[0].parent)
+    # print(tree.depth)
+    # print(asdict(tree))
+    print(tree.to_dict())
 
 
 if __name__ == "__main__":
