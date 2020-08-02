@@ -170,13 +170,23 @@ class Tree:
         return list(self.breadth_first())
 
     @property
-    def leaves(self) -> List['Tree']:
+    def leaves(self) -> Generator['Tree']:
         """A list of leaf nodes only
 
         Returns:
             list: A list of leaf nodes only
         """
-        return [n for n in self.nodes if not n.children]
+        return (n for n in self.breadth_first() if not n.children)
+
+    @property
+    def root(self) -> 'Tree':
+        if not self.parent:
+            return self
+        else:
+            node = self.parent
+            while node.parent:
+                node = node.parent
+            return node
 
     @property
     def links(self) -> List[Tuple['Tree', 'Tree']]:
@@ -191,6 +201,12 @@ class Tree:
                 for child in node.children:
                     _links.append((node, child))
         return _links
+
+    def find_leaf_by_name(self, name: str) -> [None, 'Tree']:
+        for leaf in self.leaves:
+            if leaf.name == name:
+                return leaf
+        return None
 
     @classmethod
     def from_newick(
@@ -318,7 +334,9 @@ class Tree:
         raise NotImplementedError()
 
     @classmethod
-    def from_dict(cls, tree_dict: Dict[int, List[int]]) -> 'Tree':
+    def from_dict(cls, tree_dict: Dict[int, List[int]], names: [None, Dict[int, str]] = None) -> 'Tree':
+        if names is None:
+            names = dict()
         # Find the root node
         nodes_with_parents: Set[int] = set(itertools.chain.from_iterable(tree_dict.values()))
         parent_nodes: Set[int] = set(tree_dict.keys())
@@ -327,13 +345,16 @@ class Tree:
         root_id: int = list(nodes_without_parents)[0]
 
         # start building the tree
-        tree: 'Tree' = cls(ID=root_id)
+        tree: 'Tree' = cls(ID=root_id, name="root")
         queue: List['Tree'] = [tree]
         while queue:
             node = queue.pop(0)
             if node.ID in tree_dict:
                 for child_ID in tree_dict[node.ID]:
-                    child = cls(ID=child_ID, depth=node.depth+1)
+                    if child_ID in names:
+                        child = cls(ID=child_ID, depth=node.depth + 1, name=names[child_ID])
+                    else:
+                        child = cls(ID=child_ID, depth=node.depth + 1)
                     child.parent = node
                     node.children.append(child)
                 queue += node.children
@@ -343,14 +364,14 @@ class Tree:
         return tree
 
     @classmethod
-    def from_edge_list(cls, edge_list: List[Tuple[int, int]]) -> 'Tree':
+    def from_edge_list(cls, edge_list: List[Tuple[int, int]], names: [None, Dict[int, str]] = None) -> 'Tree':
         edge_dict: Dict[int, List[int]] = dict()
         for n1, n2 in edge_list:
             if n1 not in edge_dict:
                 edge_dict[n1] = [n2]
             else:
                 edge_dict[n1].append(n2)
-        return cls.from_dict(edge_dict)
+        return cls.from_dict(edge_dict, names=names)
 
     @classmethod
     def from_json(cls):
