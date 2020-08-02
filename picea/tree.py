@@ -339,12 +339,6 @@ class TreeIndex(object):
         raise IndexError(f'{key} is not valid index')
 
 
-@dataclass
-class TwoDCoordinate():
-    x: float = 0.0
-    y: float = 0.0
-
-
 def unequal_separation(
     node_a: 'Tree',
     node_b: 'Tree',
@@ -383,6 +377,12 @@ def equal_separation(
         float: [description]
     """
     return separation
+
+
+@dataclass
+class TwoDCoordinate():
+    x: float = 0.0
+    y: float = 0.0
 
 
 def treeplot(
