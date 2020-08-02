@@ -5,48 +5,12 @@ import json
 import itertools
 import numpy as np
 
+from dataclasses import dataclass, field, InitVar, asdict
+from collections import defaultdict
+from matplotlib import pyplot as plt
+
 
 TreeDict = Dict[str, Union[str, int, float, List[Optional['TreeDict']]]]
-
-
-def unequal_separation(
-    node_a: 'Tree',
-    node_b: 'Tree',
-    sep_1: float = 1.0,
-    sep_2: float = 2.0
-) -> float:
-    """[summary]
-
-    Args:
-        node_a (Tree): [description]
-        node_b (Tree): [description]
-        sep_1 (float, optional): [description]. Defaults to 1.0.
-        sep_2 (float, optional): [description]. Defaults to 2.0.
-
-    Returns:
-        float: [description]
-    """
-    if node_a.parent == node_b.parent:
-        return sep_1
-    return sep_2
-
-
-def equal_separation(
-    node_a: 'Tree',
-    node_b: 'Tree',
-    separation: float = 1.0
-) -> float:
-    """[summary]
-
-    Args:
-        node_a (Tree): [description]
-        node_b (Tree): [description]
-        separation (float, optional): [description]. Defaults to 1.0.
-
-    Returns:
-        float: [description]
-    """
-    return separation
 
 
 def index_equals(
@@ -81,49 +45,19 @@ def name_equals(
     return node.name == name
 
 
+@dataclass
 class Tree:
-    def __init__(
-        self,
-        ID: Optional[int] = None,
-        children: Optional[List['Tree']] = None,
-        # x: float = 0.0,
-        # y: float = 0.0,
-        name: str = '',
-        length: float = 0.0,
-        depth: Optional[int] = None,
-        parent: Optional['Tree'] = None,
-        cumulative_length: float = 0.0
-    ):
-        """Recursive datastructure holding tree objects
+    name: Optional[str] = None
+    length: float = 0.0
+    children: Optional[List['Tree']] = field(default_factory=list)
 
-        Args:
-            ID (int, optional): [description]. Defaults to None.
-            children (list, optional): [description]. Defaults to None.
-            x (float, optional): [description]. Defaults to 0.0.
-            y (float, optional): [description]. Defaults to 0.0.
-            name (str, optional): [description]. Defaults to ''.
-            length (float, optional): [description]. Defaults to 0.
-            depth (float, optional): [description]. Defaults to None.
-            parent (Tree, optional): [description]. Defaults to None.
-            cumulative_length (int, optional): [description]. Defaults to 0.
-        """
-        if not children:
-            children = list()
+    ID: InitVar[[None, int]] = None
+    depth: InitVar[[None, int]] = None
+    parent: InitVar[[None, 'Tree']] = None
+    cumulative_length: InitVar[[None, float]] = 0.0
+
+    def __post_init__(self, ID, *args, **kwargs):
         self.ID = ID
-        self.children = children
-        # self.x = x
-        # self.y = y
-        self.name = name
-        self.depth = depth
-        self.parent = parent
-        self.length = length
-        self.cumulative_length = cumulative_length
-
-    def __repr__(self):
-        return (
-            f'<TreeNode ID={self.ID} depth={self.depth}'
-            f' length={self.length} name={str(self.name)}>'
-        )
 
     @property
     def loc(self) -> 'Tree':
@@ -134,7 +68,7 @@ class Tree:
             >>> newick = '(((a,b),(c,d)),e);'
             >>> tree = Tree.from_newick(newick)
             >>> tree.loc['a']
-            <TreeNode ID=3 depth=3 length=0.0 name=a>
+            Tree(name='a', length=0.0, children=[])
 
         Returns:
             Tree: tree node matching name
@@ -152,13 +86,26 @@ class Tree:
             >>> from picea import Tree
             >>> newick = '(((a,b),(c,d)),e);'
             >>> tree = Tree.from_newick(newick)
-            >>> tree.iloc[1]
-            <TreeNode ID=1 depth=1 length=0.0 name=>
+            >>> tree.iloc[2]
+            Tree(name='', length=0.0, children=[Tree(name='a', length=0.0, \
+children=[]), Tree(name='b', length=0.0, children=[])])
 
         Returns:
             Tree: tree node matching index
         """
         return TreeIndex(iterator=self.depth_first, eq_func=index_equals)
+
+    @property
+    def root(self) -> 'Tree':
+        """Root node of the (sub)tree
+
+        Returns:
+            Tree: Root node
+        """
+        root = self
+        while root.parent:
+            root = root.parent
+        return root
 
     @property
     def nodes(self) -> List['Tree']:
@@ -170,23 +117,13 @@ class Tree:
         return list(self.breadth_first())
 
     @property
-    def leaves(self) -> Generator['Tree']:
+    def leaves(self) -> Iterable['Tree']:
         """A list of leaf nodes only
 
         Returns:
             list: A list of leaf nodes only
         """
         return (n for n in self.breadth_first() if not n.children)
-
-    @property
-    def root(self) -> 'Tree':
-        if not self.parent:
-            return self
-        else:
-            node = self.parent
-            while node.parent:
-                node = node.parent
-            return node
 
     @property
     def links(self) -> List[Tuple['Tree', 'Tree']]:
@@ -277,14 +214,19 @@ class Tree:
         Returns:
             String: Newick formatted tree string
         """
+        if self.name:
+            name = str(self.name)
+        else:
+            name = ''
+
         if self.children:
             subtree_string = ','.join([
                 c.to_newick(branch_lengths=branch_lengths)
                 for c in self.children
             ])
-            newick = f'({subtree_string}){self.name}'
+            newick = f'({subtree_string}){name}'
         else:
-            newick = str(self.name)
+            newick = name
 
         if branch_lengths and self.ID != 0:
             length = self.length
@@ -292,7 +234,7 @@ class Tree:
                 length = int(0)
             newick += f':{length}'
 
-        if self.ID == 0:
+        if self == self.root:
             newick += ';'
 
         return newick
@@ -346,15 +288,17 @@ class Tree:
 
         # start building the tree
         tree: 'Tree' = cls(ID=root_id, name="root")
+        tree.depth = 0
         queue: List['Tree'] = [tree]
         while queue:
             node = queue.pop(0)
             if node.ID in tree_dict:
                 for child_ID in tree_dict[node.ID]:
                     if child_ID in names:
-                        child = cls(ID=child_ID, depth=node.depth + 1, name=names[child_ID])
+                        child = cls(ID=child_ID, name=names[child_ID])
                     else:
-                        child = cls(ID=child_ID, depth=node.depth + 1)
+                        child = cls(ID=child_ID)
+                    child.depth = node.depth + 1
                     child.parent = node
                     node.children.append(child)
                 queue += node.children
@@ -381,16 +325,20 @@ class Tree:
     def to_json(self, indent: Optional[int] = None) -> str:
         return json.dumps(self.to_dict(), indent=indent)
 
+    @classmethod
+    def from_dict(cls, tree_dict):
+        # TODO
+        # raise NotImplementedError()
+        tree = cls()
+        return tree
+
     def to_dict(self) -> TreeDict:
         """[summary]
 
         Returns:
             TreeDict: [description]
         """
-        return dict(
-            ID=self.ID, name=self.name, length=self.length,
-            children=[child.to_dict() for child in self.children]
-        )
+        return asdict(self)
 
     def breadth_first(self) -> Generator['Tree', None, None]:
         """Generator implementing breadth first search starting at root node
@@ -419,53 +367,6 @@ class Tree:
         if post_order:
             yield self
 
-    def layout(
-        self,
-        separation: Callable = equal_separation,
-        d_x: float = 1.0,
-        d_y: float = 1.0,
-        ltr: bool = True
-    ):
-        """Calculate (x,y) position of nodes for plotting,
-        modifies nodes in place
-
-        Args:
-            separation (function, optional): function to calculate separation \
-            between leaf nodes. Defaults to equal_separation.
-            d_x (int, optional): x-axis distance between neighbouring nodes. \
-            Defaults to 1.
-            d_y (int, optional): y-axis distance between neighbouring nodes.
-            Defaults to 1.
-            ltr (bool, optional): Left-To-Right layout orientation. Defaults
-            to True.
-
-        Returns:
-            Tree: Original root node with modified (x,y) coordinates according
-            to specified layout properties
-        """
-        previous_node = None
-        y = 0
-        for node in self.depth_first(post_order=True):
-            if node.children:
-                node.y = sum([c.y for c in node.children]) / len(node.children)
-                if ltr:
-                    node.x = 1 + max([c.x for c in node.children])
-                else:
-                    node.x = min([c.x for c in node.children]) - 1
-            else:
-                if previous_node:
-                    y += separation(node, previous_node)
-                    node.y = y
-                else:
-                    node.y = 0
-                node.x = 0
-                previous_node = node
-
-        for node in self.depth_first(post_order=True):
-            node.x = (self.x - node.x) * d_x
-            node.y = (node.y - self.y) * d_y
-        return self
-
 
 class TreeIndex(object):
     def __init__(
@@ -488,3 +389,119 @@ class TreeIndex(object):
             if self.eq_func(element, key):
                 return element
         raise IndexError(f'{key} is not valid index')
+
+
+def unequal_separation(
+    node_a: 'Tree',
+    node_b: 'Tree',
+    sep_1: float = 1.0,
+    sep_2: float = 2.0
+) -> float:
+    """[summary]
+
+    Args:
+        node_a (Tree): [description]
+        node_b (Tree): [description]
+        sep_1 (float, optional): [description]. Defaults to 1.0.
+        sep_2 (float, optional): [description]. Defaults to 2.0.
+
+    Returns:
+        float: [description]
+    """
+    if node_a.parent == node_b.parent:
+        return sep_1
+    return sep_2
+
+
+def equal_separation(
+    node_a: 'Tree',
+    node_b: 'Tree',
+    separation: float = 1.0
+) -> float:
+    """[summary]
+
+    Args:
+        node_a (Tree): [description]
+        node_b (Tree): [description]
+        separation (float, optional): [description]. Defaults to 1.0.
+
+    Returns:
+        float: [description]
+    """
+    return separation
+
+
+@dataclass
+class TwoDCoordinate():
+    x: float = 0.0
+    y: float = 0.0
+
+
+def treeplot(
+    tree: Tree,
+    separation: Callable = equal_separation,
+    d_x: float = 1.0,
+    d_y: float = 1.0,
+    ltr: bool = True,
+    ax: Optional[Callable] = None
+):
+    coords = defaultdict(TwoDCoordinate)
+    previous_node = None
+    y = 0
+    for node in tree.depth_first(post_order=True):
+        if node.children:
+            coords[node.ID].y = sum([coords[c.ID].y for c in node.children]) \
+                / len(node.children)
+            if ltr:
+                coords[node.ID].x = 1 + max([
+                    coords[c.ID].x for c in node.children
+                ])
+            else:
+                coords[node.ID].x = min([
+                    coords[c.ID].x for c in node.children
+                ]) - 1
+        else:
+            if previous_node:
+                y += separation(node, previous_node)
+                coords[node.ID].y = y
+            else:
+                coords[node.ID].y = 0
+            coords[node.ID].x = 0
+            previous_node = node
+
+    for node in tree.depth_first(post_order=True):
+        coords[node.ID].x = (coords[tree.ID].x - coords[node.ID].x) * d_x
+        coords[node.ID].y = (coords[node.ID].y - coords[tree.ID].y) * d_y
+
+    if not ax:
+        fig, ax = plt.subplots(figsize=(5, 5))
+
+    for node1, node2 in tree.links:
+        ax.plot(
+            (coords[node1.ID].x, coords[node2.ID].x),
+            (coords[node1.ID].y, coords[node2.ID].y),
+            c='k'
+        )
+    for leaf in tree.leaves:
+        ax.text(
+            coords[leaf.ID].x + .1,
+            coords[leaf.ID].y - .1,
+            leaf.name,
+            fontsize=18,
+            in_layout=True,
+            clip_on=True
+        )
+    ax.set_xticks(())
+    ax.set_yticks(())
+    fig.tight_layout()
+    return ax
+
+
+def main():
+    newick = '(((a,b),(c,d)),e)'
+    tree = Tree.from_edge_dict({1: [2, 3, 4], 2: [5, 6]}, {3: "a", 4: "b", 5: "c", 6: "d"})
+    print(list(tree.leaves))
+
+
+if __name__ == "__main__":
+    main()
