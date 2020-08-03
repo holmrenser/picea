@@ -504,7 +504,7 @@ def treeplot(
             coords[leaf.ID].x + .1,
             coords[leaf.ID].y - .1,
             leaf.name,
-            fontsize=18,
+            fontsize=12,
             # in_layout=True,
             clip_on=True
         )
