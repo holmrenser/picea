@@ -47,7 +47,7 @@ def name_equals(
 
 @dataclass
 class Tree:
-    ID: int
+    ID: int = 0
     depth: int = 0
     name: str = ""
     length: float = 0.
@@ -57,6 +57,8 @@ class Tree:
 
     def __post_init__(self, parent: [None, 'Tree']):
         self.parent = parent
+        if not len(self.name):
+            self.name: str = str(self.ID)
 
     @property
     def loc(self) -> 'Tree':
@@ -177,7 +179,7 @@ dict_factory function
             elif token == ',':
                 ID += 1
                 subtree = cls(ID=ID, depth=0)
-                ancestors[-1].children.append(subtree)
+                ancestors[-1].add_as_child(subtree)
                 tree = subtree
             elif token == ')':
                 tree = ancestors.pop()
@@ -265,7 +267,7 @@ dict_factory function
             for child_ID in nodes[node.ID - n_leaves]:
                 child = cls(ID=child_ID, depth=node.depth + 1)
                 child.parent = node
-                node.children.append(child)
+                node.add_as_child(child)
             queue += node.children
 
         return tree
@@ -333,7 +335,7 @@ dict_factory function
     def from_dict(cls, tree_dict):
         # TODO
         # raise NotImplementedError()
-        tree = cls(0, 0)
+        tree = cls()
         return tree
 
     def to_dict(self) -> TreeDict:
@@ -350,7 +352,8 @@ dict_factory function
         queue = [self]
         while queue:
             node = queue.pop(0)
-            queue += node.children
+            if node.children is not None:
+                queue += node.children
             yield node
 
     def depth_first(
@@ -366,8 +369,9 @@ dict_factory function
         """
         if not post_order:
             yield self
-        for child in self.children:
-            yield from child.depth_first(post_order=post_order)
+        if self.children is not None:
+            for child in self.children:
+                yield from child.depth_first(post_order=post_order)
         if post_order:
             yield self
 
@@ -404,7 +408,7 @@ def unequal_separation(
     """[summary]
 
     Args:
-        node_a (Tree): [description]
+        node_a (Tree): [descripti        print(node_a.parent)on]
         node_b (Tree): [description]
         sep_1 (float, optional): [description]. Defaults to 1.0.
         sep_2 (float, optional): [description]. Defaults to 2.0.
@@ -447,7 +451,8 @@ def treeplot(
     d_x: float = 1.0,
     d_y: float = 1.0,
     ltr: bool = True,
-    ax: Optional[Callable] = None
+    ax: Optional[Callable] = None,
+    internode_names: bool = False
 ):
     coords = defaultdict(TwoDCoordinate)
     previous_node = None
@@ -486,6 +491,14 @@ def treeplot(
             (coords[node1.ID].y, coords[node2.ID].y),
             c='k'
         )
+        if internode_names:
+            ax.text(coords[node1.ID].x,
+                    coords[node1.ID].y,
+                    node1.name,
+                    fontsize=15,
+                    in_layout=True,
+                    clip_on=True,
+                    color="green")
     for leaf in tree.leaves:
         ax.text(
             coords[leaf.ID].x + .1,
@@ -501,15 +514,3 @@ def treeplot(
     return ax
 
 
-def main():
-    newick = '(((a,b),(c,d)),e)'
-    tree = Tree.from_edge_dict({1: [2, 3, 4], 2: [5, 6]}, {3: "a", 4: "b", 5: "c", 6: "d"})
-    print(tree.parent)
-    print(tree.children[0].parent)
-    # print(tree.depth)
-    # print(asdict(tree))
-    print(tree.to_dict())
-
-
-if __name__ == "__main__":
-    main()
