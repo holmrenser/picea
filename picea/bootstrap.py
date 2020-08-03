@@ -99,7 +99,6 @@ def bootstrap(tree: Tree, bootstrap_trees: List[Tree]) -> Clades:
 
 def build_nj_tree_from_distance_matrix(distance_matrix: np.ndarray, names: List[str]) -> Tree:
     list_of_edges: List[Tuple[int, int]] = [x[::-1] for x in nj.neighbor_joining(distance_matrix)[0]]
-    names = names[::-1]
     return Tree.from_edge_list(list_of_edges, {i: names[i] for i in range(distance_matrix.shape[0])})
 
 
