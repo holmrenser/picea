@@ -188,7 +188,10 @@ dict_factory function
                 if previous_token in ('(', ')', ','):
                     tree.name = token
                 elif previous_token == ':':
-                    tree.length = float(token)
+                    try:
+                        tree.length = float(token)
+                    except ValueError:
+                        continue
         tree.depth = 0
         queue = [tree]
         while queue:
