@@ -73,7 +73,7 @@ def prepare_bootstrap_trees(distance_matrix: np.ndarray,
     names = np.array(names)
     other_trees: List[Tree] = list()
     for i in range(iteration):
-        selected_ids = np.unique(np.random.choice(np.arange(names.shape[0]), size=names.shape[0], replace=True))
+        selected_ids = np.random.choice(np.arange(names.shape[0]), size=names.shape[0], replace=True)
         other_trees.append(build_nj_tree_from_distance_matrix(distance_matrix[selected_ids, :][:, selected_ids],
                                                               list(names[selected_ids])).root)
     return tree.root, other_trees
