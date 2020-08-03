@@ -483,7 +483,7 @@ def treeplot(
         coords[node.ID].y = (coords[node.ID].y - coords[tree.ID].y) * d_y
 
     if not ax:
-        fig, ax = plt.subplots(figsize=(5, 5))
+        fig, ax = plt.subplots(figsize=(10, 10))
 
     for node1, node2 in tree.links:
         ax.plot(
