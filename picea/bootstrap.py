@@ -4,7 +4,7 @@ from typing import \
 import itertools
 import numpy as np
 from dataclasses import dataclass, field, InitVar, asdict, replace
-from caretta import neighbor_joining as nj
+from picea import neighbor_joining as nj
 from multiprocessing import Pool
 
 
@@ -77,7 +77,7 @@ def make_trees_parallel(distance_matrix_and_names_tuple: Tuple[np.ndarray, np.nd
 def prepare_bootstrap_trees(distance_matrix: np.ndarray,
                             names: [None, List[str]] = None,
                             iteration: int = 10,
-                            n_threads: int = 16) -> Tuple[Tree, List[Tree]]:
+                            n_threads: int = 4) -> Tuple[Tree, List[Tree]]:
     if names is None:
         names = [str(x) for x in range(distance_matrix.shape[0])]
     tree: Tree = build_nj_tree_from_distance_matrix(distance_matrix, names)
@@ -104,7 +104,7 @@ def build_nj_tree_from_distance_matrix(distance_matrix: np.ndarray, names: List[
 
 
 def main():
-    iteration=100
+    iteration = 100
     from sklearn.metrics import pairwise_distances
     import matplotlib.pyplot as plt
     some_arrays = np.random.random_sample(size=(10, 5))
