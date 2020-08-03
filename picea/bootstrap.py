@@ -10,7 +10,7 @@ from caretta import neighbor_joining as nj
 @dataclass
 class Clade:
     internode: Tree
-    clade: Set[Tuple[str]]
+    clade: Set[str]
     depth: int
 
     @classmethod
@@ -18,9 +18,7 @@ class Clade:
         assert internode.children is not None
         if banned is None:
             banned = set()
-        clade: Set[Tuple[str, ...]] = set()
-        for children in internode.children:
-            clade.add(tuple(sorted(list({x.name for x in children.leaves if x.name not in banned}))))
+        clade: Set[str] = {x.name for x in internode.leaves if x.name not in banned}
         return cls(internode, clade, internode.depth)
 
     def compare_to(self, other: 'Clade'):
@@ -62,7 +60,6 @@ class Clades:
                     self.bootstrap_scores[this_clade.internode.name] += 1
                 else:
                     continue
-
 
 def prepare_bootstrap_trees(distance_matrix: np.ndarray,
                             names: [None, List[str]] = None,
