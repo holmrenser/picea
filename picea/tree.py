@@ -187,8 +187,8 @@ dict_factory function
                 previous_token = tokens[i - 1]
                 if previous_token in ('(', ')', ','):
                     tree.name = token
-                # elif previous_token == ':':
-                #     tree.length = float(token)
+                elif previous_token == ':':
+                    tree.length = float(token)
         tree.depth = 0
         queue = [tree]
         while queue:
