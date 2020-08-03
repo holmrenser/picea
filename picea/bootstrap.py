@@ -56,14 +56,12 @@ class Clades:
 
     def compare_to_other(self, other: 'Clades'):
         for this_clade in self.clades:
-            print(this_clade.clade)
             for other_clade in other.clades:
-                print(other_clade.clade)
                 if this_clade.clade == other_clade.clade:
                     self.bootstrap_scores[this_clade.internode.name] += 1
+                    break
                 else:
                     continue
-            print()
 
 
 def make_trees_parallel(distance_matrix_and_names_tuple: Tuple[np.ndarray, np.ndarray]) -> Tree:
