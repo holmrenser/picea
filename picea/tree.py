@@ -173,7 +173,7 @@ dict_factory function
             if token == '(':
                 ID += 1
                 subtree = cls(ID=ID, depth=0)
-                tree.children = [subtree]
+                tree.add_as_child(subtree)
                 ancestors.append(tree)
                 tree = subtree
             elif token == ',':
@@ -193,12 +193,15 @@ dict_factory function
         queue = [tree]
         while queue:
             node = queue.pop(0)
-            for child in node.children:
-                child.parent = node
-                child.depth = node.depth + 1
-                child.cumulative_length = node.cumulative_length \
-                    + abs(child.length)
-            queue += node.children
+            if node.children is not None:
+                for child in node.children:
+                    child.parent = node
+                    child.depth = node.depth + 1
+                    child.cumulative_length = node.cumulative_length \
+                        + abs(child.length)
+                queue += node.children
+            else:
+                continue
 
         return tree
 
