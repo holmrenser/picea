@@ -5,6 +5,7 @@ import itertools
 import numpy as np
 from dataclasses import dataclass, field, InitVar, asdict, replace
 from caretta import neighbor_joining as nj
+from multiprocessing import Pool
 
 
 @dataclass
@@ -55,24 +56,34 @@ class Clades:
 
     def compare_to_other(self, other: 'Clades'):
         for this_clade in self.clades:
+            print(this_clade.clade)
             for other_clade in other.clades:
+                print(other_clade.clade)
                 if this_clade.clade == other_clade.clade:
                     self.bootstrap_scores[this_clade.internode.name] += 1
                 else:
                     continue
+            print()
+
+
+def make_trees_parallel(distance_matrix_and_names_tuple: Tuple[np.ndarray, np.ndarray]) -> Tree:
+    selected_ids = np.random.choice(np.arange(distance_matrix_and_names_tuple[1].shape[0]),
+                                    size=distance_matrix_and_names_tuple[1].shape[0],
+                                    replace=True)
+    return build_nj_tree_from_distance_matrix(distance_matrix_and_names_tuple[0][selected_ids, :][:, selected_ids],
+                                              list(distance_matrix_and_names_tuple[1][selected_ids])).root
+
 
 def prepare_bootstrap_trees(distance_matrix: np.ndarray,
                             names: [None, List[str]] = None,
-                            iteration: int = 10) -> Tuple[Tree, List[Tree]]:
+                            iteration: int = 10,
+                            n_threads: int = 16) -> Tuple[Tree, List[Tree]]:
     if names is None:
         names = [str(x) for x in range(distance_matrix.shape[0])]
     tree: Tree = build_nj_tree_from_distance_matrix(distance_matrix, names)
     names = np.array(names)
-    other_trees: List[Tree] = list()
-    for i in range(iteration):
-        selected_ids = np.random.choice(np.arange(names.shape[0]), size=names.shape[0], replace=True)
-        other_trees.append(build_nj_tree_from_distance_matrix(distance_matrix[selected_ids, :][:, selected_ids],
-                                                              list(names[selected_ids])).root)
+    p: Pool = Pool(n_threads)
+    other_trees: List[Tree] = list(p.map(make_trees_parallel, [(distance_matrix, names) for _ in range(iteration)]))
     return tree.root, other_trees
 
 
