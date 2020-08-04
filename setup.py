@@ -13,7 +13,7 @@ with open('./README.md') as filehandle:
 def main():
     setup(
         name=name,
-        packages=[name],
+        packages=[name, "picea/algorithms"],
         author=author,
         author_email='rens.holmer@wur.nl',
         description=(
