@@ -5,6 +5,7 @@ import numpy as np
 from dataclasses import dataclass
 from picea.algorithms import neighbor_joining as nj
 from multiprocessing import Pool
+from random import randint
 from copy import deepcopy
 
 
@@ -98,6 +99,7 @@ def make_tree_parallel(distance_matrix_and_names_tuple: Tuple[np.ndarray, np.nda
     :param distance_matrix_and_names_tuple:
     :return:
     """
+    np.random.seed(randint(0, 1000000))
     selected_ids = np.random.choice(np.arange(distance_matrix_and_names_tuple[1].shape[0]),
                                     size=distance_matrix_and_names_tuple[1].shape[0],
                                     replace=True)
