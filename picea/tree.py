@@ -515,7 +515,7 @@ def treeplot(
             coords[leaf.ID].y - .1,
             leaf.name,
             fontsize=12,
-            in_layout=True,
+            # in_layout=True,
             clip_on=True
         )
     ax.set_xticks(())
