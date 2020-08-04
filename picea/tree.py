@@ -522,7 +522,3 @@ def treeplot(
     ax.set_yticks(())
     fig.tight_layout()
     return ax
-
-
-if __name__ == "__main__":
-    main()

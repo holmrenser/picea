@@ -64,3 +64,32 @@ for ax in (ax1,ax2):
     ax.set_xticks([],[])
     ax.set_yticks([],[])
 ```
+
+Neighbor joining tree construction and bootstrapping example:
+
+```python
+from picea.algorithms import bootstrap as bts
+import numpy as np
+from sklearn.metrics import pairwise_distances
+
+data = np.random.random_sample(size=(10, 5))
+distance_matrix = pairwise_distances(data, metric="euclidean")
+nj_tree, other_nj_trees = bts.prepare_bootstrap_trees(distance_matrix, iteration=100)
+nj_tree.bootstrap(other_nj_trees)
+
+for n in nj_tree.breadth_first():
+    if n.children is not None:
+        print(f"node name: {n.name}, bootstrap value: {round(n.weight, 2)}%")
+```
+
+Produces following output:
+```sh
+node name: root, bootstrap value: 100.0%
+node name: 16, bootstrap value: 21.0%
+node name: 15, bootstrap value: 16.0%
+node name: 14, bootstrap value: 48.0%
+node name: 11, bootstrap value: 66.0%
+node name: 13, bootstrap value: 47.0%
+node name: 10, bootstrap value: 56.0%
+node name: 12, bootstrap value: 43.0%
+```
