@@ -54,6 +54,7 @@ class Tree:
     cumulative_length: float = 0.
     children: [None, List['Tree']] = None
     parent: InitVar[[None, 'Tree']] = None
+    weight: float = 0.
 
     def __post_init__(self, parent: [None, 'Tree']):
         self.parent = parent
@@ -381,6 +382,10 @@ dict_factory function
         if post_order:
             yield self
 
+    def bootstrap(self, other_trees: List['Tree']):
+        from picea.algorithms import bootstrap
+        bootstrap.bootstrap(self, other_trees)
+
 
 class TreeIndex(object):
     def __init__(
@@ -502,7 +507,6 @@ def treeplot(
                     coords[node1.ID].y,
                     node1.name,
                     fontsize=15,
-                    # in_layout=True,
                     clip_on=True,
                     color="green")
     for leaf in tree.leaves:
@@ -511,7 +515,7 @@ def treeplot(
             coords[leaf.ID].y - .1,
             leaf.name,
             fontsize=12,
-            # in_layout=True,
+            in_layout=True,
             clip_on=True
         )
     ax.set_xticks(())
@@ -520,3 +524,5 @@ def treeplot(
     return ax
 
 
+if __name__ == "__main__":
+    main()
