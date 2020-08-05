@@ -250,7 +250,8 @@ dict_factory function
     @classmethod
     def from_sklearn(
         cls,
-        clustering
+        clustering,
+        names: [None, List[str]] = None
     ) -> 'Tree':
         """Read a tree from sklearn agglomerative clustering
 
@@ -263,13 +264,15 @@ dict_factory function
         """
         nodes = clustering.children_
         n_leaves = nodes.shape[0] + 1
+        if names is None:
+            names = [str(x) for x in range(n_leaves)]
         tree = cls(ID=nodes.shape[0] * 2, depth=0)
 
         queue = [tree]
         while queue:
             node = queue.pop(0)
             if node.ID < n_leaves:
-                node.name = str(node.ID)
+                node.name = names[node.ID]
                 continue
             for child_ID in nodes[node.ID - n_leaves]:
                 child = cls(ID=child_ID, depth=node.depth + 1)

@@ -74,7 +74,7 @@ from sklearn.metrics import pairwise_distances
 
 data = np.random.random_sample(size=(10, 5))
 distance_matrix = pairwise_distances(data, metric="euclidean")
-nj_tree, other_nj_trees = bts.prepare_bootstrap_trees(distance_matrix, iteration=100)
+nj_tree, other_nj_trees = bts.prepare_bootstrap_trees_nj(distance_matrix, iteration=100)
 nj_tree.bootstrap(other_nj_trees)
 
 for n in nj_tree.breadth_first():

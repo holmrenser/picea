@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from picea.algorithms import neighbor_joining as nj
 from multiprocessing import Pool
 from random import randint
+from sklearn.cluster import AgglomerativeClustering as agg
 from copy import deepcopy
 
 
@@ -93,7 +94,7 @@ class Clades:
                     continue
 
 
-def make_tree_parallel(distance_matrix_and_names_tuple: Tuple[np.ndarray, np.ndarray]) -> Tree:
+def make_tree_parallel_nj(distance_matrix_and_names_tuple: Tuple[np.ndarray, np.ndarray]) -> Tree:
     """
     Nj tree is made from random sampling with replacement from the distance matrix.
     :param distance_matrix_and_names_tuple:
@@ -106,11 +107,27 @@ def make_tree_parallel(distance_matrix_and_names_tuple: Tuple[np.ndarray, np.nda
     return build_nj_tree_from_distance_matrix(distance_matrix_and_names_tuple[0][selected_ids, :][:, selected_ids],
                                               list(distance_matrix_and_names_tuple[1][selected_ids])).root
 
+def make_tree_parallel_agg(data_and_names_tuple: Tuple[np.ndarray, np.ndarray]) -> Tree:
+    """
+    Nj tree is made from random sampling with replacement from the distance matrix.
+    :param distance_matrix_and_names_tuple:
+    :return:
+    """
+    np.random.seed(randint(0, 1000000))
+    selected_ids = np.random.choice(np.arange(data_and_names_tuple[1].shape[0]),
+                                    size=data_and_names_tuple[1].shape[0],
+                                    replace=True)
+    hc = agg()
+    hc.fit(data_and_names_tuple[0][selected_ids])
+    return Tree.from_sklearn(hc, names=data_and_names_tuple[1][selected_ids])
 
-def prepare_bootstrap_trees(distance_matrix: np.ndarray,
-                            names: [None, List[str]] = None,
-                            iteration: int = 10,
-                            n_threads: int = 4) -> Tuple[Tree, List[Tree]]:
+
+
+
+def prepare_bootstrap_trees_nj(distance_matrix: np.ndarray,
+                               names: [None, List[str]] = None,
+                               iteration: int = 10,
+                               n_threads: int = 4) -> Tuple[Tree, List[Tree]]:
     """
     Makes bootstrap trees in parallel from a provided distance matrix.
 
@@ -125,7 +142,21 @@ def prepare_bootstrap_trees(distance_matrix: np.ndarray,
     tree: Tree = build_nj_tree_from_distance_matrix(distance_matrix, names)
     names = np.array(names)
     p: Pool = Pool(n_threads)
-    other_trees: List[Tree] = list(p.map(make_tree_parallel, [(distance_matrix, names) for _ in range(iteration)]))
+    other_trees: List[Tree] = list(p.map(make_tree_parallel_nj, [(distance_matrix, names) for _ in range(iteration)]))
+    return tree.root, other_trees
+
+
+def prepare_bootstrap_trees_agg(data_array: np.ndarray,
+                                names: [None, List[str]] = None,
+                                iteration: int = 10,
+                                linkage: str = "ward") -> Tuple[Tree, List[Tree]]:
+    if names is None:
+        names = [str(x) for x in range(data_array.shape[0])]
+    hc = agg()
+    hc.fit(data_array)
+    tree: Tree = Tree.from_sklearn(hc, names)
+    names = np.array(names)
+    other_trees: List[Tree] = [make_tree_parallel_agg((data_array, names)) for _ in range(iteration)]
     return tree.root, other_trees
 
 
@@ -155,8 +186,8 @@ def main():
     from sklearn.metrics import pairwise_distances
     import matplotlib.pyplot as plt
     data = np.random.random_sample(size=(10, 5))
-    distance_matrix = pairwise_distances(data, metric="euclidean")
-    nj_tree, other_nj_trees = prepare_bootstrap_trees(distance_matrix, iteration=100)
+    # distance_matrix = pairwise_distances(data, metric="euclidean")
+    nj_tree, other_nj_trees = prepare_bootstrap_trees_agg(data, iteration=100)
     nj_tree.bootstrap(other_nj_trees)
 
     print("-"*10)
