@@ -157,7 +157,7 @@ def prepare_bootstrap_trees_agg(data_array: np.ndarray,
     tree: Tree = Tree.from_sklearn(hc, names)
     names = np.array(names)
     p: Pool = Pool(n_threads)
-    other_trees: List[Tree] = list(p.map(make_tree_parallel_nj, [(data_array, names) for _ in range(iteration)]))
+    other_trees: List[Tree] = list(p.map(make_tree_parallel_agg, [(data_array, names) for _ in range(iteration)]))
     return tree.root, other_trees
 
 
