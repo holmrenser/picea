@@ -107,6 +107,7 @@ def make_tree_parallel_nj(distance_matrix_and_names_tuple: Tuple[np.ndarray, np.
     return build_nj_tree_from_distance_matrix(distance_matrix_and_names_tuple[0][selected_ids, :][:, selected_ids],
                                               list(distance_matrix_and_names_tuple[1][selected_ids])).root
 
+
 def make_tree_parallel_agg(data_and_names_tuple: Tuple[np.ndarray, np.ndarray]) -> Tree:
     """
     Nj tree is made from random sampling with replacement from the distance matrix.
@@ -120,8 +121,6 @@ def make_tree_parallel_agg(data_and_names_tuple: Tuple[np.ndarray, np.ndarray]) 
     hc = agg()
     hc.fit(data_and_names_tuple[0][selected_ids])
     return Tree.from_sklearn(hc, names=data_and_names_tuple[1][selected_ids])
-
-
 
 
 def prepare_bootstrap_trees_nj(distance_matrix: np.ndarray,
@@ -149,14 +148,16 @@ def prepare_bootstrap_trees_nj(distance_matrix: np.ndarray,
 def prepare_bootstrap_trees_agg(data_array: np.ndarray,
                                 names: [None, List[str]] = None,
                                 iteration: int = 10,
-                                linkage: str = "ward") -> Tuple[Tree, List[Tree]]:
+                                n_threads: int = 4,
+                                linkage: str = "average") -> Tuple[Tree, List[Tree]]:
     if names is None:
         names = [str(x) for x in range(data_array.shape[0])]
-    hc = agg()
+    hc = agg(linkage=linkage)
     hc.fit(data_array)
     tree: Tree = Tree.from_sklearn(hc, names)
     names = np.array(names)
-    other_trees: List[Tree] = [make_tree_parallel_agg((data_array, names)) for _ in range(iteration)]
+    p: Pool = Pool(n_threads)
+    other_trees: List[Tree] = list(p.map(make_tree_parallel_nj, [(data_array, names) for _ in range(iteration)]))
     return tree.root, other_trees
 
 
