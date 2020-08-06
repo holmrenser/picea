@@ -1,10 +1,13 @@
 import re
 from typing import \
-    Iterable, Callable, List, Optional, Generator, Dict, Union, Tuple
+    Iterable, Callable, List, Optional, Generator, Dict, Union, Tuple, Type
+from enum import Enum
 import json
 from dataclasses import dataclass, field, InitVar, asdict
 from collections import defaultdict
 from matplotlib import pyplot as plt
+from matplotlib.axes import SubplotBase
+import numpy as np
 
 TreeDict = Dict[str, Union[str, int, float, List[Optional['TreeDict']]]]
 
@@ -384,62 +387,153 @@ class TwoDCoordinate():
     x: float = 0.0
     y: float = 0.0
 
+    def __iter__(self):
+        yield from (self.x, self.y)
+
+    def to_polar(self):
+        return TwoDCoordinate(
+            x=self.x * np.cos(self.y),
+            y=self.x * np.sin(self.y)
+        )
+
+    def to_cartesian(self):
+        return TwoDCoordinate(
+            x=np.sqrt(self.x ** 2 + self.y ** 2),
+            y=np.arctan2(self.y, self.x)
+        )
+
+
+@dataclass
+class TreeLayout():
+    style: str = 'square'
+    ltr: bool = True
+
+    def __post_init__(self):
+        self.coords = defaultdict(TwoDCoordinate)
+
+    def calculate_layout(self, tree: Tree) -> None:
+        previous_node = None
+        y = 0
+        separation = equal_separation
+        for node in tree.depth_first(post_order=True):
+            node_coords = self.coords[node.ID]
+            if node.children:
+                child_x_coords, child_y_coords = zip(
+                    *(self.coords[c.ID] for c in node.children)
+                )
+                node_coords.y = sum(child_y_coords) \
+                    / len(node.children)
+                if self.ltr:
+                    node_coords.x = 1 + max(child_x_coords)
+                else:
+                    node_coords.x = min(child_x_coords) - 1
+            else:
+                if previous_node:
+                    y += separation(node, previous_node)
+                    self.coords[node.ID].y = y
+                else:
+                    self.coords[node.ID].y = 0
+                self.coords[node.ID].x = 0
+                previous_node = node
+
+        for node in tree.depth_first(post_order=True):
+            self.coords[node.ID].x = \
+                (self.coords[tree.ID].x - self.coords[node.ID].x) * 1.0
+            self.coords[node.ID].y = \
+                (self.coords[node.ID].y - self.coords[tree.ID].y) * 1.0
+
+        if self.style == 'radial':
+            for node_id in self.coords.keys():
+                self.coords[node_id] = self.coords[node_id].to_polar()
+
+
+Ax = Type[SubplotBase]
+TreeStyle = Enum('TreeStyle', 'square')
+
 
 def treeplot(
     tree: Tree,
-    separation: Callable = equal_separation,
-    d_x: float = 1.0,
-    d_y: float = 1.0,
+    style: TreeStyle = TreeStyle.square,
     ltr: bool = True,
-    ax: Optional[Callable] = None
+    ax: Optional[Ax] = None
 ):
-    coords = defaultdict(TwoDCoordinate)
-    previous_node = None
-    y = 0
-    for node in tree.depth_first(post_order=True):
-        if node.children:
-            coords[node.ID].y = sum([coords[c.ID].y for c in node.children]) \
-                / len(node.children)
-            if ltr:
-                coords[node.ID].x = 1 + max([
-                    coords[c.ID].x for c in node.children
-                ])
-            else:
-                coords[node.ID].x = min([
-                    coords[c.ID].x for c in node.children
-                ]) - 1
-        else:
-            if previous_node:
-                y += separation(node, previous_node)
-                coords[node.ID].y = y
-            else:
-                coords[node.ID].y = 0
-            coords[node.ID].x = 0
-            previous_node = node
-
-    for node in tree.depth_first(post_order=True):
-        coords[node.ID].x = (coords[tree.ID].x - coords[node.ID].x) * d_x
-        coords[node.ID].y = (coords[node.ID].y - coords[tree.ID].y) * d_y
+    layout = TreeLayout(style=style, ltr=ltr)
+    layout.calculate_layout(tree)
 
     if not ax:
-        fig, ax = plt.subplots(figsize=(5, 5))
+        fig, ax = plt.subplots(figsize=(6, 6))
 
     for node1, node2 in tree.links:
-        ax.plot(
-            (coords[node1.ID].x, coords[node2.ID].x),
-            (coords[node1.ID].y, coords[node2.ID].y),
-            c='k'
-        )
+        node1_x, node1_y = layout.coords[node1.ID]
+        node2_x, node2_y = layout.coords[node2.ID]
+        if style == 'square':
+            ax.plot(
+                (node1_x, node1_x),
+                (node1_y, node2_y),
+                c='k'
+            )
+            ax.plot(
+                (node1_x, node2_x),
+                (node2_y, node2_y),
+                c='k'
+            )
+        elif style == 'radial':
+            if node2.root == node1:
+                ax.plot(
+                    (node1_x, node2_x),
+                    (node1_y, node2_y),
+                    c='k'
+                )
+            else:
+                corner = TwoDCoordinate(
+                    x=layout.coords[node2.ID].to_cartesian().x,
+                    y=layout.coords[node1.ID].to_cartesian().y
+                ).to_polar()
+                ax.plot(
+                    (node1_x, corner.x),
+                    (node1_y, corner.y),
+                    c='k'
+                )
+                ax.plot(
+                    (corner.x, node2_x),
+                    (corner.x, node2_y),
+                    c='k'
+                )
+        else:
+            ax.plot(
+                (node1_x, node2_x),
+                (node1_y, node2_y),
+                c='k'
+            )
+
+    for node in tree.nodes:
+        ax.scatter(*layout.coords[node.ID], c='k')
+
     for leaf in tree.leaves:
+        leaf_coords = layout.coords[leaf.ID]
+        if style == 'radial':
+            pass
+            #polar_coords = leaf_coords.to_polar()
+            #polar_coords.y -= 0  # .1
+            #leaf_coords = polar_coords.to_cartesian()
+        else:
+            leaf_coords.x += .1
+            leaf_coords.y -= .1
         ax.text(
-            coords[leaf.ID].x + .1,
-            coords[leaf.ID].y - .1,
+            leaf_coords.x,
+            leaf_coords.y,
             leaf.name,
             fontsize=18,
             in_layout=True,
             clip_on=True
         )
+
     ax.set_xticks(())
+    xmin, xmax = ax.get_xlim()
+    if style != 'circular':
+        ax.set_xlim((0.8 * xmin, 1.2 * xmax))
+
     ax.set_yticks(())
-    fig.tight_layout()
+    ax.set_ylim((-4, 4))
+
     return ax
