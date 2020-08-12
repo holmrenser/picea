@@ -146,12 +146,12 @@ def prepare_bootstrap_trees_nj(distance_matrix: np.ndarray,
     names = np.array(names)
 
     if n_threads == 1:
-        other_trees = [make_tree_parallel_nj((distance_matrix, names)) for _ in range(iteration)]
+        other_trees = [make_tree_parallel_nj(distance_matrix, names) for _ in range(iteration)]
     else:
         ray.init(num_cpus=n_threads)
         names_ray = ray.put(names)
         distance_matrix_ray = ray.put(distance_matrix)
-        other_trees: List[Tree] = ray.get([make_tree_parallel_nj(distance_matrix_ray, names_ray) for _ in range(iteration)])
+        other_trees: List[Tree] = ray.get([make_tree_parallel_nj.remote(distance_matrix_ray, names_ray) for _ in range(iteration)])
         ray.shutdown()
     return tree.root, other_trees
 
@@ -168,13 +168,13 @@ def prepare_bootstrap_trees_agg(data_array: np.ndarray,
     tree: Tree = Tree.from_sklearn(hc, names)
     names = np.array(names)
     if n_threads == 1:
-        other_trees: List[Tree] = [make_tree_parallel_agg((data_array, names)) for _ in range(iteration)]
+        other_trees: List[Tree] = [make_tree_parallel_agg.remote(data_array, names) for _ in range(iteration)]
     else:
         ray.init(num_cpus=n_threads)
         names_ray = ray.put(names)
         data_ray = ray.put(data_array)
         other_trees: List[Tree] = ray.get(
-            [make_tree_parallel_agg(data_ray, names_ray) for _ in range(iteration)])
+            [make_tree_parallel_agg.remote(data_ray, names_ray) for _ in range(iteration)])
         ray.shutdown()
     return tree.root, other_trees
 
