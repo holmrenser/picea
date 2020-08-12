@@ -1,4 +1,6 @@
 numpy
 matplotlib
+ray
+scikit-learn
 picea
 dataclasses
