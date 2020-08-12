@@ -126,7 +126,7 @@ def make_tree_parallel_agg(data_and_names_tuple: Tuple[np.ndarray, np.ndarray]) 
 def prepare_bootstrap_trees_nj(distance_matrix: np.ndarray,
                                names: [None, List[str]] = None,
                                iteration: int = 10,
-                               n_threads: int = 4) -> Tuple[Tree, List[Tree]]:
+                               n_threads: int = 1) -> Tuple[Tree, List[Tree]]:
     """
     Makes bootstrap trees in parallel from a provided distance matrix.
 
@@ -140,15 +140,20 @@ def prepare_bootstrap_trees_nj(distance_matrix: np.ndarray,
         names = [str(x) for x in range(distance_matrix.shape[0])]
     tree: Tree = build_nj_tree_from_distance_matrix(distance_matrix, names)
     names = np.array(names)
-    p: Pool = Pool(n_threads)
-    other_trees: List[Tree] = list(p.map(make_tree_parallel_nj, [(distance_matrix, names) for _ in range(iteration)]))
+
+    if n_threads == 1:
+        other_trees = [make_tree_parallel_nj((distance_matrix, names)) for _ in range(iteration)]
+    else:
+        p: Pool = Pool(n_threads)
+        other_trees: List[Tree] = list(p.map(make_tree_parallel_nj,
+                                             [(distance_matrix, names) for _ in range(iteration)]))
     return tree.root, other_trees
 
 
 def prepare_bootstrap_trees_agg(data_array: np.ndarray,
                                 names: [None, List[str]] = None,
                                 iteration: int = 10,
-                                n_threads: int = 4,
+                                n_threads: int = 1,
                                 linkage: str = "average") -> Tuple[Tree, List[Tree]]:
     if names is None:
         names = [str(x) for x in range(data_array.shape[0])]
@@ -156,8 +161,11 @@ def prepare_bootstrap_trees_agg(data_array: np.ndarray,
     hc.fit(data_array)
     tree: Tree = Tree.from_sklearn(hc, names)
     names = np.array(names)
-    p: Pool = Pool(n_threads)
-    other_trees: List[Tree] = list(p.map(make_tree_parallel_agg, [(data_array, names) for _ in range(iteration)]))
+    if n_threads == 1:
+        other_trees: List[Tree] = [make_tree_parallel_agg((data_array, names)) for _ in range(iteration)]
+    else:
+        p: Pool = Pool(n_threads)
+        other_trees: List[Tree] = list(p.map(make_tree_parallel_agg, [(data_array, names) for _ in range(iteration)]))
     return tree.root, other_trees
 
 
