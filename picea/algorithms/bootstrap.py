@@ -144,11 +144,13 @@ def prepare_bootstrap_trees_nj(distance_matrix: np.ndarray,
         names = [str(x) for x in range(distance_matrix.shape[0])]
     tree: Tree = build_nj_tree_from_distance_matrix(distance_matrix, names)
     names = np.array(names)
+
     ray.init(num_cpus=n_threads)
     names_ray = ray.put(names)
     distance_matrix_ray = ray.put(distance_matrix)
     other_trees: List[Tree] = ray.get([make_tree_parallel_nj.remote(distance_matrix_ray, names_ray) for _ in range(iteration)])
     ray.shutdown()
+
     return tree.root, other_trees
 
 
