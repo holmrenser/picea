@@ -1,6 +1,8 @@
 import re
-from typing import \
-    Iterable, Callable, List, Optional, Generator, Dict, Union, Tuple, Type
+from typing import (
+    Iterable, Callable, List, Optional, Generator, Dict, Union, Tuple, Type,
+    DefaultDict,
+)
 from enum import Enum
 import json
 from dataclasses import dataclass, field, InitVar, asdict
@@ -411,7 +413,12 @@ class TreeLayout():
     def __post_init__(self):
         self.coords = defaultdict(TwoDCoordinate)
 
-    def calculate_layout(self, tree: Tree) -> None:
+    def calculate_layout(self, tree: Tree) -> 'TreeLayout':
+        """[summary]
+
+        Returns:
+            [TreeLayout]: Returns self
+        """
         previous_node = None
         y = 0
         separation = equal_separation
@@ -445,10 +452,64 @@ class TreeLayout():
         if self.style == 'radial':
             for node_id in self.coords.keys():
                 self.coords[node_id] = self.coords[node_id].to_polar()
+        return self
 
 
 Ax = Type[SubplotBase]
 TreeStyle = Enum('TreeStyle', 'square')
+
+
+def calculate_tree_layout(
+    tree: Tree,
+    style: TreeStyle = TreeStyle.square,
+    ltr: bool = True,
+) -> DefaultDict[int, TwoDCoordinate]:
+    """[summary]
+
+    Args:
+        tree (Tree): [description]
+        style (Treestyle, optional): [description]. Defaults to \
+            Treestyle.square.
+        ltr (bool, optional): [description]. Defaults to True.
+
+    Returns:
+        DefaultDict[int, TwoDCoordinate]: [description]
+    """
+    layout = defaultdict(TwoDCoordinate)
+    previous_node = None
+    y = 0
+    separation = equal_separation
+    for node in tree.depth_first(post_order=True):
+        node_coords = layout[node.ID]
+        if node.children:
+            child_x_coords, child_y_coords = zip(
+                *(layout[c.ID] for c in node.children)
+            )
+            node_coords.y = sum(child_y_coords) \
+                / len(node.children)
+            if ltr:
+                node_coords.x = 1 + max(child_x_coords)
+            else:
+                node_coords.x = min(child_x_coords) - 1
+        else:
+            if previous_node:
+                y += separation(node, previous_node)
+                layout[node.ID].y = y
+            else:
+                layout[node.ID].y = 0
+            layout[node.ID].x = 0
+            previous_node = node
+
+    for node in tree.depth_first(post_order=True):
+        layout[node.ID].x = \
+            (layout[tree.ID].x - layout[node.ID].x) * 1.0
+        layout[node.ID].y = \
+            (layout[node.ID].y - layout[tree.ID].y) * 1.0
+
+    if style == 'radial':
+        for node_id in layout.keys():
+            layout[node_id] = layout[node_id].to_polar()
+    return layout
 
 
 def treeplot(
@@ -457,15 +518,15 @@ def treeplot(
     ltr: bool = True,
     ax: Optional[Ax] = None
 ):
-    layout = TreeLayout(style=style, ltr=ltr)
-    layout.calculate_layout(tree)
+    layout = calculate_tree_layout(tree=tree, style=style, ltr=ltr)
+    # layout.calculate_layout(tree)
 
     if not ax:
         fig, ax = plt.subplots(figsize=(6, 6))
 
     for node1, node2 in tree.links:
-        node1_x, node1_y = layout.coords[node1.ID]
-        node2_x, node2_y = layout.coords[node2.ID]
+        node1_x, node1_y = layout[node1.ID]
+        node2_x, node2_y = layout[node2.ID]
         if style == 'square':
             ax.plot(
                 (node1_x, node1_x),
@@ -486,8 +547,8 @@ def treeplot(
                 )
             else:
                 corner = TwoDCoordinate(
-                    x=layout.coords[node2.ID].to_cartesian().x,
-                    y=layout.coords[node1.ID].to_cartesian().y
+                    x=layout[node2.ID].to_cartesian().x,
+                    y=layout[node1.ID].to_cartesian().y
                 ).to_polar()
                 ax.plot(
                     (node1_x, corner.x),
@@ -507,15 +568,15 @@ def treeplot(
             )
 
     for node in tree.nodes:
-        ax.scatter(*layout.coords[node.ID], c='k')
+        ax.scatter(*layout[node.ID], c='k')
 
     for leaf in tree.leaves:
-        leaf_coords = layout.coords[leaf.ID]
+        leaf_coords = layout[leaf.ID]
         if style == 'radial':
             pass
-            #polar_coords = leaf_coords.to_polar()
-            #polar_coords.y -= 0  # .1
-            #leaf_coords = polar_coords.to_cartesian()
+            # polar_coords = leaf_coords.to_polar()
+            # polar_coords.y -= 0  # .1
+            # leaf_coords = polar_coords.to_cartesian()
         else:
             leaf_coords.x += .1
             leaf_coords.y -= .1
