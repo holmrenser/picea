@@ -335,7 +335,7 @@
 <div class='mkapi-object-container'>
   <div class="mkapi-object dataclass code top">
     <div class="mkapi-object-kind dataclass top">dataclass</div>
-    <div class="mkapi-object-body dataclass top"><code class="mkapi-object-prefix">picea.sequence.</code><code class="mkapi-object-name">Sequence</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">header=None</code>, <code class="mkapi-object-signature">sequence=None</code>, <code class="mkapi-object-signature">alphabet=None</code><code class="mkapi-object-parenthesis">)</code></div>
+    <div class="mkapi-object-body dataclass top"><code class="mkapi-object-prefix">picea.sequence.</code><code class="mkapi-object-name">Sequence</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">header=None</code>, <code class="mkapi-object-signature">sequence=None</code>, <code class="mkapi-object-signature">alphabet=None</code>, <code class="mkapi-object-signature">annotation=&lt;factory&gt;</code><code class="mkapi-object-parenthesis">)</code></div>
   </div>
   
 </div>
@@ -1140,7 +1140,7 @@ and serves as a template only</span></li>
 <div class='mkapi-object-container'>
   <div class="mkapi-object class code top">
     <div class="mkapi-object-kind class top">class</div>
-    <div class="mkapi-object-body class top"><code class="mkapi-object-prefix">picea.sequence.</code><code class="mkapi-object-name">SequenceAnnotation</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">sequence_collection=None</code><code class="mkapi-object-parenthesis">)</code></div>
+    <div class="mkapi-object-body class top"><code class="mkapi-object-prefix">picea.sequence.</code><code class="mkapi-object-name">SequenceAnnotation</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">sequence=None</code><code class="mkapi-object-parenthesis">)</code></div>
   </div>
   
 </div>
@@ -1153,9 +1153,9 @@ and serves as a template only</span></li>
           <span class="mkapi-section-name-body parameters">Parameters</span> 
         </div>
       <div class="mkapi-section-body parameters"><ul class="mkapi-items">
-<li><code class="mkapi-item-name">sequence_collection</code>
-<span class="mkapi-item-type">(Optional['SequenceCollection'])</span>
-<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[description]. Defaults to None.</span></li>
+<li><code class="mkapi-item-name">sequence</code>
+<span class="mkapi-item-type">(Optional[Sequence], optional)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[description]. Defaults                 to None.</span></li>
 
 
 </ul></div>
@@ -1165,11 +1165,11 @@ and serves as a template only</span></li>
           <span class="mkapi-section-name-body methods">Methods</span> 
         </div>
       <div class="mkapi-section-body methods"><ul class="mkapi-items">
-<li class="classmethod"><code class="mkapi-item-name"><a href="#picea.sequence.SequenceAnnotation.from_gff">from_gff</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">filename</code>, <code class="mkapi-object-signature">string</code>, <code class="mkapi-object-signature">sequence_collection</code><code class="mkapi-object-parenthesis">)</code>
+<li class="classmethod"><code class="mkapi-item-name"><a href="#picea.sequence.SequenceAnnotation.from_gff">from_gff</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">filename</code>, <code class="mkapi-object-signature">string</code>, <code class="mkapi-object-signature">sequence</code><code class="mkapi-object-parenthesis">)</code>
 <span class="mkapi-item-type">([type])</span>
 <span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[summary]</span></li>
 
-<li class="classmethod"><code class="mkapi-item-name"><a href="#picea.sequence.SequenceAnnotation.from_json">from_json</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">filename</code>, <code class="mkapi-object-signature">string</code>, <code class="mkapi-object-signature">sequence_collection</code><code class="mkapi-object-parenthesis">)</code>
+<li class="classmethod"><code class="mkapi-item-name"><a href="#picea.sequence.SequenceAnnotation.from_json">from_json</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">filename</code>, <code class="mkapi-object-signature">string</code>, <code class="mkapi-object-signature">sequence</code><code class="mkapi-object-parenthesis">)</code>
 <span class="mkapi-item-type">(SequenceAnnotation)</span>
 <span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[summary]</span></li>
 
@@ -1193,7 +1193,7 @@ and serves as a template only</span></li>
 <div class='mkapi-object-container'>
   <div class="mkapi-object classmethod code">
     <div class="mkapi-object-kind classmethod">classmethod</div>
-    <div class="mkapi-object-body classmethod"><code class="mkapi-object-name">from_gff</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">filename=None</code>, <code class="mkapi-object-signature">string=None</code>, <code class="mkapi-object-signature">sequence_collection=None</code><code class="mkapi-object-parenthesis">)</code></div>
+    <div class="mkapi-object-body classmethod"><code class="mkapi-object-name">from_gff</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">filename=None</code>, <code class="mkapi-object-signature">string=None</code>, <code class="mkapi-object-signature">sequence=None</code><code class="mkapi-object-parenthesis">)</code></div>
   </div>
   
 </div>
@@ -1214,7 +1214,7 @@ and serves as a template only</span></li>
 <span class="mkapi-item-type">([type], optional)</span>
 <span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[description]. Defaults to None.</span></li>
 
-<li><code class="mkapi-item-name">sequence_collection</code>
+<li><code class="mkapi-item-name">sequence</code>
 <span class="mkapi-item-type">([type], optional)</span>
 <span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[description].
 Defaults to None.</span></li>
@@ -1262,7 +1262,7 @@ Defaults to None.</span></li>
 <div class='mkapi-object-container'>
   <div class="mkapi-object classmethod code">
     <div class="mkapi-object-kind classmethod">classmethod</div>
-    <div class="mkapi-object-body classmethod"><code class="mkapi-object-name">from_json</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">filename=None</code>, <code class="mkapi-object-signature">string=None</code>, <code class="mkapi-object-signature">sequence_collection=None</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; SequenceAnnotation</span></div>
+    <div class="mkapi-object-body classmethod"><code class="mkapi-object-name">from_json</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">filename=None</code>, <code class="mkapi-object-signature">string=None</code>, <code class="mkapi-object-signature">sequence=None</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; SequenceAnnotation</span></div>
   </div>
   
 </div>
