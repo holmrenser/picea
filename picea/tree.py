@@ -516,10 +516,11 @@ def treeplot(
     tree: Tree,
     style: TreeStyle = TreeStyle.square,
     ltr: bool = True,
+    node_labels: bool = True,
+    leaf_labels: bool = True,
     ax: Optional[Ax] = None
 ):
     layout = calculate_tree_layout(tree=tree, style=style, ltr=ltr)
-    # layout.calculate_layout(tree)
 
     if not ax:
         fig, ax = plt.subplots(figsize=(6, 6))
@@ -527,6 +528,13 @@ def treeplot(
     for node1, node2 in tree.links:
         node1_x, node1_y = layout[node1.ID]
         node2_x, node2_y = layout[node2.ID]
+        if node_labels:
+            ax.text(
+                node1_x + .1,
+                node1_y - .2,
+                node1.name,
+                fontsize=8
+            )
         if style == 'square':
             ax.plot(
                 (node1_x, node1_x),
@@ -595,6 +603,6 @@ def treeplot(
         ax.set_xlim((0.8 * xmin, 1.2 * xmax))
 
     ax.set_yticks(())
-    ax.set_ylim((-4, 4))
+    # ax.set_ylim((-4, 4))
 
     return ax
