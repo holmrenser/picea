@@ -738,7 +738,7 @@ class SequenceCollection(metaclass=ABCMeta):
         Returns:
             List[str]: list of sequences
         """
-        return [self[header] for header in self.headers]
+        return [self[header].sequence for header in self.headers]
 
     @abstractproperty
     def n_seqs(self) -> int:

@@ -405,56 +405,6 @@ class TwoDCoordinate():
         )
 
 
-@dataclass
-class TreeLayout():
-    style: str = 'square'
-    ltr: bool = True
-
-    def __post_init__(self):
-        self.coords = defaultdict(TwoDCoordinate)
-
-    def calculate_layout(self, tree: Tree) -> 'TreeLayout':
-        """[summary]
-
-        Returns:
-            [TreeLayout]: Returns self
-        """
-        previous_node = None
-        y = 0
-        separation = equal_separation
-        for node in tree.depth_first(post_order=True):
-            node_coords = self.coords[node.ID]
-            if node.children:
-                child_x_coords, child_y_coords = zip(
-                    *(self.coords[c.ID] for c in node.children)
-                )
-                node_coords.y = sum(child_y_coords) \
-                    / len(node.children)
-                if self.ltr:
-                    node_coords.x = 1 + max(child_x_coords)
-                else:
-                    node_coords.x = min(child_x_coords) - 1
-            else:
-                if previous_node:
-                    y += separation(node, previous_node)
-                    self.coords[node.ID].y = y
-                else:
-                    self.coords[node.ID].y = 0
-                self.coords[node.ID].x = 0
-                previous_node = node
-
-        for node in tree.depth_first(post_order=True):
-            self.coords[node.ID].x = \
-                (self.coords[tree.ID].x - self.coords[node.ID].x) * 1.0
-            self.coords[node.ID].y = \
-                (self.coords[node.ID].y - self.coords[tree.ID].y) * 1.0
-
-        if self.style == 'radial':
-            for node_id in self.coords.keys():
-                self.coords[node_id] = self.coords[node_id].to_polar()
-        return self
-
-
 Ax = Type[SubplotBase]
 TreeStyle = Enum('TreeStyle', 'square')
 
