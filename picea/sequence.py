@@ -138,7 +138,10 @@ class SequenceAnnotation:
         self._intervals[key] = value
 
     def __iter__(self):
-        yield from self._intervals.values()
+        try:
+            yield from self._intervals.values()
+        except StopIteration:
+            return
 
     @property
     def intervals(self):
@@ -644,7 +647,10 @@ alphabet=Alphabet(name='DNA', members='-?ACGNT'))
         Yields:
             Iterable[Sequence]: [description]
         """
-        yield from self._iter()
+        try:
+            yield from self._iter()
+        except StopIteration:
+            return
 
     def __next__(self) -> Sequence:
         """Next header and sequence in the iterator
