@@ -543,12 +543,20 @@ and serves as a template only</span></li>
           <span class="mkapi-section-name-body methods">Methods</span> 
         </div>
       <div class="mkapi-section-body methods"><ul class="mkapi-items">
+<li class="method"><code class="mkapi-item-name"><a href="#picea.sequence.SequenceCollection.batch_rename">batch_rename</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">rename_func</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[summary]</span></li>
+
 <li class="classmethod"><code class="mkapi-item-name"><a href="#picea.sequence.SequenceCollection.from_fasta">from_fasta</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">filename</code>, <code class="mkapi-object-signature">string</code><code class="mkapi-object-parenthesis">)</code>
 <span class="mkapi-item-type">(SequenceCollection)</span>
 <span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Parse a fasta formatted string into a SequenceCollection object</span></li>
 
 <li class="classmethod"><code class="mkapi-item-name"><a href="#picea.sequence.SequenceCollection.from_json">from_json</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">filename</code>, <code class="mkapi-object-signature">string</code><code class="mkapi-object-parenthesis">)</code>
 <span class="mkapi-item-type">(SequenceCollection)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[summary]</span></li>
+
+<li class="abstract-method"><code class="mkapi-item-name"><a href="#picea.sequence.SequenceCollection.pop">pop</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">header</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Sequence)</span>
 <span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[summary]</span></li>
 
 <li class="method"><code class="mkapi-item-name"><a href="#picea.sequence.SequenceCollection.to_fasta">to_fasta</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code>
@@ -661,6 +669,72 @@ and serves as a template only</span></li>
           <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(str)</span>
         </div>
       <div class="mkapi-section-body returns"><p>[description]</p></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="picea.sequence.SequenceCollection.pop">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object abstract-method code">
+    <div class="mkapi-object-kind abstract-method">abstract method</div>
+    <div class="mkapi-object-body abstract-method"><code class="mkapi-object-name">pop</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">header</code><code class="mkapi-object-parenthesis">)</code></div>
+  </div>
+  
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>[summary]</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">header</code>
+<span class="mkapi-item-type">(str)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[description]</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Sequence)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>[description]</p></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="picea.sequence.SequenceCollection.batch_rename">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object method code">
+    <div class="mkapi-object-kind method">method</div>
+    <div class="mkapi-object-body method"><code class="mkapi-object-name">batch_rename</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">rename_func</code><code class="mkapi-object-parenthesis">)</code></div>
+  </div>
+  
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>[summary]</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">rename_func</code>
+<span class="mkapi-item-type">(Callable)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[description]</span></li>
+
+
+</ul></div>
     </div>
   </div>
 
@@ -731,12 +805,20 @@ and serves as a template only</span></li>
 <span class="mkapi-item-type">([type])</span>
 <span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[summary]</span></li>
 
+<li class="method"><code class="mkapi-item-name"><a href="#picea.sequence.SequenceCollection.batch_rename">batch_rename</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">rename_func</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[summary]</span></li>
+
 <li class="classmethod"><code class="mkapi-item-name"><a href="#picea.sequence.SequenceCollection.from_fasta">from_fasta</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">filename</code>, <code class="mkapi-object-signature">string</code><code class="mkapi-object-parenthesis">)</code>
 <span class="mkapi-item-type">(SequenceCollection)</span>
 <span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Parse a fasta formatted string into a SequenceCollection object</span></li>
 
 <li class="classmethod"><code class="mkapi-item-name"><a href="#picea.sequence.SequenceCollection.from_json">from_json</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">filename</code>, <code class="mkapi-object-signature">string</code><code class="mkapi-object-parenthesis">)</code>
 <span class="mkapi-item-type">(SequenceCollection)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[summary]</span></li>
+
+<li class="method"><code class="mkapi-item-name"><a href="#picea.sequence.SequenceList.pop">pop</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">header</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Sequence)</span>
 <span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[summary]</span></li>
 
 <li class="method"><code class="mkapi-item-name"><a href="#picea.sequence.SequenceCollection.to_fasta">to_fasta</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code>
@@ -856,6 +938,36 @@ and serves as a template only</span></li>
     </div>
   
     <div class="mkapi-member">
+      <div class="mkapi-node" id="picea.sequence.SequenceCollection.batch_rename">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object method code">
+    <div class="mkapi-object-kind method">method</div>
+    <div class="mkapi-object-body method"><code class="mkapi-object-name">batch_rename</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">rename_func</code><code class="mkapi-object-parenthesis">)</code></div>
+  </div>
+  
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>[summary]</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">rename_func</code>
+<span class="mkapi-item-type">(Callable)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[description]</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+    <div class="mkapi-member">
       <div class="mkapi-node" id="picea.sequence.SequenceList.align">
 <div class='mkapi-object-container'>
   <div class="mkapi-object method code">
@@ -887,6 +999,42 @@ and serves as a template only</span></li>
   <div class="mkapi-section returns">
       <div class="mkapi-section-name returns">
           <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">([type])</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>[description]</p></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="picea.sequence.SequenceList.pop">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object method code">
+    <div class="mkapi-object-kind method">method</div>
+    <div class="mkapi-object-body method"><code class="mkapi-object-name">pop</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">header</code><code class="mkapi-object-parenthesis">)</code></div>
+  </div>
+  
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>[summary]</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">header</code>
+<span class="mkapi-item-type">(str)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[description]</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Sequence)</span>
         </div>
       <div class="mkapi-section-body returns"><p>[description]</p></div>
     </div>
@@ -977,12 +1125,20 @@ and serves as a template only</span></li>
 
 <span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">WIP!</span></li>
 
+<li class="method"><code class="mkapi-item-name"><a href="#picea.sequence.SequenceCollection.batch_rename">batch_rename</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">rename_func</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[summary]</span></li>
+
 <li class="classmethod"><code class="mkapi-item-name"><a href="#picea.sequence.SequenceCollection.from_fasta">from_fasta</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">filename</code>, <code class="mkapi-object-signature">string</code><code class="mkapi-object-parenthesis">)</code>
 <span class="mkapi-item-type">(SequenceCollection)</span>
 <span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Parse a fasta formatted string into a SequenceCollection object</span></li>
 
 <li class="classmethod"><code class="mkapi-item-name"><a href="#picea.sequence.SequenceCollection.from_json">from_json</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">filename</code>, <code class="mkapi-object-signature">string</code><code class="mkapi-object-parenthesis">)</code>
 <span class="mkapi-item-type">(SequenceCollection)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[summary]</span></li>
+
+<li class="method"><code class="mkapi-item-name"><a href="#picea.sequence.MultipleSequenceAlignment.pop">pop</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">header</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(Sequence)</span>
 <span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[summary]</span></li>
 
 <li class="method"><code class="mkapi-item-name"><a href="#picea.sequence.SequenceCollection.to_fasta">to_fasta</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code>
@@ -1102,6 +1258,36 @@ and serves as a template only</span></li>
     </div>
   
     <div class="mkapi-member">
+      <div class="mkapi-node" id="picea.sequence.SequenceCollection.batch_rename">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object method code">
+    <div class="mkapi-object-kind method">method</div>
+    <div class="mkapi-object-body method"><code class="mkapi-object-name">batch_rename</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">rename_func</code><code class="mkapi-object-parenthesis">)</code></div>
+  </div>
+  
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>[summary]</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">rename_func</code>
+<span class="mkapi-item-type">(Callable)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[description]</span></li>
+
+
+</ul></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+    <div class="mkapi-member">
       <div class="mkapi-node" id="picea.sequence.MultipleSequenceAlignment.__delitem__">
 <div class='mkapi-object-container'>
   <div class="mkapi-object method code">
@@ -1125,6 +1311,42 @@ and serves as a template only</span></li>
 
 
 </ul></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="picea.sequence.MultipleSequenceAlignment.pop">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object method code">
+    <div class="mkapi-object-kind method">method</div>
+    <div class="mkapi-object-body method"><code class="mkapi-object-name">pop</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">header</code><code class="mkapi-object-parenthesis">)</code></div>
+  </div>
+  
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>[summary]</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">header</code>
+<span class="mkapi-item-type">(str)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[description]</span></li>
+
+
+</ul></div>
+    </div>
+  <div class="mkapi-section returns">
+      <div class="mkapi-section-name returns">
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Sequence)</span>
+        </div>
+      <div class="mkapi-section-body returns"><p>[description]</p></div>
     </div>
   </div>
 
