@@ -2,7 +2,7 @@ from warnings import warn
 from itertools import groupby, chain
 from subprocess import Popen, PIPE
 from collections import defaultdict
-from typing import Iterable, List, Tuple, Dict, Any, Optional
+from typing import Iterable, List, Tuple, Dict, Any, Optional, Callable
 from abc import ABCMeta, abstractmethod, abstractproperty
 import uuid
 import numpy as np
@@ -822,6 +822,29 @@ class SequenceCollection(metaclass=ABCMeta):
         gene_dicts = [seq.to_dict() for seq in self]
         return json.dumps(gene_dicts, indent=indent)
 
+    @abstractmethod
+    def pop(self, header: str) -> Sequence:
+        """[summary]
+
+        Args:
+            header (str): [description]
+
+        Returns:
+            Sequence: [description]
+        """
+        raise NotImplementedError()
+
+    def batch_rename(self, rename_func: Callable) -> None:
+        """[summary]
+
+        Args:
+            rename_func (Callable): [description]
+        """
+        for header in self.headers:
+            s: Sequence = self.pop(header)
+            s.header = rename_func(s.header)
+            self[s.header] = s.sequence
+
 
 class SequenceList(SequenceCollection):
     """
@@ -890,6 +913,10 @@ class SequenceList(SequenceCollection):
         stdout, stderr = process.communicate(input=fasta.encode())
         aligned_fasta = stdout.decode().strip()
         return MultipleSequenceAlignment.from_fasta(string=aligned_fasta)
+
+    def pop(self, header: str) -> Sequence:
+        sequence = self._collection.pop(header)
+        return Sequence(header, sequence)
 
 
 class MultipleSequenceAlignment(SequenceCollection):
@@ -972,6 +999,20 @@ class MultipleSequenceAlignment(SequenceCollection):
     @property
     def shape(self) -> int:
         return self._collection.shape
+
+    def pop(self, header: str) -> Sequence:
+        pop_idx = self._header_idx[header]
+        n_chars = self._collection.shape[1]
+        sequence = self._collection[pop_idx] \
+            .view(f'S{n_chars}')[0] \
+            .decode()
+        del self._header_idx[header]
+        self._header_idx = {
+            h: (idx if idx < pop_idx else idx - 1)
+            for h, idx in self._header_idx.items()
+        }
+        self._collection = np.delete(self._collection, (pop_idx,), axis=0)
+        return Sequence(header, sequence)
 
 
 def quote_gff3(attribute_value: str) -> str:

@@ -11,6 +11,7 @@ class SequenceTests(TestCase):
             '[{"header":"A","sequence":"ABC"},'
             '{"header":"B","sequence":"DEF"}]'
         )
+        self.rename_func = lambda x: f'{x}.test'
 
     def test_empty_init_sequencereader(self):
         self.assertRaises(AssertionError, SequenceReader)
@@ -77,3 +78,29 @@ class SequenceTests(TestCase):
     def test_sequence_iter_msa(self):
         for _ in MultipleSequenceAlignment.from_fasta(string=self.fasta):
             pass
+
+    def test_sequencelist_pop(self):
+        seq_list = SequenceList.from_fasta(string=self.fasta)
+        pop_seq = seq_list.pop('A')
+        self.assertEqual(pop_seq.header, 'A')
+        self.assertEqual(pop_seq.sequence, 'ABC')
+        self.assertNotIn('A', seq_list.headers)
+        self.assertNotIn('ABC', seq_list.sequences)
+
+    def test_msa_pop(self):
+        msa = MultipleSequenceAlignment.from_fasta(string=self.fasta)
+        pop_seq = msa.pop('A')
+        self.assertEqual(pop_seq.header, 'A')
+        self.assertEqual(pop_seq.sequence, 'ABC')
+        self.assertNotIn('A', msa.headers)
+        self.assertNotIn('ABC', msa.sequences)
+
+    def test_seqlist_batch_rename(self):
+        seq_list = SequenceList.from_fasta(string=self.fasta)
+        seq_list.batch_rename(self.rename_func)
+        self.assertEqual(seq_list.headers, ['A.test', 'B.test'])
+
+    def test_msa_batch_rename(self):
+        msa = MultipleSequenceAlignment.from_fasta(string=self.fasta)
+        msa.batch_rename(self.rename_func)
+        self.assertEqual(msa.headers, ['A.test', 'B.test'])
