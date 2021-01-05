@@ -1,9 +1,8 @@
 __author__ = 'Rens Holmer'
-__version__ = '0.0.18'
+__version__ = '0.0.19'
 
 from .tree import (  # noqa
     Tree,
-    # TreeLayout,
     calculate_tree_layout,
     treeplot,
 )
@@ -12,8 +11,8 @@ from .sequence import (  # noqa
     alphabets,
     Sequence,
     SequenceReader,
+    AbstractSequenceCollection,
     SequenceCollection,
-    SequenceList,
     MultipleSequenceAlignment,
     SequenceAnnotation,
     SequenceInterval,

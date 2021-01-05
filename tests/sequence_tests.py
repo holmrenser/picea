@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from picea import Sequence, SequenceReader, SequenceList,\
+from picea import Sequence, SequenceReader, SequenceCollection,\
     MultipleSequenceAlignment, alphabets
 
 
@@ -35,35 +35,35 @@ class SequenceTests(TestCase):
         s = Sequence('test', 'KUDHLSKJSPOIJKMSLKM')
         self.assertEqual(s.alphabet, alphabets.AminoAcid)
 
-    def test_empty_init_sequencelist(self):
-        SequenceList()
+    def test_empty_init_sequencecollection(self):
+        SequenceCollection()
 
     def test_empty_init_msa(self):
         MultipleSequenceAlignment()
 
-    def test_fasta_parsing_sequencelist(self):
-        SequenceList.from_fasta(string=self.fasta)
+    def test_fasta_parsing_sequencecollection(self):
+        SequenceCollection.from_fasta(string=self.fasta)
 
     def test_fasta_parsing_msa(self):
         MultipleSequenceAlignment.from_fasta(string=self.fasta)
 
-    def test_fasta_input_output_sequencelist(self):
-        seq = SequenceList.from_fasta(string=self.fasta)
+    def test_fasta_input_output_sequencecollection(self):
+        seq = SequenceCollection.from_fasta(string=self.fasta)
         self.assertEqual(seq.to_fasta(), self.fasta)
 
     def test_fasta_input_output_msa(self):
         seq = MultipleSequenceAlignment.from_fasta(string=self.fasta)
         self.assertEqual(seq.to_fasta(), self.fasta)
 
-    def test_json_parsing_sequencelist(self):
-        SequenceList.from_json(string=self.json)
+    def test_json_parsing_sequencecollection(self):
+        SequenceCollection.from_json(string=self.json)
 
     def test_json_parsing_msa(self):
         MultipleSequenceAlignment.from_json(string=self.json)
 
-    def test_trailing_newline_sequencelist(self):
+    def test_trailing_newline_sequencecollection(self):
         fasta = f'{self.fasta}\n'
-        seq = SequenceList.from_fasta(string=fasta)
+        seq = SequenceCollection.from_fasta(string=fasta)
         self.assertEqual(seq.to_fasta(), fasta[:-1])
 
     def test_trailing_newline_msa(self):
@@ -71,21 +71,21 @@ class SequenceTests(TestCase):
         seq = MultipleSequenceAlignment.from_fasta(string=fasta)
         self.assertEqual(seq.to_fasta(), fasta[:-1])
 
-    def test_sequence_iter_sequencelist(self):
-        for _ in SequenceList.from_fasta(string=self.fasta):
+    def test_sequence_iter_sequencecollection(self):
+        for _ in SequenceCollection.from_fasta(string=self.fasta):
             pass
 
     def test_sequence_iter_msa(self):
         for _ in MultipleSequenceAlignment.from_fasta(string=self.fasta):
             pass
 
-    def test_sequencelist_pop(self):
-        seq_list = SequenceList.from_fasta(string=self.fasta)
-        pop_seq = seq_list.pop('A')
+    def test_sequencecollection_pop(self):
+        seq_col = SequenceCollection.from_fasta(string=self.fasta)
+        pop_seq = seq_col.pop('A')
         self.assertEqual(pop_seq.header, 'A')
         self.assertEqual(pop_seq.sequence, 'ABC')
-        self.assertNotIn('A', seq_list.headers)
-        self.assertNotIn('ABC', seq_list.sequences)
+        self.assertNotIn('A', seq_col.headers)
+        self.assertNotIn('ABC', seq_col.sequences)
 
     def test_msa_pop(self):
         msa = MultipleSequenceAlignment.from_fasta(string=self.fasta)
@@ -95,10 +95,10 @@ class SequenceTests(TestCase):
         self.assertNotIn('A', msa.headers)
         self.assertNotIn('ABC', msa.sequences)
 
-    def test_seqlist_batch_rename(self):
-        seq_list = SequenceList.from_fasta(string=self.fasta)
-        seq_list.batch_rename(self.rename_func)
-        self.assertEqual(seq_list.headers, ['A.test', 'B.test'])
+    def test_seqcol_batch_rename(self):
+        seq_col = SequenceCollection.from_fasta(string=self.fasta)
+        seq_col.batch_rename(self.rename_func)
+        self.assertEqual(seq_col.headers, ['A.test', 'B.test'])
 
     def test_msa_batch_rename(self):
         msa = MultipleSequenceAlignment.from_fasta(string=self.fasta)

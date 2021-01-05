@@ -9,11 +9,11 @@
 ## Sequence
 ![mkapi](picea.Sequence)
 
+## AbstractSequenceCollection
+![mkapi](picea.AbstractSequenceCollection)
+
 ## SequenceCollection
 ![mkapi](picea.SequenceCollection)
-
-## SequenceList
-![mkapi](picea.SequenceList)
 
 ## MultipleSequenceAlignment
 ![mkapi](picea.MultipleSequenceAlignment)

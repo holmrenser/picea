@@ -9,45 +9,20 @@ from dataclasses import dataclass, field, InitVar, asdict
 from collections import defaultdict
 from matplotlib import pyplot as plt
 from matplotlib.axes import SubplotBase
+from matplotlib.patches import Arc
 import numpy as np
 
 TreeDict = Dict[str, Union[str, int, float, List[Optional['TreeDict']]]]
 
 
-def index_equals(
-    node: 'Tree',
-    index: int
-) -> bool:
-    """[summary]
-
-    Args:
-        node (Tree): [description]
-        index (int): [description]
-
-    Returns:
-        bool: [description]
-    """
-    return node.ID == index
-
-
-def name_equals(
-    node: 'Tree',
-    name: str
-) -> bool:
-    """[summary]
-
-    Args:
-        node (Tree): [description]
-        name (str): [description]
-
-    Returns:
-        bool: [description]
-    """
-    return node.name == name
-
-
 @dataclass
 class Tree:
+    """[summary]
+
+    Returns:
+        [type]: [description]
+    """
+
     name: Optional[str] = None
     length: float = 0.0
     children: Optional[List['Tree']] = field(default_factory=list)
@@ -58,6 +33,11 @@ class Tree:
     cumulative_length: InitVar[float] = 0.0
 
     def __post_init__(self, ID, *args, **kwargs):
+        """[summary]
+
+        Args:
+            ID ([type]): [description]
+        """
         self.ID = ID
 
     @property
@@ -77,7 +57,10 @@ class Tree:
         Raises:
             IndexError
         """
-        return TreeIndex(iterator=self.depth_first, eq_func=name_equals)
+        return TreeIndex(
+            iterator=self.depth_first,
+            eq_func=lambda node, name: node.name == name
+        )
 
     @property
     def iloc(self) -> 'Tree':
@@ -94,7 +77,10 @@ children=[]), Tree(name='b', length=0.0, children=[])])
         Returns:
             Tree: tree node matching index
         """
-        return TreeIndex(iterator=self.depth_first, eq_func=index_equals)
+        return TreeIndex(
+            iterator=self.depth_first,
+            eq_func=lambda node, index: node.ID == index
+        )
 
     @property
     def root(self) -> 'Tree':
@@ -469,15 +455,29 @@ def treeplot(
     node_labels: bool = True,
     leaf_labels: bool = True,
     ax: Optional[Ax] = None
-):
+) -> Ax:
+    """[summary]
+
+    Args:
+        tree (Tree): [description]
+        style (TreeStyle, optional): [description]. Defaults to TreeStyle.\
+            square.
+        ltr (bool, optional): [description]. Defaults to True.
+        node_labels (bool, optional): [description]. Defaults to True.
+        leaf_labels (bool, optional): [description]. Defaults to True.
+        ax (Optional[Ax], optional): [description]. Defaults to None.
+
+    Returns:
+        Ax: [description]
+    """
     layout = calculate_tree_layout(tree=tree, style=style, ltr=ltr)
 
     if not ax:
         fig, ax = plt.subplots(figsize=(6, 6))
 
     for node1, node2 in tree.links:
-        node1_x, node1_y = layout[node1.ID]
-        node2_x, node2_y = layout[node2.ID]
+        node1_x, node1_y = node1_coords = layout[node1.ID]
+        node2_x, node2_y = node2_coords = layout[node2.ID]
         if node_labels:
             ax.text(
                 node1_x + .1,
@@ -505,9 +505,10 @@ def treeplot(
                 )
             else:
                 corner = TwoDCoordinate(
-                    x=layout[node2.ID].to_cartesian().x,
-                    y=layout[node1.ID].to_cartesian().y
+                    x=node1_coords.to_cartesian().x,
+                    y=node2_coords.to_cartesian().y
                 ).to_polar()
+
                 ax.plot(
                     (node1_x, corner.x),
                     (node1_y, corner.y),
@@ -515,7 +516,7 @@ def treeplot(
                 )
                 ax.plot(
                     (corner.x, node2_x),
-                    (corner.x, node2_y),
+                    (corner.y, node2_y),
                     c='k'
                 )
         else:
@@ -531,10 +532,10 @@ def treeplot(
     for leaf in tree.leaves:
         leaf_coords = layout[leaf.ID]
         if style == 'radial':
-            pass
-            # polar_coords = leaf_coords.to_polar()
-            # polar_coords.y -= 0  # .1
-            # leaf_coords = polar_coords.to_cartesian()
+            # pass
+            polar_coords = leaf_coords.to_polar()
+            polar_coords.x *= 1.1
+            leaf_coords = polar_coords.to_cartesian()
         else:
             leaf_coords.x += .1
             leaf_coords.y -= .1
@@ -549,7 +550,7 @@ def treeplot(
 
     ax.set_xticks(())
     xmin, xmax = ax.get_xlim()
-    if style != 'circular':
+    if style != 'radial':
         ax.set_xlim((0.8 * xmin, 1.2 * xmax))
 
     ax.set_yticks(())

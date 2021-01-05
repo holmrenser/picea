@@ -1,8 +1,8 @@
 from warnings import warn
 from itertools import groupby, chain
 from subprocess import Popen, PIPE
-from collections import defaultdict
-from typing import Iterable, List, Tuple, Dict, Any, Optional, Callable
+from collections import defaultdict, Counter
+from typing import Iterable, List, Tuple, Dict, Any, Optional, Callable, Union
 from abc import ABCMeta, abstractmethod, abstractproperty
 import uuid
 import numpy as np
@@ -10,6 +10,7 @@ import json
 from functools import reduce
 import re
 from dataclasses import dataclass, field
+from copy import deepcopy
 
 
 # (character, code) tuples for encoding special characters in gff3
@@ -34,6 +35,31 @@ DECODE_SPECIAL_CHARACTERS = (
     ('%0A', '\n'),
     ('%09', '\t'),
     ('%25', '%')
+)
+
+TRANSLATION = dict(
+  ACC='T', ACA='T', ACG='T',
+  AGG='R', AGC='S', GTA='V',
+  AGA='R', ACT='T', GTG='V',
+  AGT='S', CCA='P', CCC='P',
+  GGT='G', CGA='R', CGC='R',
+  TAT='Y', CGG='R', CCT='P',
+  GGG='G', GGA='G', GGC='G',
+  TAA='*', TAC='Y', CGT='R',
+  TAG='*', ATA='I', CTT='L',
+  ATG='M', CTG='L', ATT='I',
+  CTA='L', TTT='F', GAA='E',
+  TTG='L', TTA='L', TTC='F',
+  GTC='V', AAG='K', AAA='K',
+  AAC='N', ATC='I', CAT='H',
+  AAT='N', GTT='V', CAC='H',
+  CAA='Q', CAG='Q', CCG='P',
+  TCT='S', TGC='C', TGA='*',
+  TGG='W', TCG='S', TCC='S',
+  TCA='S', GAG='E', GAC='D',
+  TGT='C', GCA='A', GCC='A',
+  GCG='A', GCT='A', CTC='L',
+  GAT='D'
 )
 
 
@@ -63,7 +89,8 @@ class Alphabet(set):
         self,
         sequence: str,
         match: float = 1.0,
-        mismatch: float = -1.0
+        mismatch: float = -1.0,
+        n_chars: int = 100
     ) -> float:
         """Scores how well a sequence matches an alphabet by summing \
         (mis)matches of sequence letters that are not in the alphabet \
@@ -74,12 +101,16 @@ class Alphabet(set):
                 it fits the alphabet
             match (float, optional): match score. Defaults to 1.0.
             mismatch (float, optional): mismatch score. Defaults to -1.0.
+            n_chars (int, optional): number of sequence characters to use in \
+                scoring. Large numbers incur a significant computational cost.
 
         Returns:
             (float): Score of how well a sequence matches the alphabet
         """
-        return sum(match if s in self else mismatch for s in sequence) \
-            + sum(match if s in sequence else mismatch for s in self)
+        return (
+            sum(match if s in self else mismatch for s in sequence[:n_chars])
+            + sum(match if s in sequence[:n_chars] else mismatch for s in self)
+        )
 
     def validate(self, sequence: str) -> bool:
         """Determine whether a sequence strictly fits an alphabet
@@ -91,6 +122,20 @@ class Alphabet(set):
             bool: true if all characters in sequence are in the alphabet
         """
         return sum(1 if s not in self else 0 for s in sequence) == 0
+
+    def complement(self, sequence: str) -> str:
+        if self.name != 'DNA':
+            raise TypeError('Cannot complement non-DNA alphabet')
+        dna_complement = dict(zip('acgtACGTN-?', 'tgcaTGCAN-?'))
+        return ''.join(dna_complement[s] for s in sequence)
+
+    def translate(self, sequence: str) -> str:
+        if self.name != 'DNA':
+            raise TypeError('Cannot translate non-DNA alphabet')
+        codons = re.findall('...', sequence.upper())
+        return ''.join(
+            TRANSLATION[codon] if 'N' not in codon else 'X' for codon in codons
+        )
 
 
 def alphabet_factory(alphabet):
@@ -110,6 +155,147 @@ class Alphabets:
 
 
 alphabets = Alphabets()
+
+
+def quote_gff3(attribute_value: Union[int, str, float]) -> str:
+    '''pattern, repl = ENCODE_SPECIAL_CHARACTERS[0]
+    quoted_value = re.sub(pattern, repl, attribute_value)
+    for pattern, repl in ENCODE_SPECIAL_CHARACTERS[1:]:
+        quoted_value = re.sub(pattern, repl, attribute_value)
+    return quoted_value'''
+    return reduce(
+        lambda acc, code: re.sub(code[0], code[1], acc),  # func
+        ENCODE_SPECIAL_CHARACTERS,  # iterable
+        str(attribute_value)  # initial accumulator
+    )
+
+
+def encode_attribute_value(
+    attribute_value: Iterable[Union[int, str, float]]
+) -> str:
+    """[summary]
+
+    Args:
+        attribute_value (Iterable[Union[int, str, float]]): [description]
+
+    Returns:
+        str: [description]
+    """
+    try:
+        iter(attribute_value)
+    except TypeError:
+        attribute_value = [attribute_value]
+    return ','.join([quote_gff3(v) for v in attribute_value])
+
+
+def format_gff_attribute_string(
+    attributes: Dict[str, Iterable[Union[int, str, float]]]
+) -> str:
+    """[summary]
+
+    Args:
+        attributes (Dict[str, Iterable[Union[int, str, float]]]): [description]
+
+    Returns:
+        str: [description]
+    """
+    partially_formatted = {
+        (
+            key.capitalize()
+            if key in SequenceInterval._predefined_gff3_attributes
+            else key
+        ): encode_attribute_value(value)
+        for key, value in attributes.items()
+    }
+    partially_formatted['ID'] = partially_formatted.pop('Id')
+    return ';'.join([
+        f'{key}={value}'
+        for key, value in partially_formatted.items()
+    ])
+
+
+def unquote_gff3(attribute_value: str) -> str:
+    """[summary]
+
+    Args:
+        attribute_value (str): [description]
+
+    Returns:
+        str: [description]
+    """
+    return reduce(
+        lambda acc, code: re.sub(code[0], code[1], acc),  # func
+        DECODE_SPECIAL_CHARACTERS,  # iterable
+        attribute_value  # initial
+    )
+
+
+def decode_attribute_value(attribute_value: str) -> List[str]:
+    """[summary]
+
+    Args:
+        attribute_value (str): [description]
+
+    Returns:
+        List[str]: [description]
+    """
+    return [unquote_gff3(v) for v in attribute_value.split(',')]
+
+
+def parse_gtf_attribute_string(
+    gtf_attribute_string: str
+) -> Dict[str, List[str]]:
+    """[summary]
+
+    Args:
+        gtf_attribute_string (str): [description]
+
+    Returns:
+        Dict[str, List[str]]: [description]
+    """
+    attributes = defaultdict(list)
+    for string_part in gtf_attribute_string.split(';'):
+        string_part = string_part.strip()
+        if not string_part:
+            continue
+        try:
+            key, value = string_part.split(' ', maxsplit=1)
+        except Exception as e:
+            print(gtf_attribute_string, string_part)
+            raise Exception(e)
+        attributes[key].append(value.strip('"'))
+    return attributes
+
+
+def parse_gff_attribute_string(
+    gff_attribute_string: str,
+    case_sensitive_attribute_keys: bool = False
+) -> Dict[str, List[str]]:
+    """[summary]
+    https://github.com/The-Sequence-Ontology/Specifications/blob/master/gff3.md
+    See "Column 9: Attributes"
+    Args:
+        gff_attribute_string ([type]): [description]
+    """
+    attributes = defaultdict(list)
+    for string_part in gff_attribute_string.split(';'):
+        if not string_part:
+            continue
+        try:
+            key, value = string_part.split('=', maxsplit=1)
+        except Exception as e:
+            print(gff_attribute_string, string_part)
+            raise Exception(e)
+        # The gff spec lists the predefined attribute fields as starting with
+        # a capital letter, but we process in lowercase so we don't miss
+        # anything from poorly formatted files. When writing to gff we convert
+        # back to a capital
+        # EXCEPT FOR THE ID ATTRIBUTE, since lowercase id is reserved in python
+        if key != 'ID':
+            key = key.lower()
+        for value_part in decode_attribute_value(value):
+            attributes[key].append(value_part)
+    return attributes
 
 
 class SequenceAnnotation:
@@ -134,7 +320,7 @@ class SequenceAnnotation:
 
     def __setitem__(self, key, value):
         if key in self._intervals:
-            raise Exception('Duplicate ID')
+            raise Exception(f'Duplicate ID: {key}')
         self._intervals[key] = value
 
     def __iter__(self):
@@ -145,7 +331,124 @@ class SequenceAnnotation:
 
     @property
     def intervals(self):
-        return list(self._intervals.values())
+        return list(self)
+
+    @classmethod
+    def from_gtf(
+        cls,
+        filename: Optional[str] = None,
+        string: Optional[str] = None,
+        sequence: Optional['Sequence'] = None
+    ) -> 'SequenceAnnotation':
+        """[summary]
+
+        Raises:
+            IndexError: [description]
+            IndexError: [description]
+
+        Returns:
+            [type]: [description]
+        """
+        assert filename or string
+        assert not (filename and string)
+        sequence_annotation = cls(sequence=sequence)
+        header = True
+
+        # start with just reading all intervals
+        if filename:
+            with open(filename) as filehandle:
+                string = filehandle.read()
+        for line_number, line in enumerate(string.split('\n')):
+            line = line.strip()
+            if not line:
+                continue
+            if line[0] == '#':
+                if header:
+                    sequence_annotation._gff_headers.append(line)
+                continue
+            else:
+                header = False
+            interval = SequenceInterval.from_gtf_line(gtf_line=line,
+                                                      line_number=line_number)
+            interval._container = sequence_annotation
+            sequence_annotation[interval.ID] = interval
+        # fix missing gene and transcript intervals
+        transcript_child_counter = Counter()
+        new_intervals = dict()
+        for interval in sequence_annotation:
+            gene_id = interval.gff_attributes['gene_id'][0]
+            transcript_id = interval.gff_attributes['transcript_id'][0]
+            interval_type = interval.interval_type
+            id_tuple = (gene_id, transcript_id, interval_type)
+            child_count = transcript_child_counter[id_tuple]
+            transcript_child_counter.update([id_tuple])
+            interval._ID = f'{transcript_id}.{interval_type}_{child_count}'
+            if transcript_id not in new_intervals:
+                # new transcript interval
+                transcript_interval = deepcopy(interval)
+                transcript_interval._container = interval._container
+                transcript_interval._ID = transcript_id
+                transcript_interval.interval_type = 'mRNA'
+                transcript_interval.parent = [gene_id]
+                # new gene interval
+                gene_interval = deepcopy(interval)
+                gene_interval._container = interval._container
+                gene_interval._ID = gene_id
+                gene_interval.interval_type = 'gene'
+                gene_interval.parent = None
+
+                new_intervals[transcript_id] = transcript_interval
+                new_intervals[gene_id] = gene_interval
+
+            interval.parent = [transcript_id]
+            new_intervals[interval.ID] = interval
+        sequence_annotation._intervals = new_intervals
+
+        # set children
+        for interval in sequence_annotation:
+            if interval.parent:
+                for parent_ID in interval.parent:
+                    try:
+                        parent = sequence_annotation[parent_ID]
+                    except IndexError:
+                        raise IndexError(
+                            'Interval {interval.ID} is listing {parent_ID} '
+                            'as Parent, but parent could not be found.'
+                        )
+                    parent._children.append(interval.ID)
+
+        # fix gene and transcript start and stop coordinates
+        genes = sequence_annotation.groupby('interval_type')['gene']
+        for gene in genes:
+            # fix gene first
+            start = 10e9
+            end = 0
+            for child in gene.children:
+                start = min(start, child.start)
+                end = max(end, child.end)
+            gene.start = start
+            gene.end = end
+
+            # fix transcripts
+            transcripts = gene.children.groupby('interval_type')['mRNA']
+            for transcript in transcripts:
+                start = 10e9
+                end = 0
+                for child in transcript.children:
+                    start = min(start, child.start)
+                    end = max(end, child.end)
+                transcript.end = end
+                transcript.start = start
+
+        return sequence_annotation
+
+    def to_gtf(self) -> str:
+        gtf_lines = [
+            interval.to_gtf_line() for interval in self
+            if (interval.interval_type != 'gene'
+                and interval.interval_type != 'mRNA')
+        ]
+        return '\n'.join(gtf_lines)
 
     @classmethod
     def from_gff(
@@ -185,7 +488,7 @@ class SequenceAnnotation:
             interval = SequenceInterval.from_gff_line(gff_line=line,
                                                       line_number=line_number)
             interval._container = sequence_annotation
-            sequence_annotation._intervals[interval.ID] = interval
+            sequence_annotation[interval.ID] = interval
         for interval in sequence_annotation:
             if interval.parent:
                 for parent_ID in interval.parent:
@@ -206,9 +509,7 @@ class SequenceAnnotation:
         Returns:
             str: [description]
         """
-        gff_lines = [
-            interval.to_gff_line() for interval in self._intervals.values()
-        ]
+        gff_lines = [interval.to_gff_line() for interval in self]
         return '\n'.join(gff_lines)
 
     @classmethod
@@ -235,13 +536,12 @@ class SequenceAnnotation:
             child_dicts = top_dict.pop('children', list())
             top_interval = SequenceInterval.from_dict(interval_dict=top_dict)
             top_interval._container = sequence_annotation
-            sequence_annotation._intervals[top_interval.ID] = top_interval
+            sequence_annotation[top_interval.ID] = top_interval
             for child_dict in child_dicts:
                 child_interval = SequenceInterval.from_dict(
                     interval_dict=child_dict)
                 child_interval._container = sequence_annotation
-                sequence_annotation._intervals[child_interval.ID] = \
-                    child_interval
+                sequence_annotation[child_interval.ID] = child_interval
         for interval in sequence_annotation:
             if interval.parent:
                 for parent_ID in interval.parent:
@@ -262,9 +562,26 @@ class SequenceAnnotation:
             str: [description]
         """
         interval_dicts = [
-            interval.to_dict() for interval in self._intervals.values()
+            interval.to_dict() for interval in self
         ]
         return json.dumps(interval_dicts, indent=indent)
+
+    def groupby(self, key='seqid') -> Dict[str, 'SequenceAnnotation']:
+        grouped = defaultdict(SequenceAnnotation)
+        for interval in self:
+            grouped[interval[key]][interval.ID] = interval
+            interval._container = self
+        return grouped
+
+    def pop(self, value: str) -> 'SequenceInterval':
+        return self._intervals.pop(value)
+
+    def filter(self, filter_func: Callable) -> 'SequenceAnnotation':
+        result = SequenceAnnotation()
+        for interval in self:
+            if filter_func(interval):
+                result[interval.ID] = interval
+        return result
 
 
 class SequenceInterval:
@@ -311,8 +628,8 @@ class SequenceInterval:
             container (Optional[SequenceAnnotation], optional): [description].
                 Defaults to None.
         """
-        # interval ID
-        self.ID = ID
+        # interval ID is a property (see below) with getter and setter
+        self._ID = ID
 
         # Standard gff fields
         self.seqid = seqid
@@ -354,26 +671,81 @@ class SequenceInterval:
     def __setitem__(self, key, value):
         self.__dict__[key] = value
 
+    def __deepcopy__(self, memo):
+        new_interval = SequenceInterval()
+        for key, value in vars(self).items():
+            # _container is strictly a reference, do not deepcopy
+            if key == '_container':
+                new_interval[key] = value
+            else:
+                new_interval[key] = deepcopy(value)
+        return new_interval
+
     @property
-    def attributes(self):
+    def ID(self):
+        return self._ID
+
+    @ID.setter
+    def ID(self, value):
+        old_ID = self._ID
+        self._ID = value
+        for child in self.children:
+            if child.parent:
+                child.parent = \
+                    [value if p == old_ID else p for p in child.parent]
+        if self._container:
+            self._container[value] = self._container.pop(old_ID)
+
+    @property
+    def gff_attributes(self):
         return {
             attr: self[attr]
             for attr in self.__dict__
             if attr not in self._fixed_gff3_fields  # skip column 1-8 in gff3
-            and attr not in ('_children', '_container')  # internal use only
+            and attr not in ('_children', '_container',
+                             '_ID')  # internal use only
             and self[attr] is not None  # no empty attributes
         }
 
     @property
-    def children(self) -> List['SequenceInterval']:
-        return list(self._get_children())
+    def children(self) -> SequenceAnnotation:
+        ann = SequenceAnnotation()
+        for interval in self._get_children():
+            if interval == self:
+                continue
+            ann[interval.ID] = interval
+        return ann
+
+    @classmethod
+    def from_gtf_line(
+        cls,
+        gtf_line: Optional[str] = None,
+        line_number: Optional[int] = None
+    ) -> 'SequenceInterval':
+        """[summary]
+
+        Returns:
+            [type]: [description]
+
+        Yields:
+            [type]: [description]
+        """
+        return cls.from_gff_line(
+            gtf_line,
+            line_number,
+            parse_gtf_attribute_string
+        )
+
+    def to_gtf_line(self) -> str:
+        raise NotImplementedError()
 
     @classmethod
     def from_gff_line(
         cls,
         gff_line: Optional[str] = None,
-        line_number: Optional[int] = None
-    ):
+        line_number: Optional[int] = None,
+        attribute_parser: Callable = parse_gff_attribute_string
+    ) -> 'SequenceInterval':
         """[summary]
 
         Args:
@@ -381,13 +753,6 @@ class SequenceInterval:
                 to None.
             line_number (Optional[int], optional): [description]. Defaults
                 to None.
-
-        Raises:
-            ValueError: [description]
-            ValueError: [description]
-            ValueError: [description]
-            ValueError: [description]
-            ValueError: [description]
 
         Returns:
             [type]: [description]
@@ -436,7 +801,7 @@ class SequenceInterval:
         #         error = f'{error}, gff line {line_number}'
         #         raise ValueError(error)
 
-        attributes = parse_gff_attribute_string(gff_parts[8])
+        attributes = attribute_parser(gff_parts[8])
 
         ID = attributes.pop('ID', [str(uuid.uuid4())])[0]
 
@@ -451,10 +816,12 @@ class SequenceInterval:
             str: [description]
         """
         attributes = defaultdict(list)
-        attributes.update(self.attributes)
-        for attr in self._predefined_gff3_attributes:
-            if self[attr] is not None:
-                attributes[attr] = self[attr]
+        attributes.update(self.gff_attributes)
+        for attribute in self._predefined_gff3_attributes:
+            attribute_value = getattr(self, attribute)
+            if attribute_value is not None:
+                attributes[attribute] = attribute_value
+
         attributes['ID'] = [attributes['ID']]
 
         return '\t'.join([
@@ -560,6 +927,37 @@ alphabet=Alphabet(name='AminoAcid', members='*-?ACDEFGHIKLMNPQRSTVWXY'))
                 key=lambda alphabet: alphabet.score(self.sequence)
             ).pop()
 
+    def __getitem__(self, key):
+        return Sequence(self.header, self.sequence[key])
+
+    @property
+    def reverse(self):
+        return Sequence(self.header, self.sequence[::-1])
+
+    @property
+    def complement(self):
+        return Sequence(
+            self.header,
+            self.alphabet.complement(self.sequence)
+        )
+
+    @property
+    def reverse_complement(self):
+        return Sequence(
+            self.header,
+            self.alphabet.complement(self.sequence[::-1])
+        )
+
+    @property
+    def amino_acids(self):
+        if self.alphabet.name == 'AminoAcid':
+            return self
+        else:
+            return Sequence(
+                self.header,
+                self.alphabet.translate(self.sequence)
+            )
+
     def to_dict(self) -> Dict[str, str]:
         """Make dictionary with header and sequence elements
 
@@ -592,13 +990,20 @@ alphabet=Alphabet(name='DNA', members='-?ACGNT'))
         sequence = ''.join(lines[1:])
         return cls(header, sequence)
 
-    def to_fasta(self) -> str:
+    def to_fasta(self, linewidth: int = 80) -> str:
         """Make fasta formatted sequence entry
 
         Returns:
             str: sequence in fasta format
         """
-        return f'>{self.header}\n{self.sequence}'
+        sequence_lines = '\n'.join(
+            re.findall(f'.{{1,{linewidth}}}', self.sequence)
+        )
+        return f'>{self.header}\n{sequence_lines}'
+
+
+class FastaParseError(Exception):
+    pass
 
 
 class SequenceReader:
@@ -661,6 +1066,9 @@ alphabet=Alphabet(name='DNA', members='-?ACGNT'))
         return next(self._iter())
 
     def _fasta_iter(self) -> Iterable[Sequence]:
+        if self.string[0] != '>':
+            raise FastaParseError('First character in fasta format\
+                 must be ">"')
         fasta_iter = (
             x for _, x in groupby(
                 self.string.strip().split('\n'),
@@ -677,7 +1085,7 @@ alphabet=Alphabet(name='DNA', members='-?ACGNT'))
             yield Sequence(entry['header'], entry['sequence'])
 
 
-class SequenceCollection(metaclass=ABCMeta):
+class AbstractSequenceCollection(metaclass=ABCMeta):
     """
     (Partially) Abstract Base Class for sequence collections.
     Classes extending from this baseclass should override
@@ -719,10 +1127,6 @@ class SequenceCollection(metaclass=ABCMeta):
     def __iter__(self) -> Iterable[Sequence]:
         for header in self.headers:
             yield self[header]
-
-    def __next__(self) -> Sequence:
-        header = next(self.headers)
-        return self[header]
 
     @abstractproperty
     def headers(self) -> List[str]:
@@ -782,13 +1186,13 @@ class SequenceCollection(metaclass=ABCMeta):
             sequencecollection[seq.header] = seq.sequence
         return sequencecollection
 
-    def to_fasta(self) -> str:
+    def to_fasta(self, linewidth: int = 80) -> str:
         """Get a fasta-formatted string of the sequence collection
 
         Returns:
             str: Multi-line fasta-formatted string
         """
-        return '\n'.join([seq.to_fasta() for seq in self])
+        return '\n'.join([seq.to_fasta(linewidth=linewidth) for seq in self])
 
     @classmethod
     def from_json(
@@ -846,7 +1250,7 @@ class SequenceCollection(metaclass=ABCMeta):
             self[s.header] = s.sequence
 
 
-class SequenceList(SequenceCollection):
+class SequenceCollection(AbstractSequenceCollection):
     """
     A container for multiple (unaligned) DNA or amino acid sequences
     """
@@ -1013,102 +1417,3 @@ class MultipleSequenceAlignment(SequenceCollection):
         }
         self._collection = np.delete(self._collection, (pop_idx,), axis=0)
         return Sequence(header, sequence)
-
-
-def quote_gff3(attribute_value: str) -> str:
-    '''pattern, repl = ENCODE_SPECIAL_CHARACTERS[0]
-    quoted_value = re.sub(pattern, repl, attribute_value)
-    for pattern, repl in ENCODE_SPECIAL_CHARACTERS[1:]:
-        quoted_value = re.sub(pattern, repl, attribute_value)
-    return quoted_value'''
-    return reduce(
-        lambda acc, code: re.sub(code[0], code[1], acc),  # func
-        ENCODE_SPECIAL_CHARACTERS,  # iterable
-        attribute_value  # initial
-    )
-
-
-def encode_attribute_value(attribute_value: List[str]) -> str:
-    """[summary]
-
-    Args:
-        attribute_value (List[str]): [description]
-
-    Returns:
-        str: [description]
-    """
-    return ','.join([quote_gff3(v) for v in attribute_value])
-
-
-def format_gff_attribute_string(attributes: Dict[str, List[str]]) -> str:
-    """[summary]
-
-    Args:
-        attributes (Dict[str, List[str]]): [description]
-
-    Returns:
-        str: [description]
-    """
-    return ';'.join([
-        f'{key}={encode_attribute_value(value)}'
-        for key, value in attributes.items()
-    ])
-
-
-def unquote_gff3(attribute_value: str) -> str:
-    """[summary]
-
-    Args:
-        attribute_value (str): [description]
-
-    Returns:
-        str: [description]
-    """
-    return reduce(
-        lambda acc, code: re.sub(code[0], code[1], acc),  # func
-        DECODE_SPECIAL_CHARACTERS,  # iterable
-        attribute_value  # initial
-    )
-
-
-def decode_attribute_value(attribute_value: str) -> List[str]:
-    """[summary]
-
-    Args:
-        attribute_value (str): [description]
-
-    Returns:
-        List[str]: [description]
-    """
-    return [unquote_gff3(v) for v in attribute_value.split(',')]
-
-
-def parse_gff_attribute_string(
-    gff_attribute_string: str,
-    case_sensitive_attribute_keys: bool = False
-) -> Dict[str, List[str]]:
-    """[summary]
-    https://github.com/The-Sequence-Ontology/Specifications/blob/master/gff3.md
-    See "Column 9: Attributes"
-    Args:
-        gff_attribute_string ([type]): [description]
-    """
-    attributes = defaultdict(list)
-    for string_part in gff_attribute_string.split(';'):
-        if not string_part:
-            continue
-        try:
-            key, value = string_part.split('=', maxsplit=1)
-        except Exception as e:
-            print(gff_attribute_string, string_part)
-            raise Exception(e)
-        # The gff spec lists the predefined attribute fields as starting with
-        # a capital letter, but we process in lowercase so we don't miss
-        # anything from poorly formatted files. When writing to gff we convert
-        # back to a capital
-        # EXCEPT FOR THE ID ATTRIBUTE, since lowercase id is reserved in python
-        if key != 'ID':
-            key = key.lower()
-        for value_part in decode_attribute_value(value):
-            attributes[key].append(value_part)
-    return attributes

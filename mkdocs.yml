@@ -8,7 +8,7 @@ markdown_extensions:
     - codehilite
     - toc
 theme:
-    name: cinder
+    name: ivory
 nav:
     - index.md
     - API:
