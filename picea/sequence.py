@@ -2,7 +2,9 @@ from warnings import warn
 from itertools import groupby, chain
 from subprocess import Popen, PIPE
 from collections import defaultdict, Counter
-from typing import Iterable, List, Tuple, Dict, Any, Optional, Callable, Union
+from typing import (
+    Iterable, List, Tuple, Dict, Any, Optional, Callable, Union
+)
 from abc import ABCMeta, abstractmethod, abstractproperty
 import uuid
 import numpy as np
@@ -1085,6 +1087,40 @@ alphabet=Alphabet(name='DNA', members='-?ACGNT'))
             yield Sequence(entry['header'], entry['sequence'])
 
 
+SequenceIndexKey = Union[int, List[int], slice]
+
+
+class SequenceIndex:
+    def __init__(
+        self,
+        sequence_collection: Union[
+            'SequenceCollection', 'MultipleSequenceAlignment'
+        ]
+    ):
+        self.sequence_collection = sequence_collection
+
+    def __getitem__(self, key: SequenceIndexKey):
+        if isinstance(key, int):
+            key = [key]
+        elif isinstance(key, slice):
+            start = key.start if key.start is not None else 0
+            stop = (
+                key.stop if key.stop is not None
+                else len(self.sequence_collection)
+            )
+            step = key.step if key.step is not None else 1
+            key = range(start, stop, step)
+        elif not isinstance(key, list):
+            raise TypeError(
+                f'SequenceIndex key must be of type f{SequenceIndexKey}'
+            )
+        new_seq_col = self.sequence_collection.__class__()
+        for k in key:
+            header = self.sequence_collection.headers[k]
+            new_seq_col[header] = self.sequence_collection[header].sequence
+        return new_seq_col
+
+
 class AbstractSequenceCollection(metaclass=ABCMeta):
     """
     (Partially) Abstract Base Class for sequence collections.
@@ -1128,6 +1164,9 @@ class AbstractSequenceCollection(metaclass=ABCMeta):
         for header in self.headers:
             yield self[header]
 
+    def __len__(self) -> int:
+        return len(self.headers)
+
     @abstractproperty
     def headers(self) -> List[str]:
         """List of sequences headers.
@@ -1140,6 +1179,15 @@ class AbstractSequenceCollection(metaclass=ABCMeta):
             List[str]: List of sequence headers
         """
         raise NotImplementedError()
+
+    @property
+    def iloc(self) -> SequenceIndex:
+        """[summary]
+
+        Returns:
+            SequenceIndex: [description]
+        """
+        return SequenceIndex(self)
 
     @property
     def sequences(self) -> List[str]:
@@ -1162,6 +1210,24 @@ class AbstractSequenceCollection(metaclass=ABCMeta):
             int: number of sequences
         """
         raise NotImplementedError()
+
+    @classmethod
+    def from_sequence_iter(
+        cls,
+        sequence_iter: Iterable[Sequence]
+    ) -> 'SequenceCollection':
+        """[summary]
+
+        Raises:
+            NotImplementedError: [description]
+
+        Returns:
+            [type]: [description]
+        """
+        sequencecollection = cls()
+        for seq in sequence_iter:
+            sequencecollection[seq.header] = seq.sequence
+        return sequencecollection
 
     @classmethod
     def from_fasta(

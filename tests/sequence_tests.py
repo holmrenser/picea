@@ -104,3 +104,27 @@ class SequenceTests(TestCase):
         msa = MultipleSequenceAlignment.from_fasta(string=self.fasta)
         msa.batch_rename(self.rename_func)
         self.assertEqual(msa.headers, ['A.test', 'B.test'])
+
+    def test_iloc(self):
+        seq_col = SequenceCollection.from_fasta(string=self.fasta)
+        sub = seq_col.iloc[0]
+        self.assertEqual(sub.headers, ['A'])
+        sub_multiple = seq_col.iloc[[0, 1]]
+        self.assertEqual(sub_multiple.headers, ['A', 'B'])
+        sub_slice1 = seq_col.iloc[0:2]
+        self.assertEqual(sub_slice1.headers, ['A', 'B'])
+        sub_slice2 = seq_col.iloc[1:]
+        self.assertEqual(sub_slice2.headers, ['B'])
+        sub_slice3 = seq_col.iloc[:1]
+        self.assertEqual(sub_slice3.headers, ['A'])
+        with self.assertRaises(TypeError):
+            seq_col.iloc['A']
+
+    def test_len(self):
+        seq_col = SequenceCollection.from_fasta(string=self.fasta)
+        self.assertEqual(len(seq_col), 2)
+
+    def test_from_iter(self):
+        seq_col = SequenceCollection.from_fasta(string=self.fasta)
+        seq_col2 = SequenceCollection.from_sequence_iter(seq_col)
+        self.assertEqual(seq_col.headers, seq_col2.headers)
