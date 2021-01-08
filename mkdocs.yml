@@ -3,6 +3,8 @@ repo_url: https://github.com/holmrenser/picea
 plugins: 
     - search
     - mkapi
+    - mkdocs-jupyter:
+        execute: True
 markdown_extensions:
     - admonition
     - codehilite
@@ -11,6 +13,8 @@ theme:
     name: material
 nav:
     - index.md
+    - Examples:
+        - examples/tree.ipynb
     - API:
         - API/sequence.md
         - API/tree.md

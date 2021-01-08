@@ -9,8 +9,8 @@ from dataclasses import dataclass, field, InitVar, asdict
 from collections import defaultdict
 from matplotlib import pyplot as plt
 from matplotlib.axes import SubplotBase
-from matplotlib.patches import Arc
 import numpy as np
+from copy import deepcopy
 
 TreeDict = Dict[str, Union[str, int, float, List[Optional['TreeDict']]]]
 
@@ -306,6 +306,17 @@ children=[]), Tree(name='b', length=0.0, children=[])])
         if post_order:
             yield self
 
+    def rename_leaves(
+        self,
+        rename_func: Callable,
+        inplace: bool = True
+    ) -> Optional['Tree']:
+        """[summary]
+        """
+        tree = self if inplace else deepcopy(self)
+        for leaf in tree.leaves:
+            leaf.name = rename_func(leaf.name)
+
 
 class TreeIndex(object):
     def __init__(
@@ -475,33 +486,39 @@ def treeplot(
     if not ax:
         fig, ax = plt.subplots(figsize=(6, 6))
 
+    linestyle = dict(
+        linewidth=1,
+        color='black'
+    )
+
     for node1, node2 in tree.links:
         node1_x, node1_y = node1_coords = layout[node1.ID]
         node2_x, node2_y = node2_coords = layout[node2.ID]
         if node_labels:
             ax.text(
                 node1_x + .1,
-                node1_y - .2,
+                node1_y - .0,
                 node1.name,
-                fontsize=8
+                fontsize=8,
+                verticalalignment='center_baseline'
             )
         if style == 'square':
             ax.plot(
                 (node1_x, node1_x),
                 (node1_y, node2_y),
-                c='k'
+                **linestyle
             )
             ax.plot(
                 (node1_x, node2_x),
                 (node2_y, node2_y),
-                c='k'
+                **linestyle
             )
         elif style == 'radial':
             if node2.root == node1:
                 ax.plot(
                     (node1_x, node2_x),
                     (node1_y, node2_y),
-                    c='k'
+                    **linestyle
                 )
             else:
                 corner = TwoDCoordinate(
@@ -512,22 +529,28 @@ def treeplot(
                 ax.plot(
                     (node1_x, corner.x),
                     (node1_y, corner.y),
-                    c='k'
+                    **linestyle
                 )
                 ax.plot(
                     (corner.x, node2_x),
                     (corner.y, node2_y),
-                    c='k'
+                    **linestyle
                 )
         else:
             ax.plot(
                 (node1_x, node2_x),
                 (node1_y, node2_y),
-                c='k'
+                **linestyle
             )
 
-    for node in tree.nodes:
-        ax.scatter(*layout[node.ID], c='k')
+    for leaf in tree.leaves:
+        x, y = leaf_coords = layout[leaf.ID]
+        x += .15
+        ax.scatter(
+            x, y,
+            facecolors='white',
+            edgecolors='black'
+        )
 
     for leaf in tree.leaves:
         leaf_coords = layout[leaf.ID]
@@ -537,23 +560,25 @@ def treeplot(
             polar_coords.x *= 1.1
             leaf_coords = polar_coords.to_cartesian()
         else:
-            leaf_coords.x += .1
-            leaf_coords.y -= .1
+            leaf_coords.x += .4
+            leaf_coords.y += .05
         ax.text(
             leaf_coords.x,
             leaf_coords.y,
             leaf.name,
-            fontsize=18,
+            fontsize=12,
             in_layout=True,
-            clip_on=True
+            clip_on=True,
+            verticalalignment='center_baseline'
         )
 
     ax.set_xticks(())
     xmin, xmax = ax.get_xlim()
     if style != 'radial':
-        ax.set_xlim((0.8 * xmin, 1.2 * xmax))
+        ax.set_xlim((0.8 * xmin, 1.8 * xmax))
 
     ax.set_yticks(())
     # ax.set_ylim((-4, 4))
+    plt.tight_layout()
 
     return ax

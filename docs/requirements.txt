@@ -1,3 +1,5 @@
 mkdocs
 mkapi
 mkdocs-material
+mkdocs-jupyter
+picea
