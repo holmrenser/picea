@@ -5,6 +5,7 @@ plugins:
     - mkapi
     - mkdocs-jupyter:
         execute: True
+        kernel_name: python3
 markdown_extensions:
     - admonition
     - codehilite
