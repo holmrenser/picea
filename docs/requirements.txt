@@ -3,3 +3,7 @@ mkapi
 mkdocs-material
 mkdocs-jupyter
 picea
+jupyter
+matplotlib
+scikit-learn
+numpy

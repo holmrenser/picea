@@ -295,6 +295,12 @@ def parse_gff_attribute_string(
         # EXCEPT FOR THE ID ATTRIBUTE, since lowercase id is reserved in python
         if key != 'ID':
             key = key.lower()
+        # First eight columns have predefined names which can collide with what
+        # is in the 9th column. Solution is to prefix collisions in the 9th
+        # column with underscore. E.g. 'score' becomes '_score' because 'score'
+        # is the predefined name of the 6th column
+        if key in SequenceInterval._fixed_gff3_fields:
+            key = f'_{key}'
         for value_part in decode_attribute_value(value):
             attributes[key].append(value_part)
     return attributes
@@ -317,13 +323,21 @@ class SequenceAnnotation:
         self._intervals = dict()
         self._gff_headers = list()
 
-    def __getitem__(self, key):
-        return self._intervals[key]
+    def __getitem__(self, ID: str) -> 'SequenceInterval':
+        return self._intervals[ID]
 
-    def __setitem__(self, key, value):
-        if key in self._intervals:
-            raise Exception(f'Duplicate ID: {key}')
-        self._intervals[key] = value
+    def __setitem__(self, ID: str, interval: 'SequenceInterval'):
+        if ID in self._intervals:
+            warn(f'Turning duplicate ID {ID} into unique ID')
+            interval._original_ID = ID
+            modifier = 0
+            new_ID = ID
+            while new_ID in self._intervals:
+                modifier += 1
+                new_ID = f'{ID}_{modifier}'
+            ID = new_ID
+            interval._ID = ID
+        self._intervals[ID] = interval
 
     def __iter__(self):
         try:
@@ -457,7 +471,8 @@ class SequenceAnnotation:
         cls,
         filename: Optional[str] = None,
         string: Optional[str] = None,
-        sequence: Optional['Sequence'] = None
+        sequence: Optional['Sequence'] = None,
+        link_parents: bool = True
     ) -> 'SequenceAnnotation':
         """[summary]
 
@@ -481,27 +496,32 @@ class SequenceAnnotation:
             line = line.strip()
             if not line:
                 continue
+            if line == '##FASTA':
+                break
             if line[0] == '#':
                 if header:
                     sequence_annotation._gff_headers.append(line)
                 continue
             else:
                 header = False
+
             interval = SequenceInterval.from_gff_line(gff_line=line,
                                                       line_number=line_number)
             interval._container = sequence_annotation
             sequence_annotation[interval.ID] = interval
-        for interval in sequence_annotation:
-            if interval.parent:
-                for parent_ID in interval.parent:
-                    try:
-                        parent = sequence_annotation[parent_ID]
-                    except IndexError:
-                        raise IndexError(
-                            'Interval {interval.ID} is listing {parent_ID} '
-                            'as Parent, but parent could not be found.'
-                        )
-                    parent._children.append(interval.ID)
+
+        if link_parents:
+            for interval in sequence_annotation:
+                if interval.parent:
+                    for parent_ID in interval.parent:
+                        try:
+                            parent = sequence_annotation[parent_ID]
+                        except IndexError:
+                            raise IndexError(
+                                'Interval {interval.ID} is listing {parent_ID}'
+                                ' as Parent, but parent could not be found.'
+                            )
+                        parent._children.append(interval.ID)
 
         return sequence_annotation
 
@@ -568,15 +588,18 @@ class SequenceAnnotation:
         ]
         return json.dumps(interval_dicts, indent=indent)
 
+    def add(self, interval: 'SequenceInterval'):
+        self._intervals[interval]
+
+    def pop(self, value: str) -> 'SequenceInterval':
+        return self._intervals.pop(value)
+
     def groupby(self, key='seqid') -> Dict[str, 'SequenceAnnotation']:
         grouped = defaultdict(SequenceAnnotation)
         for interval in self:
             grouped[interval[key]][interval.ID] = interval
             interval._container = self
         return grouped
-
-    def pop(self, value: str) -> 'SequenceInterval':
-        return self._intervals.pop(value)
 
     def filter(self, filter_func: Callable) -> 'SequenceAnnotation':
         result = SequenceAnnotation()
@@ -632,6 +655,7 @@ class SequenceInterval:
         """
         # interval ID is a property (see below) with getter and setter
         self._ID = ID
+        self._original_ID = ID
 
         # Standard gff fields
         self.seqid = seqid
@@ -690,6 +714,8 @@ class SequenceInterval:
     @ID.setter
     def ID(self, value):
         old_ID = self._ID
+        if not self._original_ID:
+            self._original_ID = old_ID
         self._ID = value
         for child in self.children:
             if child.parent:

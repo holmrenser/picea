@@ -403,14 +403,16 @@ class TwoDCoordinate():
 
 
 Ax = Type[SubplotBase]
-TreeStyle = Enum('TreeStyle', 'square')
+TreeStyle = Enum('TreeStyle', ('square', 'radial', 'triangular'))
+LayoutDict = DefaultDict[int, TwoDCoordinate]
 
 
 def calculate_tree_layout(
     tree: Tree,
     style: TreeStyle = TreeStyle.square,
     ltr: bool = True,
-) -> DefaultDict[int, TwoDCoordinate]:
+    branchlengths: bool = True
+) -> LayoutDict:
     """[summary]
 
     Args:
@@ -420,12 +422,12 @@ def calculate_tree_layout(
         ltr (bool, optional): [description]. Defaults to True.
 
     Returns:
-        DefaultDict[int, TwoDCoordinate]: [description]
+        LayoutDict: [description]
     """
     layout = defaultdict(TwoDCoordinate)
     previous_node = None
     y = 0
-    separation = equal_separation
+    # separation = equal_separation
     for node in tree.depth_first(post_order=True):
         node_coords = layout[node.ID]
         if node.children:
@@ -434,17 +436,18 @@ def calculate_tree_layout(
             )
             node_coords.y = sum(child_y_coords) \
                 / len(node.children)
+            increment = node.length if branchlengths else 1.0
             if ltr:
-                node_coords.x = 1 + max(child_x_coords)
+                node_coords.x = increment + max(child_x_coords)
             else:
-                node_coords.x = min(child_x_coords) - 1
+                node_coords.x = min(child_x_coords) - increment
         else:
             if previous_node:
-                y += separation(node, previous_node)
+                y += 1.0
                 layout[node.ID].y = y
             else:
                 layout[node.ID].y = 0
-            layout[node.ID].x = 0
+            layout[node.ID].x = node.length if branchlengths else 0.0
             previous_node = node
 
     for node in tree.depth_first(post_order=True):
@@ -462,42 +465,76 @@ def calculate_tree_layout(
 def treeplot(
     tree: Tree,
     style: TreeStyle = TreeStyle.square,
+    branchlengths: bool = True,
     ltr: bool = True,
     node_labels: bool = True,
     leaf_labels: bool = True,
-    ax: Optional[Ax] = None
-) -> Ax:
+    leaf_marker: Union[str, Callable, None] = 'o',
+    leaf_marker_fill: Union[str, Callable[[Tree], 'str'], None] = 'white',
+    leaf_marker_edge: Union[str, Callable[[Tree], 'str'], None] = 'black',
+    branch_linestyle: Union[dict, Callable[[Tree], dict], None] = None,
+    ax: Optional[Ax] = None,
+    return_layout: bool = False
+) -> Union[Ax, Tuple[Ax, LayoutDict]]:
     """[summary]
 
     Args:
         tree (Tree): [description]
         style (TreeStyle, optional): [description]. Defaults to TreeStyle.\
             square.
+        branchlengths (bool, optional): [description]. Defaults to True.
         ltr (bool, optional): [description]. Defaults to True.
         node_labels (bool, optional): [description]. Defaults to True.
         leaf_labels (bool, optional): [description]. Defaults to True.
+        leaf_marker (Union[str, Callable, None], optional): [description].\
+             Defaults to 'o'.
+        leaf_marker_fill (Union[str, Callable[[Tree],, optional): \
+            [description]. Defaults to 'white'.
+        leaf_marker_edge (Union[str, Callable[[Tree],, optional): \
+            [description]. Defaults to 'black'.
+        branch_linestyle (Union[dict, Callable[[Tree], dict], None], \
+            optional): [description]. Defaults to None.
         ax (Optional[Ax], optional): [description]. Defaults to None.
+        return_layout (bool, optional): [description]. Defaults to False.
 
     Returns:
-        Ax: [description]
+        Union[Ax, Tuple[Ax, LayoutDict]]: [description]
     """
-    layout = calculate_tree_layout(tree=tree, style=style, ltr=ltr)
+    layout = calculate_tree_layout(
+        tree=tree,
+        style=style,
+        ltr=ltr,
+        branchlengths=branchlengths
+    )
 
     if not ax:
-        fig, ax = plt.subplots(figsize=(6, 6))
+        _, ax = plt.subplots(figsize=(6, 6))
 
-    linestyle = dict(
+    default_linestyle = dict(
         linewidth=1,
-        color='black'
+        color='black',
+        zorder=1
     )
+    if branch_linestyle is None:
+        def linestyle_fun(_) -> dict:
+            return default_linestyle
+    elif isinstance(branch_linestyle, dict):
+        def linestyle_fun(_) -> dict:
+            return {**default_linestyle, **branch_linestyle}
+    elif callable(branch_linestyle):
+        def linestyle_fun(branch: Tuple[Tree, Tree]) -> dict:
+            return {**default_linestyle, **branch_linestyle(leaf)}
+    else:
+        raise TypeError(
+            f'{type(branch_linestyle)} is not valid branch_linestyle type')
 
     for node1, node2 in tree.links:
         node1_x, node1_y = node1_coords = layout[node1.ID]
         node2_x, node2_y = node2_coords = layout[node2.ID]
         if node_labels:
             ax.text(
-                node1_x + .1,
-                node1_y - .0,
+                node1_x,
+                node1_y,
                 node1.name,
                 fontsize=8,
                 verticalalignment='center_baseline'
@@ -506,19 +543,19 @@ def treeplot(
             ax.plot(
                 (node1_x, node1_x),
                 (node1_y, node2_y),
-                **linestyle
+                **linestyle_fun((node1, node2))
             )
             ax.plot(
                 (node1_x, node2_x),
                 (node2_y, node2_y),
-                **linestyle
+                **linestyle_fun((node1, node2))
             )
         elif style == 'radial':
             if node2.root == node1:
                 ax.plot(
                     (node1_x, node2_x),
                     (node1_y, node2_y),
-                    **linestyle
+                    **linestyle_fun((node1, node2))
                 )
             else:
                 corner = TwoDCoordinate(
@@ -529,56 +566,93 @@ def treeplot(
                 ax.plot(
                     (node1_x, corner.x),
                     (node1_y, corner.y),
-                    **linestyle
+                    **linestyle_fun((node1, node2))
                 )
                 ax.plot(
                     (corner.x, node2_x),
                     (corner.y, node2_y),
-                    **linestyle
+                    **linestyle_fun((node1, node2))
                 )
         else:
             ax.plot(
                 (node1_x, node2_x),
                 (node1_y, node2_y),
-                **linestyle
+                **linestyle_fun((node1, node2))
             )
+
+    xmin, xmax = ax.get_xlim()
+    xspacer = 0.25  # 0.01 * (xmax - xmin)
+
+    if isinstance(leaf_marker, str):
+        def leaf_marker_fun(_):
+            return leaf_marker
+    elif callable(leaf_marker):
+        leaf_marker_fun = leaf_marker
+    elif leaf_marker is None:
+        pass
+    else:
+        raise TypeError(f'{type(leaf_marker)} is not a valid leaf_marker type')
+
+    if isinstance(leaf_marker_fill, str) or leaf_marker_fill is None:
+        def leaf_marker_fill_fun(_):
+            return leaf_marker_fill
+    elif callable(leaf_marker_fill):
+        leaf_marker_fill_fun = leaf_marker_fill
+    else:
+        raise TypeError(f'{type(leaf_marker)} is not a valid leaf_marker type')
+
+    if isinstance(leaf_marker_edge, str) or leaf_marker_edge is None:
+        def leaf_marker_edge_fun(_):
+            return leaf_marker_edge
+    elif callable(leaf_marker_edge):
+        leaf_marker_edge_fun = leaf_marker_edge
+    else:
+        raise TypeError(f'{type(leaf_marker)} is not a valid leaf_marker type')
 
     for leaf in tree.leaves:
         x, y = leaf_coords = layout[leaf.ID]
-        x += .15
-        ax.scatter(
-            x, y,
-            facecolors='white',
-            edgecolors='black'
-        )
+        if leaf_marker:
+            ax.scatter(
+                x, y,
+                c=leaf_marker_fill_fun(leaf),
+                alpha=1,
+                edgecolors=leaf_marker_edge_fun(leaf),
+                marker=leaf_marker_fun(leaf),
+                zorder=2
+            )
 
-    for leaf in tree.leaves:
-        leaf_coords = layout[leaf.ID]
+        # x, y = leaf_coords = layout[leaf.ID]
         if style == 'radial':
             # pass
             polar_coords = leaf_coords.to_polar()
             polar_coords.x *= 1.1
-            leaf_coords = polar_coords.to_cartesian()
+            x, y = leaf_coords = polar_coords.to_cartesian()
         else:
-            leaf_coords.x += .4
-            leaf_coords.y += .05
+            x = x + xspacer if ltr else x - xspacer
+            y += 0.05
+        horizontalalignment = 'left' if ltr else 'right'
         ax.text(
-            leaf_coords.x,
-            leaf_coords.y,
+            x, y,
             leaf.name,
             fontsize=12,
             in_layout=True,
             clip_on=True,
-            verticalalignment='center_baseline'
+            verticalalignment='center_baseline',
+            horizontalalignment=horizontalalignment
         )
 
     ax.set_xticks(())
     xmin, xmax = ax.get_xlim()
     if style != 'radial':
-        ax.set_xlim((0.8 * xmin, 1.8 * xmax))
+        if ltr:
+            ax.set_xlim((0.8 * xmin, 1.8 * xmax))
+        else:
+            ax.set_xlim((1.8 * xmin, 1.2 * xmax))
 
     ax.set_yticks(())
-    # ax.set_ylim((-4, 4))
+
     plt.tight_layout()
 
+    if return_layout:
+        return (ax, layout)
     return ax
