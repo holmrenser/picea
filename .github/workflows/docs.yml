@@ -13,10 +13,19 @@ jobs:
       - name: Checkout master
         uses: actions/checkout@v1
 
-      - name: Set up Python 3.8
+      - name: Setup Python 3.8
         uses: actions/setup-python@v1
         with:
           python-version: 3.8
+
+      - name: Setup conda
+        uses: s-weigand/setup-conda@v1.0.5
+        with:
+          python-version: 3.8
+          activate-conda: false
+        run: |
+          conda create -n py38 
+          conda activate py38
       
       - name: Install dependencies
         run: |
