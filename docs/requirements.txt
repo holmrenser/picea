@@ -4,6 +4,7 @@ mkdocs-material
 mkdocs-jupyter
 picea
 jupyter
+ipykernel
 matplotlib
 scikit-learn
 numpy
