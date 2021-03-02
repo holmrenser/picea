@@ -29,7 +29,7 @@ jobs:
           pip3 install -r docs/requirements.txt
           pip3 install -r requirements.txt
           pip3 install -e .
-          python -m ipykernel install --name=py38
+          python -m ipykernel install --user --name=py38
       
       - name: Build docs site
         run: |
