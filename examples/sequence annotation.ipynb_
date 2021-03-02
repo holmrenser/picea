@@ -1,0 +1,533 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "('0.0.3_beta1', <module 'picea' from '../picea/__init__.py'>)"
+      ]
+     },
+     "execution_count": 2,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "%load_ext autoreload\n",
+    "%autoreload 2\n",
+    "import sys\n",
+    "sys.path.insert(0, '../')\n",
+    "import picea\n",
+    "picea.__version__,picea"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from picea import SequenceAnnotation, SequenceInterval"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 34,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "MtrunA17Chr1\tEuGene\tgene\t35039693\t35045433\t.\t+\t.\tID=gene:MtrunA17Chr1g0184451;name=MtrunA17Chr1g0184451;locus_tag=MtrunA17_Chr1g0184451\n",
+      "MtrunA17Chr1\tEuGene\tmRNA\t35039693\t35045433\t.\t+\t.\tID=mRNA:MtrunA17Chr1g0184451;name=MtrunA17Chr1g0184451;parent=gene:MtrunA17Chr1g0184451;ontology_term=GO:0005739;locus_tag=MtrunA17_Chr1g0184451;product=Putative%2520flagellum%2520site-determining%2520protein%2520YlxH%252F%2520Fe-S%2520cluster%2520assembling%2520factor%2520NBP35\n",
+      "MtrunA17Chr1\tEuGene\tfive_prime_UTR\t35039693\t35039922\t.\t+\t.\tID=five_prime_UTR:MtrunA17Chr1g0184451.0;parent=mRNA:MtrunA17Chr1g0184451;est_cons=100.0;est_incons=0.0\n",
+      "MtrunA17Chr1\tEuGene\texon\t35039693\t35039934\t.\t+\t.\tID=exon:MtrunA17Chr1g0184451.1;parent=mRNA:MtrunA17Chr1g0184451\n",
+      "MtrunA17Chr1\tEuGene\tCDS\t35039923\t35039934\t.\t+\t0\tID=CDS:MtrunA17Chr1g0184451.1;parent=mRNA:MtrunA17Chr1g0184451;est_cons=100.0;est_incons=0.0\n",
+      "MtrunA17Chr1\tEuGene\texon\t35040034\t35040142\t.\t+\t.\tID=exon:MtrunA17Chr1g0184451.2;parent=mRNA:MtrunA17Chr1g0184451\n",
+      "MtrunA17Chr1\tEuGene\tCDS\t35040034\t35040142\t.\t+\t0\tID=CDS:MtrunA17Chr1g0184451.2;parent=mRNA:MtrunA17Chr1g0184451;est_cons=100.0;est_incons=0.0\n",
+      "MtrunA17Chr1\tBLASTN\trepeat_region\t35040438\t35040761\t0.0\t+\t.\tID=DHH_singleton_family0_helitron1_MtrunA17Chr0c01_558455_569669_fragment_MtrunA17Chr1-17702;name=MtrunA17Chr1R0197040;locus_tag=MtrunA17_Chr1R0197040\n",
+      "MtrunA17Chr1\tEuGene\texon\t35041155\t35041277\t.\t+\t.\tID=exon:MtrunA17Chr1g0184451.3;parent=mRNA:MtrunA17Chr1g0184451\n",
+      "MtrunA17Chr1\tEuGene\tCDS\t35041155\t35041277\t.\t+\t2\tID=CDS:MtrunA17Chr1g0184451.3;parent=mRNA:MtrunA17Chr1g0184451;est_cons=100.0;est_incons=0.0\n",
+      "MtrunA17Chr1\tEuGene\texon\t35042183\t35042280\t.\t+\t.\tID=exon:MtrunA17Chr1g0184451.4;parent=mRNA:MtrunA17Chr1g0184451\n",
+      "MtrunA17Chr1\tEuGene\tCDS\t35042183\t35042280\t.\t+\t2\tID=CDS:MtrunA17Chr1g0184451.4;parent=mRNA:MtrunA17Chr1g0184451;est_cons=100.0;est_incons=0.0\n",
+      "MtrunA17Chr1\tEuGene\texon\t35042442\t35042568\t.\t+\t.\tID=exon:MtrunA17Chr1g0184451.5;parent=mRNA:MtrunA17Chr1g0184451\n",
+      "MtrunA17Chr1\tEuGene\tCDS\t35042442\t35042568\t.\t+\t0\tID=CDS:MtrunA17Chr1g0184451.5;parent=mRNA:MtrunA17Chr1g0184451;est_cons=100.0;est_incons=0.0\n",
+      "MtrunA17Chr1\tEuGene\texon\t35043200\t35043285\t.\t+\t.\tID=exon:MtrunA17Chr1g0184451.6;parent=mRNA:MtrunA17Chr1g0184451\n",
+      "MtrunA17Chr1\tEuGene\tCDS\t35043200\t35043285\t.\t+\t2\tID=CDS:MtrunA17Chr1g0184451.6;parent=mRNA:MtrunA17Chr1g0184451;est_cons=100.0;est_incons=0.0\n",
+      "MtrunA17Chr1\tEuGene\texon\t35044019\t35044144\t.\t+\t.\tID=exon:MtrunA17Chr1g0184451.7;parent=mRNA:MtrunA17Chr1g0184451\n",
+      "MtrunA17Chr1\tEuGene\tCDS\t35044019\t35044144\t.\t+\t0\tID=CDS:MtrunA17Chr1g0184451.7;parent=mRNA:MtrunA17Chr1g0184451;est_cons=100.0;est_incons=0.0\n",
+      "MtrunA17Chr1\tEuGene\tCDS\t35044859\t35045017\t.\t+\t0\tID=CDS:MtrunA17Chr1g0184451.8;parent=mRNA:MtrunA17Chr1g0184451;est_cons=100.0;est_incons=0.0\n",
+      "MtrunA17Chr1\tEuGene\texon\t35044859\t35045433\t.\t+\t.\tID=exon:MtrunA17Chr1g0184451.8;parent=mRNA:MtrunA17Chr1g0184451\n",
+      "MtrunA17Chr1\tEuGene\tthree_prime_UTR\t35045018\t35045433\t.\t+\t.\tID=three_prime_UTR:MtrunA17Chr1g0184451.16;parent=mRNA:MtrunA17Chr1g0184451;est_cons=100.0;est_incons=0.0\n"
+     ]
+    }
+   ],
+   "source": [
+    "ann = SequenceAnnotation.from_gff('./data/example1.gff3')\n",
+    "print(ann.to_gff())"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "{'ID': 'mRNA:MtrunA17Chr1g0184451',\n",
+       " 'seqid': 'MtrunA17Chr1',\n",
+       " 'source': 'EuGene',\n",
+       " 'interval_type': 'mRNA',\n",
+       " 'start': 35039693,\n",
+       " 'end': 35045433,\n",
+       " 'score': '.',\n",
+       " 'strand': '+',\n",
+       " 'phase': '.',\n",
+       " 'name': ['MtrunA17Chr1g0184451'],\n",
+       " 'alias': None,\n",
+       " 'parent': ['gene:MtrunA17Chr1g0184451'],\n",
+       " 'target': None,\n",
+       " 'gap': None,\n",
+       " 'derives_from': None,\n",
+       " 'note': None,\n",
+       " 'dbxref': None,\n",
+       " 'ontology_term': ['GO:0005739'],\n",
+       " 'is_circular': None,\n",
+       " 'locus_tag': ['MtrunA17_Chr1g0184451'],\n",
+       " 'product': ['Putative%20flagellum%20site-determining%20protein%20YlxH%2F%20Fe-S%20cluster%20assembling%20factor%20NBP35'],\n",
+       " '_container': <picea.sequence.SequenceAnnotation at 0x11d1cb150>,\n",
+       " '_children': ['five_prime_UTR:MtrunA17Chr1g0184451.0',\n",
+       "  'exon:MtrunA17Chr1g0184451.1',\n",
+       "  'CDS:MtrunA17Chr1g0184451.1',\n",
+       "  'exon:MtrunA17Chr1g0184451.2',\n",
+       "  'CDS:MtrunA17Chr1g0184451.2',\n",
+       "  'exon:MtrunA17Chr1g0184451.3',\n",
+       "  'CDS:MtrunA17Chr1g0184451.3',\n",
+       "  'exon:MtrunA17Chr1g0184451.4',\n",
+       "  'CDS:MtrunA17Chr1g0184451.4',\n",
+       "  'exon:MtrunA17Chr1g0184451.5',\n",
+       "  'CDS:MtrunA17Chr1g0184451.5',\n",
+       "  'exon:MtrunA17Chr1g0184451.6',\n",
+       "  'CDS:MtrunA17Chr1g0184451.6',\n",
+       "  'exon:MtrunA17Chr1g0184451.7',\n",
+       "  'CDS:MtrunA17Chr1g0184451.7',\n",
+       "  'CDS:MtrunA17Chr1g0184451.8',\n",
+       "  'exon:MtrunA17Chr1g0184451.8',\n",
+       "  'three_prime_UTR:MtrunA17Chr1g0184451.16']}"
+      ]
+     },
+     "execution_count": 6,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "gene = ann['mRNA:MtrunA17Chr1g0184451']\n",
+    "gene.__dict__"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 24,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "{'ID': 'gene:MtrunA17Chr1g0184451',\n",
+       " 'seqid': 'MtrunA17Chr1',\n",
+       " 'source': 'EuGene',\n",
+       " 'interval_type': 'gene',\n",
+       " 'start': 35039693,\n",
+       " 'end': 35045433,\n",
+       " 'score': '.',\n",
+       " 'strand': '+',\n",
+       " 'phase': '.',\n",
+       " 'name': ['MtrunA17Chr1g0184451'],\n",
+       " 'alias': None,\n",
+       " 'parent': None,\n",
+       " 'target': None,\n",
+       " 'gap': None,\n",
+       " 'derives_from': None,\n",
+       " 'note': None,\n",
+       " 'dbxref': None,\n",
+       " 'ontology_term': None,\n",
+       " 'is_circular': None,\n",
+       " 'locus_tag': ['MtrunA17_Chr1g0184451'],\n",
+       " '_container': <picea.sequence.SequenceAnnotation at 0x11d1cb150>,\n",
+       " '_children': ['mRNA:MtrunA17Chr1g0184451']}"
+      ]
+     },
+     "execution_count": 24,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "gene = ann['gene:MtrunA17Chr1g0184451']\n",
+    "gene.__dict__"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 35,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "'[{\"ID\": \"gene:MtrunA17Chr1g0184451\", \"seqid\": \"MtrunA17Chr1\", \"source\": \"EuGene\", \"interval_type\": \"gene\", \"start\": 35039693, \"end\": 35045433, \"score\": \".\", \"strand\": \"+\", \"phase\": \".\", \"attributes\": {\"name\": [\"MtrunA17Chr1g0184451\"], \"locus_tag\": [\"MtrunA17_Chr1g0184451\"]}, \"children\": [{\"ID\": \"mRNA:MtrunA17Chr1g0184451\", \"seqid\": \"MtrunA17Chr1\", \"source\": \"EuGene\", \"interval_type\": \"mRNA\", \"start\": 35039693, \"end\": 35045433, \"score\": \".\", \"strand\": \"+\", \"phase\": \".\", \"attributes\": {\"name\": [\"MtrunA17Chr1g0184451\"], \"parent\": [\"gene:MtrunA17Chr1g0184451\"], \"ontology_term\": [\"GO:0005739\"], \"locus_tag\": [\"MtrunA17_Chr1g0184451\"], \"product\": [\"Putative%20flagellum%20site-determining%20protein%20YlxH%2F%20Fe-S%20cluster%20assembling%20factor%20NBP35\"]}}, {\"ID\": \"five_prime_UTR:MtrunA17Chr1g0184451.0\", \"seqid\": \"MtrunA17Chr1\", \"source\": \"EuGene\", \"interval_type\": \"five_prime_UTR\", \"start\": 35039693, \"end\": 35039922, \"score\": \".\", \"strand\": \"+\", \"phase\": \".\", \"attributes\": {\"parent\": [\"mRNA:MtrunA17Chr1g0184451\"], \"est_cons\": [\"100.0\"], \"est_incons\": [\"0.0\"]}}, {\"ID\": \"exon:MtrunA17Chr1g0184451.1\", \"seqid\": \"MtrunA17Chr1\", \"source\": \"EuGene\", \"interval_type\": \"exon\", \"start\": 35039693, \"end\": 35039934, \"score\": \".\", \"strand\": \"+\", \"phase\": \".\", \"attributes\": {\"parent\": [\"mRNA:MtrunA17Chr1g0184451\"]}}, {\"ID\": \"CDS:MtrunA17Chr1g0184451.1\", \"seqid\": \"MtrunA17Chr1\", \"source\": \"EuGene\", \"interval_type\": \"CDS\", \"start\": 35039923, \"end\": 35039934, \"score\": \".\", \"strand\": \"+\", \"phase\": 0, \"attributes\": {\"parent\": [\"mRNA:MtrunA17Chr1g0184451\"], \"est_cons\": [\"100.0\"], \"est_incons\": [\"0.0\"]}}, {\"ID\": \"exon:MtrunA17Chr1g0184451.2\", \"seqid\": \"MtrunA17Chr1\", \"source\": \"EuGene\", \"interval_type\": \"exon\", \"start\": 35040034, \"end\": 35040142, \"score\": \".\", \"strand\": \"+\", \"phase\": \".\", \"attributes\": {\"parent\": [\"mRNA:MtrunA17Chr1g0184451\"]}}, {\"ID\": \"CDS:MtrunA17Chr1g0184451.2\", \"seqid\": \"MtrunA17Chr1\", \"source\": \"EuGene\", \"interval_type\": \"CDS\", \"start\": 35040034, \"end\": 35040142, \"score\": \".\", \"strand\": \"+\", \"phase\": 0, \"attributes\": {\"parent\": [\"mRNA:MtrunA17Chr1g0184451\"], \"est_cons\": [\"100.0\"], \"est_incons\": [\"0.0\"]}}, {\"ID\": \"exon:MtrunA17Chr1g0184451.3\", \"seqid\": \"MtrunA17Chr1\", \"source\": \"EuGene\", \"interval_type\": \"exon\", \"start\": 35041155, \"end\": 35041277, \"score\": \".\", \"strand\": \"+\", \"phase\": \".\", \"attributes\": {\"parent\": [\"mRNA:MtrunA17Chr1g0184451\"]}}, {\"ID\": \"CDS:MtrunA17Chr1g0184451.3\", \"seqid\": \"MtrunA17Chr1\", \"source\": \"EuGene\", \"interval_type\": \"CDS\", \"start\": 35041155, \"end\": 35041277, \"score\": \".\", \"strand\": \"+\", \"phase\": 2, \"attributes\": {\"parent\": [\"mRNA:MtrunA17Chr1g0184451\"], \"est_cons\": [\"100.0\"], \"est_incons\": [\"0.0\"]}}, {\"ID\": \"exon:MtrunA17Chr1g0184451.4\", \"seqid\": \"MtrunA17Chr1\", \"source\": \"EuGene\", \"interval_type\": \"exon\", \"start\": 35042183, \"end\": 35042280, \"score\": \".\", \"strand\": \"+\", \"phase\": \".\", \"attributes\": {\"parent\": [\"mRNA:MtrunA17Chr1g0184451\"]}}, {\"ID\": \"CDS:MtrunA17Chr1g0184451.4\", \"seqid\": \"MtrunA17Chr1\", \"source\": \"EuGene\", \"interval_type\": \"CDS\", \"start\": 35042183, \"end\": 35042280, \"score\": \".\", \"strand\": \"+\", \"phase\": 2, \"attributes\": {\"parent\": [\"mRNA:MtrunA17Chr1g0184451\"], \"est_cons\": [\"100.0\"], \"est_incons\": [\"0.0\"]}}, {\"ID\": \"exon:MtrunA17Chr1g0184451.5\", \"seqid\": \"MtrunA17Chr1\", \"source\": \"EuGene\", \"interval_type\": \"exon\", \"start\": 35042442, \"end\": 35042568, \"score\": \".\", \"strand\": \"+\", \"phase\": \".\", \"attributes\": {\"parent\": [\"mRNA:MtrunA17Chr1g0184451\"]}}, {\"ID\": \"CDS:MtrunA17Chr1g0184451.5\", \"seqid\": \"MtrunA17Chr1\", \"source\": \"EuGene\", \"interval_type\": \"CDS\", \"start\": 35042442, \"end\": 35042568, \"score\": \".\", \"strand\": \"+\", \"phase\": 0, \"attributes\": {\"parent\": [\"mRNA:MtrunA17Chr1g0184451\"], \"est_cons\": [\"100.0\"], \"est_incons\": [\"0.0\"]}}, {\"ID\": \"exon:MtrunA17Chr1g0184451.6\", \"seqid\": \"MtrunA17Chr1\", \"source\": \"EuGene\", \"interval_type\": \"exon\", \"start\": 35043200, \"end\": 35043285, \"score\": \".\", \"strand\": \"+\", \"phase\": \".\", \"attributes\": {\"parent\": [\"mRNA:MtrunA17Chr1g0184451\"]}}, {\"ID\": \"CDS:MtrunA17Chr1g0184451.6\", \"seqid\": \"MtrunA17Chr1\", \"source\": \"EuGene\", \"interval_type\": \"CDS\", \"start\": 35043200, \"end\": 35043285, \"score\": \".\", \"strand\": \"+\", \"phase\": 2, \"attributes\": {\"parent\": [\"mRNA:MtrunA17Chr1g0184451\"], \"est_cons\": [\"100.0\"], \"est_incons\": [\"0.0\"]}}, {\"ID\": \"exon:MtrunA17Chr1g0184451.7\", \"seqid\": \"MtrunA17Chr1\", \"source\": \"EuGene\", \"interval_type\": \"exon\", \"start\": 35044019, \"end\": 35044144, \"score\": \".\", \"strand\": \"+\", \"phase\": \".\", \"attributes\": {\"parent\": [\"mRNA:MtrunA17Chr1g0184451\"]}}, {\"ID\": \"CDS:MtrunA17Chr1g0184451.7\", \"seqid\": \"MtrunA17Chr1\", \"source\": \"EuGene\", \"interval_type\": \"CDS\", \"start\": 35044019, \"end\": 35044144, \"score\": \".\", \"strand\": \"+\", \"phase\": 0, \"attributes\": {\"parent\": [\"mRNA:MtrunA17Chr1g0184451\"], \"est_cons\": [\"100.0\"], \"est_incons\": [\"0.0\"]}}, {\"ID\": \"CDS:MtrunA17Chr1g0184451.8\", \"seqid\": \"MtrunA17Chr1\", \"source\": \"EuGene\", \"interval_type\": \"CDS\", \"start\": 35044859, \"end\": 35045017, \"score\": \".\", \"strand\": \"+\", \"phase\": 0, \"attributes\": {\"parent\": [\"mRNA:MtrunA17Chr1g0184451\"], \"est_cons\": [\"100.0\"], \"est_incons\": [\"0.0\"]}}, {\"ID\": \"exon:MtrunA17Chr1g0184451.8\", \"seqid\": \"MtrunA17Chr1\", \"source\": \"EuGene\", \"interval_type\": \"exon\", \"start\": 35044859, \"end\": 35045433, \"score\": \".\", \"strand\": \"+\", \"phase\": \".\", \"attributes\": {\"parent\": [\"mRNA:MtrunA17Chr1g0184451\"]}}, {\"ID\": \"three_prime_UTR:MtrunA17Chr1g0184451.16\", \"seqid\": \"MtrunA17Chr1\", \"source\": \"EuGene\", \"interval_type\": \"three_prime_UTR\", \"start\": 35045018, \"end\": 35045433, \"score\": \".\", \"strand\": \"+\", \"phase\": \".\", \"attributes\": {\"parent\": [\"mRNA:MtrunA17Chr1g0184451\"], \"est_cons\": [\"100.0\"], \"est_incons\": [\"0.0\"]}}]}]'"
+      ]
+     },
+     "execution_count": 35,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "json_string = f'[{gene.to_json(include_children=True)}]'\n",
+    "#json_string = SequenceAnnotation.from_json(string=json_string).to_json()\n",
+    "\n",
+    "SequenceAnnotation.from_json(string=json_string).to_json(indent=2)\n",
+    "json_string"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 42,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "[<SequenceInterval type=gene ID=gene:MtrunA17Chr1g0184451 loc=MtrunA17Chr1..35039693..35045433..+ at 0x1225cad10>,\n",
+       " <SequenceInterval type=mRNA ID=mRNA:MtrunA17Chr1g0184451.1 loc=MtrunA17Chr1..35039693..35045433..+ at 0x1219f0c90>,\n",
+       " <SequenceInterval type=five_prime_UTR ID=five_prime_UTR:MtrunA17Chr1g0184451.0 loc=MtrunA17Chr1..35039693..35039922..+ at 0x1222d5790>,\n",
+       " <SequenceInterval type=exon ID=exon:MtrunA17Chr1g0184451.1 loc=MtrunA17Chr1..35039693..35039934..+ at 0x1225cadd0>,\n",
+       " <SequenceInterval type=CDS ID=CDS:MtrunA17Chr1g0184451.1 loc=MtrunA17Chr1..35039923..35039934..+ at 0x1219f0d10>,\n",
+       " <SequenceInterval type=exon ID=exon:MtrunA17Chr1g0184451.2 loc=MtrunA17Chr1..35040034..35040142..+ at 0x1219f0d50>,\n",
+       " <SequenceInterval type=CDS ID=CDS:MtrunA17Chr1g0184451.2 loc=MtrunA17Chr1..35040034..35040142..+ at 0x1219f0d90>,\n",
+       " <SequenceInterval type=exon ID=exon:MtrunA17Chr1g0184451.3 loc=MtrunA17Chr1..35041155..35041277..+ at 0x1219f0dd0>,\n",
+       " <SequenceInterval type=CDS ID=CDS:MtrunA17Chr1g0184451.3 loc=MtrunA17Chr1..35041155..35041277..+ at 0x1219f0e10>,\n",
+       " <SequenceInterval type=exon ID=exon:MtrunA17Chr1g0184451.4 loc=MtrunA17Chr1..35042183..35042280..+ at 0x1219f0e50>,\n",
+       " <SequenceInterval type=CDS ID=CDS:MtrunA17Chr1g0184451.4 loc=MtrunA17Chr1..35042183..35042280..+ at 0x1219f0e90>,\n",
+       " <SequenceInterval type=exon ID=exon:MtrunA17Chr1g0184451.5 loc=MtrunA17Chr1..35042442..35042568..+ at 0x1219f0ed0>,\n",
+       " <SequenceInterval type=CDS ID=CDS:MtrunA17Chr1g0184451.5 loc=MtrunA17Chr1..35042442..35042568..+ at 0x1219f0f10>,\n",
+       " <SequenceInterval type=exon ID=exon:MtrunA17Chr1g0184451.6 loc=MtrunA17Chr1..35043200..35043285..+ at 0x1219f0f50>,\n",
+       " <SequenceInterval type=CDS ID=CDS:MtrunA17Chr1g0184451.6 loc=MtrunA17Chr1..35043200..35043285..+ at 0x1219f0f90>,\n",
+       " <SequenceInterval type=exon ID=exon:MtrunA17Chr1g0184451.7 loc=MtrunA17Chr1..35044019..35044144..+ at 0x1219f0fd0>,\n",
+       " <SequenceInterval type=CDS ID=CDS:MtrunA17Chr1g0184451.7 loc=MtrunA17Chr1..35044019..35044144..+ at 0x121a0f050>,\n",
+       " <SequenceInterval type=CDS ID=CDS:MtrunA17Chr1g0184451.8 loc=MtrunA17Chr1..35044859..35045017..+ at 0x121a0f090>,\n",
+       " <SequenceInterval type=exon ID=exon:MtrunA17Chr1g0184451.8 loc=MtrunA17Chr1..35044859..35045433..+ at 0x121a0f0d0>,\n",
+       " <SequenceInterval type=three_prime_UTR ID=three_prime_UTR:MtrunA17Chr1g0184451.16 loc=MtrunA17Chr1..35045018..35045433..+ at 0x1225cac50>,\n",
+       " <SequenceInterval type=mRNA ID=mRNA:MtrunA17Chr1g0184451.2 loc=MtrunA17Chr1..35039693..35045433..+ at 0x1219f0cd0>]"
+      ]
+     },
+     "execution_count": 42,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "ann = SequenceAnnotation.from_json(filename='./data/genemodel.json')\n",
+    "ann['gene:MtrunA17Chr1g0184451'].children"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 29,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "<SequenceInterval type=gene ID=gene:MtrunA17Chr1g0184451 loc=MtrunA17Chr1..35039693..35045433..+ at 0x11d1fb590>"
+      ]
+     },
+     "execution_count": 29,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "SequenceInterval.from_dict(gene.to_dict())"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 33,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "'[{\"ID\": \"gene:MtrunA17Chr1g0184451\", \"seqid\": \"MtrunA17Chr1\", \"source\": \"EuGene\", \"interval_type\": \"gene\", \"start\": 35039693, \"end\": 35045433, \"score\": \".\", \"strand\": \"+\", \"phase\": \".\", \"attributes\": {\"name\": [\"MtrunA17Chr1g0184451\"], \"locus_tag\": [\"MtrunA17_Chr1g0184451\"]}}, {\"ID\": \"mRNA:MtrunA17Chr1g0184451\", \"seqid\": \"MtrunA17Chr1\", \"source\": \"EuGene\", \"interval_type\": \"mRNA\", \"start\": 35039693, \"end\": 35045433, \"score\": \".\", \"strand\": \"+\", \"phase\": \".\", \"attributes\": {\"name\": [\"MtrunA17Chr1g0184451\"], \"parent\": [\"gene:MtrunA17Chr1g0184451\"], \"ontology_term\": [\"GO:0005739\"], \"locus_tag\": [\"MtrunA17_Chr1g0184451\"], \"product\": [\"Putative%20flagellum%20site-determining%20protein%20YlxH%2F%20Fe-S%20cluster%20assembling%20factor%20NBP35\"]}}, {\"ID\": \"five_prime_UTR:MtrunA17Chr1g0184451.0\", \"seqid\": \"MtrunA17Chr1\", \"source\": \"EuGene\", \"interval_type\": \"five_prime_UTR\", \"start\": 35039693, \"end\": 35039922, \"score\": \".\", \"strand\": \"+\", \"phase\": \".\", \"attributes\": {\"parent\": [\"mRNA:MtrunA17Chr1g0184451\"], \"est_cons\": [\"100.0\"], \"est_incons\": [\"0.0\"]}}, {\"ID\": \"exon:MtrunA17Chr1g0184451.1\", \"seqid\": \"MtrunA17Chr1\", \"source\": \"EuGene\", \"interval_type\": \"exon\", \"start\": 35039693, \"end\": 35039934, \"score\": \".\", \"strand\": \"+\", \"phase\": \".\", \"attributes\": {\"parent\": [\"mRNA:MtrunA17Chr1g0184451\"]}}, {\"ID\": \"CDS:MtrunA17Chr1g0184451.1\", \"seqid\": \"MtrunA17Chr1\", \"source\": \"EuGene\", \"interval_type\": \"CDS\", \"start\": 35039923, \"end\": 35039934, \"score\": \".\", \"strand\": \"+\", \"phase\": 0, \"attributes\": {\"parent\": [\"mRNA:MtrunA17Chr1g0184451\"], \"est_cons\": [\"100.0\"], \"est_incons\": [\"0.0\"]}}, {\"ID\": \"exon:MtrunA17Chr1g0184451.2\", \"seqid\": \"MtrunA17Chr1\", \"source\": \"EuGene\", \"interval_type\": \"exon\", \"start\": 35040034, \"end\": 35040142, \"score\": \".\", \"strand\": \"+\", \"phase\": \".\", \"attributes\": {\"parent\": [\"mRNA:MtrunA17Chr1g0184451\"]}}, {\"ID\": \"CDS:MtrunA17Chr1g0184451.2\", \"seqid\": \"MtrunA17Chr1\", \"source\": \"EuGene\", \"interval_type\": \"CDS\", \"start\": 35040034, \"end\": 35040142, \"score\": \".\", \"strand\": \"+\", \"phase\": 0, \"attributes\": {\"parent\": [\"mRNA:MtrunA17Chr1g0184451\"], \"est_cons\": [\"100.0\"], \"est_incons\": [\"0.0\"]}}, {\"ID\": \"DHH_singleton_family0_helitron1_MtrunA17Chr0c01_558455_569669_fragment_MtrunA17Chr1-17702\", \"seqid\": \"MtrunA17Chr1\", \"source\": \"BLASTN\", \"interval_type\": \"repeat_region\", \"start\": 35040438, \"end\": 35040761, \"score\": 0.0, \"strand\": \"+\", \"phase\": \".\", \"attributes\": {\"name\": [\"MtrunA17Chr1R0197040\"], \"locus_tag\": [\"MtrunA17_Chr1R0197040\"]}}, {\"ID\": \"exon:MtrunA17Chr1g0184451.3\", \"seqid\": \"MtrunA17Chr1\", \"source\": \"EuGene\", \"interval_type\": \"exon\", \"start\": 35041155, \"end\": 35041277, \"score\": \".\", \"strand\": \"+\", \"phase\": \".\", \"attributes\": {\"parent\": [\"mRNA:MtrunA17Chr1g0184451\"]}}, {\"ID\": \"CDS:MtrunA17Chr1g0184451.3\", \"seqid\": \"MtrunA17Chr1\", \"source\": \"EuGene\", \"interval_type\": \"CDS\", \"start\": 35041155, \"end\": 35041277, \"score\": \".\", \"strand\": \"+\", \"phase\": 2, \"attributes\": {\"parent\": [\"mRNA:MtrunA17Chr1g0184451\"], \"est_cons\": [\"100.0\"], \"est_incons\": [\"0.0\"]}}, {\"ID\": \"exon:MtrunA17Chr1g0184451.4\", \"seqid\": \"MtrunA17Chr1\", \"source\": \"EuGene\", \"interval_type\": \"exon\", \"start\": 35042183, \"end\": 35042280, \"score\": \".\", \"strand\": \"+\", \"phase\": \".\", \"attributes\": {\"parent\": [\"mRNA:MtrunA17Chr1g0184451\"]}}, {\"ID\": \"CDS:MtrunA17Chr1g0184451.4\", \"seqid\": \"MtrunA17Chr1\", \"source\": \"EuGene\", \"interval_type\": \"CDS\", \"start\": 35042183, \"end\": 35042280, \"score\": \".\", \"strand\": \"+\", \"phase\": 2, \"attributes\": {\"parent\": [\"mRNA:MtrunA17Chr1g0184451\"], \"est_cons\": [\"100.0\"], \"est_incons\": [\"0.0\"]}}, {\"ID\": \"exon:MtrunA17Chr1g0184451.5\", \"seqid\": \"MtrunA17Chr1\", \"source\": \"EuGene\", \"interval_type\": \"exon\", \"start\": 35042442, \"end\": 35042568, \"score\": \".\", \"strand\": \"+\", \"phase\": \".\", \"attributes\": {\"parent\": [\"mRNA:MtrunA17Chr1g0184451\"]}}, {\"ID\": \"CDS:MtrunA17Chr1g0184451.5\", \"seqid\": \"MtrunA17Chr1\", \"source\": \"EuGene\", \"interval_type\": \"CDS\", \"start\": 35042442, \"end\": 35042568, \"score\": \".\", \"strand\": \"+\", \"phase\": 0, \"attributes\": {\"parent\": [\"mRNA:MtrunA17Chr1g0184451\"], \"est_cons\": [\"100.0\"], \"est_incons\": [\"0.0\"]}}, {\"ID\": \"exon:MtrunA17Chr1g0184451.6\", \"seqid\": \"MtrunA17Chr1\", \"source\": \"EuGene\", \"interval_type\": \"exon\", \"start\": 35043200, \"end\": 35043285, \"score\": \".\", \"strand\": \"+\", \"phase\": \".\", \"attributes\": {\"parent\": [\"mRNA:MtrunA17Chr1g0184451\"]}}, {\"ID\": \"CDS:MtrunA17Chr1g0184451.6\", \"seqid\": \"MtrunA17Chr1\", \"source\": \"EuGene\", \"interval_type\": \"CDS\", \"start\": 35043200, \"end\": 35043285, \"score\": \".\", \"strand\": \"+\", \"phase\": 2, \"attributes\": {\"parent\": [\"mRNA:MtrunA17Chr1g0184451\"], \"est_cons\": [\"100.0\"], \"est_incons\": [\"0.0\"]}}, {\"ID\": \"exon:MtrunA17Chr1g0184451.7\", \"seqid\": \"MtrunA17Chr1\", \"source\": \"EuGene\", \"interval_type\": \"exon\", \"start\": 35044019, \"end\": 35044144, \"score\": \".\", \"strand\": \"+\", \"phase\": \".\", \"attributes\": {\"parent\": [\"mRNA:MtrunA17Chr1g0184451\"]}}, {\"ID\": \"CDS:MtrunA17Chr1g0184451.7\", \"seqid\": \"MtrunA17Chr1\", \"source\": \"EuGene\", \"interval_type\": \"CDS\", \"start\": 35044019, \"end\": 35044144, \"score\": \".\", \"strand\": \"+\", \"phase\": 0, \"attributes\": {\"parent\": [\"mRNA:MtrunA17Chr1g0184451\"], \"est_cons\": [\"100.0\"], \"est_incons\": [\"0.0\"]}}, {\"ID\": \"CDS:MtrunA17Chr1g0184451.8\", \"seqid\": \"MtrunA17Chr1\", \"source\": \"EuGene\", \"interval_type\": \"CDS\", \"start\": 35044859, \"end\": 35045017, \"score\": \".\", \"strand\": \"+\", \"phase\": 0, \"attributes\": {\"parent\": [\"mRNA:MtrunA17Chr1g0184451\"], \"est_cons\": [\"100.0\"], \"est_incons\": [\"0.0\"]}}, {\"ID\": \"exon:MtrunA17Chr1g0184451.8\", \"seqid\": \"MtrunA17Chr1\", \"source\": \"EuGene\", \"interval_type\": \"exon\", \"start\": 35044859, \"end\": 35045433, \"score\": \".\", \"strand\": \"+\", \"phase\": \".\", \"attributes\": {\"parent\": [\"mRNA:MtrunA17Chr1g0184451\"]}}, {\"ID\": \"three_prime_UTR:MtrunA17Chr1g0184451.16\", \"seqid\": \"MtrunA17Chr1\", \"source\": \"EuGene\", \"interval_type\": \"three_prime_UTR\", \"start\": 35045018, \"end\": 35045433, \"score\": \".\", \"strand\": \"+\", \"phase\": \".\", \"attributes\": {\"parent\": [\"mRNA:MtrunA17Chr1g0184451\"], \"est_cons\": [\"100.0\"], \"est_incons\": [\"0.0\"]}}]'"
+      ]
+     },
+     "execution_count": 33,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "ann.to_json()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 44,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "'abcdef'"
+      ]
+     },
+     "execution_count": 44,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "(\n",
+    "    'abc'\n",
+    "    'def'\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 22,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "[1, 2, 3]"
+      ]
+     },
+     "execution_count": 22,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "import json\n",
+    "json.loads(json.dumps([1,2,3]))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 61,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "re.compile(r'([\\t|\\n|%|\\x00-\\x1f|\\x7f]+)', re.UNICODE)"
+      ]
+     },
+     "execution_count": 61,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "import re \n",
+    "re.compile('([\\t|\\n|%|\\x00-\\x1f|\\x7f]+)')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 78,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "'hi%25'"
+      ]
+     },
+     "execution_count": 78,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "from functools import reduce\n",
+    "\n",
+    "# (character, code) tuples for encoding special characters\n",
+    "# percent (%) MUST GO FIRST\n",
+    "ENCODE_SPECIAL_CHARACTERS = (\n",
+    "    ('%', '%25'),\n",
+    "    ('[   |\\t]', '%09'),\n",
+    "    ('\\n', '%0A'),\n",
+    "    (';', '%3B'),\n",
+    "    ('=', '%3D'),\n",
+    "    ('&', '%26'),\n",
+    "    (',', '%2C')\n",
+    ")\n",
+    "\n",
+    "# (code, character) tuples for decoding special characters\n",
+    "# percent (%) MUST GO LAST\n",
+    "DECODE_SPECIAL_CHARACTERS = (\n",
+    "    ('%2C', ','),\n",
+    "    ('%26', '&'),\n",
+    "    ('%3D', '='),\n",
+    "    ('%3B', ';'),\n",
+    "    ('%0A', '\\n'),\n",
+    "    ('%09', '\\t'),\n",
+    "    ('%25', '%')\n",
+    ")\n",
+    "\n",
+    "def quote_gff3(attribute_value: str) -> str:\n",
+    "    pattern, repl = ENCODE_SPECIAL_CHARACTERS[0]\n",
+    "    quoted_value = re.sub(pattern, repl, attribute_value)\n",
+    "    for pattern, repl in ENCODE_SPECIAL_CHARACTERS[1:]:\n",
+    "        quoted_value = re.sub(pattern, repl, quoted_value)\n",
+    "    return quoted_value\n",
+    "\n",
+    "quote_gff3('hi%')\n",
+    "\n",
+    "reduce(lambda acc, code: re.sub(code[0], code[1], acc), ENCODE_SPECIAL_CHARACTERS, 'hi%' )"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 89,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "(['gene:MtrunA17Chr1g0184451'],\n",
+       " defaultdict(list,\n",
+       "             {'name': ['MtrunA17Chr1g0184451'],\n",
+       "              'locus_tag': ['MtrunA17_Chr1g0184451']}))"
+      ]
+     },
+     "execution_count": 89,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "from typing import Iterable, List, Tuple, Dict, Callable\n",
+    "\n",
+    "# (code, character) tuples for decoding special characters\n",
+    "# percent (%) MUST GO LAST\n",
+    "DECODE_SPECIAL_CHARACTERS = (\n",
+    "    ('%2C', ','),\n",
+    "    ('%26', '&'),\n",
+    "    ('%3D', '='),\n",
+    "    ('%3B', ';'),\n",
+    "    ('%0A', '\\n'),\n",
+    "    ('%09', '\\t'),\n",
+    "    ('%25', '%')\n",
+    ")\n",
+    "\n",
+    "def unquote_gff3(attribute_value: str) -> str:\n",
+    "    return reduce(\n",
+    "        lambda acc, code: re.sub(code[0], code[1], acc),  # func\n",
+    "        DECODE_SPECIAL_CHARACTERS,  # iterable\n",
+    "        attribute_value  # initial\n",
+    "    )\n",
+    "\n",
+    "def decode_attribute_value(attribute_value: str) -> List[str]:\n",
+    "    \"\"\"[summary]\n",
+    "\n",
+    "    Args:\n",
+    "        attribute_value (str): [description]\n",
+    "\n",
+    "    Returns:\n",
+    "        List[str]: [description]\n",
+    "    \"\"\"\n",
+    "    return [unquote_gff3(v) for v in attribute_value.split(',')]\n",
+    "\n",
+    "def parse_gff_attribute_string(\n",
+    "        gff_attribute_string: str,\n",
+    "        case_sensitive_attribute_keys: bool = False\n",
+    "    ) -> Dict[str, List[str]]:\n",
+    "    \"\"\"[summary]\n",
+    "    https://github.com/The-Sequence-Ontology/Specifications/blob/master/gff3.md\n",
+    "    See \"Column 9: Attributes\"\n",
+    "    Args:\n",
+    "        gff_attribute_string ([type]): [description]\n",
+    "    \"\"\"\n",
+    "    attributes = defaultdict(list)\n",
+    "    for string_part in gff_attribute_string.split(';'):\n",
+    "        if not string_part:\n",
+    "            continue\n",
+    "        try:\n",
+    "            key, value = string_part.split('=', maxsplit=1)\n",
+    "        except Exception as e:\n",
+    "            print(gff_attribute_string, string_part)\n",
+    "            raise Exception(e)\n",
+    "        # The gff spec lists the predefined attribute fields as starting with\n",
+    "        # a capital letter, but we process in lowercase so we don't miss\n",
+    "        # anything from poorly formatted files. When writing to gff we convert\n",
+    "        # back to a capital\n",
+    "        # EXCEPT FOR THE ID ATTRIBUTE, since lowercase id is reserved in python\n",
+    "        if key != 'ID':\n",
+    "            key = key.lower()\n",
+    "        for value_part in decode_attribute_value(value):\n",
+    "            attributes[key].append(value_part)\n",
+    "    return attributes\n",
+    "\n",
+    "d = parse_gff_attribute_string(\n",
+    "    'ID=gene:MtrunA17Chr1g0184451;Name=MtrunA17Chr1g0184451;locus_tag=MtrunA17_Chr1g0184451'\n",
+    ")\n",
+    "\n",
+    "d.pop('ID'),d"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 92,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "'hi'"
+      ]
+     },
+     "execution_count": 92,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "d.pop('ID', 'hi')"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "py37",
+   "language": "python",
+   "name": "py37"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.7.6"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 4
+}

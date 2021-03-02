@@ -1,0 +1,24 @@
+##gff-version 3
+##sequence-region   MtrunA17Chr1 1 56706830
+##COMMENT Annotation taken from Medicago truncatula annotation v5.1.7
+MtrunA17Chr1	EuGene	gene	35039693	35045433	.	+	.	ID=gene:MtrunA17Chr1g0184451;Name=MtrunA17Chr1g0184451;locus_tag=MtrunA17_Chr1g0184451
+MtrunA17Chr1	EuGene	mRNA	35039693	35045433	.	+	.	ID=mRNA:MtrunA17Chr1g0184451;Parent=gene:MtrunA17Chr1g0184451;Name=MtrunA17Chr1g0184451;locus_tag=MtrunA17_Chr1g0184451;product=Putative%20flagellum%20site-determining%20protein%20YlxH%2F%20Fe-S%20cluster%20assembling%20factor%20NBP35;Ontology_term=GO:0005739
+MtrunA17Chr1	EuGene	five_prime_UTR	35039693	35039922	.	+	.	ID=five_prime_UTR:MtrunA17Chr1g0184451.0;Parent=mRNA:MtrunA17Chr1g0184451;est_cons=100.0;est_incons=0.0
+MtrunA17Chr1	EuGene	exon	35039693	35039934	.	+	.	ID=exon:MtrunA17Chr1g0184451.1;Parent=mRNA:MtrunA17Chr1g0184451
+MtrunA17Chr1	EuGene	CDS	35039923	35039934	.	+	0	ID=CDS:MtrunA17Chr1g0184451.1;Parent=mRNA:MtrunA17Chr1g0184451;est_cons=100.0;est_incons=0.0
+MtrunA17Chr1	EuGene	exon	35040034	35040142	.	+	.	ID=exon:MtrunA17Chr1g0184451.2;Parent=mRNA:MtrunA17Chr1g0184451
+MtrunA17Chr1	EuGene	CDS	35040034	35040142	.	+	0	ID=CDS:MtrunA17Chr1g0184451.2;Parent=mRNA:MtrunA17Chr1g0184451;est_cons=100.0;est_incons=0.0
+MtrunA17Chr1	BLASTN	repeat_region	35040438	35040761	0	+	.	ID=DHH_singleton_family0_helitron1_MtrunA17Chr0c01_558455_569669_fragment_MtrunA17Chr1-17702;Name=MtrunA17Chr1R0197040;locus_tag=MtrunA17_Chr1R0197040
+MtrunA17Chr1	EuGene	exon	35041155	35041277	.	+	.	ID=exon:MtrunA17Chr1g0184451.3;Parent=mRNA:MtrunA17Chr1g0184451
+MtrunA17Chr1	EuGene	CDS	35041155	35041277	.	+	2	ID=CDS:MtrunA17Chr1g0184451.3;Parent=mRNA:MtrunA17Chr1g0184451;est_cons=100.0;est_incons=0.0
+MtrunA17Chr1	EuGene	exon	35042183	35042280	.	+	.	ID=exon:MtrunA17Chr1g0184451.4;Parent=mRNA:MtrunA17Chr1g0184451
+MtrunA17Chr1	EuGene	CDS	35042183	35042280	.	+	2	ID=CDS:MtrunA17Chr1g0184451.4;Parent=mRNA:MtrunA17Chr1g0184451;est_cons=100.0;est_incons=0.0
+MtrunA17Chr1	EuGene	exon	35042442	35042568	.	+	.	ID=exon:MtrunA17Chr1g0184451.5;Parent=mRNA:MtrunA17Chr1g0184451
+MtrunA17Chr1	EuGene	CDS	35042442	35042568	.	+	0	ID=CDS:MtrunA17Chr1g0184451.5;Parent=mRNA:MtrunA17Chr1g0184451;est_cons=100.0;est_incons=0.0
+MtrunA17Chr1	EuGene	exon	35043200	35043285	.	+	.	ID=exon:MtrunA17Chr1g0184451.6;Parent=mRNA:MtrunA17Chr1g0184451
+MtrunA17Chr1	EuGene	CDS	35043200	35043285	.	+	2	ID=CDS:MtrunA17Chr1g0184451.6;Parent=mRNA:MtrunA17Chr1g0184451;est_cons=100.0;est_incons=0.0
+MtrunA17Chr1	EuGene	exon	35044019	35044144	.	+	.	ID=exon:MtrunA17Chr1g0184451.7;Parent=mRNA:MtrunA17Chr1g0184451
+MtrunA17Chr1	EuGene	CDS	35044019	35044144	.	+	0	ID=CDS:MtrunA17Chr1g0184451.7;Parent=mRNA:MtrunA17Chr1g0184451;est_cons=100.0;est_incons=0.0
+MtrunA17Chr1	EuGene	CDS	35044859	35045017	.	+	0	ID=CDS:MtrunA17Chr1g0184451.8;Parent=mRNA:MtrunA17Chr1g0184451;est_cons=100.0;est_incons=0.0
+MtrunA17Chr1	EuGene	exon	35044859	35045433	.	+	.	ID=exon:MtrunA17Chr1g0184451.8;Parent=mRNA:MtrunA17Chr1g0184451
+MtrunA17Chr1	EuGene	three_prime_UTR	35045018	35045433	.	+	.	ID=three_prime_UTR:MtrunA17Chr1g0184451.16;Parent=mRNA:MtrunA17Chr1g0184451;est_cons=100.0;est_incons=0.0
