@@ -1,12 +1,15 @@
 from unittest import TestCase
 
-from picea import Sequence, SequenceReader, SequenceCollection,\
-    MultipleSequenceAlignment, alphabets
+from picea import (
+    Sequence, SequenceReader, BatchSequenceReader,
+    SequenceCollection, MultipleSequenceAlignment, alphabets
+)
 
 
 class SequenceTests(TestCase):
     def setUp(self):
         self.fasta = '>A\nABC\n>B\nDEF'
+        self.big_fasta = '>A\nABC\n>B\nDEF\n>C\nGHI\n>D\nJKL'
         self.json = (
             '[{"header":"A","sequence":"ABC"},'
             '{"header":"B","sequence":"DEF"}]'
@@ -23,6 +26,17 @@ class SequenceTests(TestCase):
     def test_json_sequencereader(self):
         for _ in SequenceReader(string=self.json, filetype='json'):
             pass
+
+    def test_batchsequencereader(self):
+        n_batches = 0
+        for batch in BatchSequenceReader(
+            string=self.big_fasta,
+            filetype='fasta',
+            batchsize=2
+        ):
+            n_batches += 1
+            self.assertEqual(len(batch), 2)
+        self.assertEqual(n_batches, 2)
 
     def test_empty_init_sequence(self):
         Sequence()

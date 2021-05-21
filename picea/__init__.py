@@ -11,6 +11,7 @@ from .sequence import (  # noqa
     alphabets,
     Sequence,
     SequenceReader,
+    BatchSequenceReader,
     AbstractSequenceCollection,
     SequenceCollection,
     MultipleSequenceAlignment,

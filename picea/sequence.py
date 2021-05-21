@@ -128,16 +128,14 @@ class Alphabet(set):
     def complement(self, sequence: str) -> str:
         if self.name != 'DNA':
             raise TypeError('Cannot complement non-DNA alphabet')
-        dna_complement = dict(zip('acgtACGTN-?', 'tgcaTGCAN-?'))
+        dna_complement = dict(zip('acgtnACGTN-?', 'tgcanTGCAN-?'))
         return ''.join(dna_complement[s] for s in sequence)
 
     def translate(self, sequence: str) -> str:
         if self.name != 'DNA':
             raise TypeError('Cannot translate non-DNA alphabet')
         codons = re.findall('...', sequence.upper())
-        return ''.join(
-            TRANSLATION[codon] if 'N' not in codon else 'X' for codon in codons
-        )
+        return ''.join(TRANSLATION.get(codon, 'X') for codon in codons)
 
 
 def alphabet_factory(alphabet):
@@ -183,11 +181,26 @@ def encode_attribute_value(
     Returns:
         str: [description]
     """
-    try:
-        iter(attribute_value)
-    except TypeError:
+    if not isinstance(attribute_value, (list, tuple)):
         attribute_value = [attribute_value]
-    return ','.join([quote_gff3(v) for v in attribute_value])
+    return ','.join(quote_gff3(v) for v in attribute_value)
+
+
+def format_gtf_attribute_string(
+    attributes: Dict[str, Iterable[Union[int, str, float]]]
+) -> str:
+    """[summary]
+
+    Args:
+        attributes (Dict[str, Iterable[Union[int, str, float]]]): [description]
+
+    Returns:
+        str: [description]
+    """
+    return ''.join(
+        f' {key} "{encode_attribute_value(value)}";'
+        for key, value in attributes.items()
+    ).strip()
 
 
 def format_gff_attribute_string(
@@ -210,10 +223,10 @@ def format_gff_attribute_string(
         for key, value in attributes.items()
     }
     partially_formatted['ID'] = partially_formatted.pop('Id')
-    return ';'.join([
+    return ';'.join(
         f'{key}={value}'
         for key, value in partially_formatted.items()
-    ])
+    )
 
 
 def unquote_gff3(attribute_value: str) -> str:
@@ -459,12 +472,7 @@ class SequenceAnnotation:
         return sequence_annotation
 
     def to_gtf(self) -> str:
-        gtf_lines = [
-            interval.to_gtf_line() for interval in self
-            if (interval.interval_type != 'gene'
-                and interval.interval_type != 'mRNA')
-        ]
-        return '\n'.join(gtf_lines)
+        return '\n'.join(interval.to_gtf_line() for interval in self)
 
     @classmethod
     def from_gff(
@@ -531,8 +539,7 @@ class SequenceAnnotation:
         Returns:
             str: [description]
         """
-        gff_lines = [interval.to_gff_line() for interval in self]
-        return '\n'.join(gff_lines)
+        return '\n'.join(interval.to_gff_line() for interval in self)
 
     @classmethod
     def from_json(
@@ -589,7 +596,7 @@ class SequenceAnnotation:
         return json.dumps(interval_dicts, indent=indent)
 
     def add(self, interval: 'SequenceInterval'):
-        self._intervals[interval]
+        self[interval.ID] = interval
 
     def pop(self, value: str) -> 'SequenceInterval':
         return self._intervals.pop(value)
@@ -618,6 +625,7 @@ class SequenceInterval:
         'seqid', 'source', 'interval_type', 'start', 'end', 'score', 'strand',
         'phase'
     )
+    _gtf_interval_types = dict(mRNA='transcript')
 
     def __init__(
         self,
@@ -725,15 +733,37 @@ class SequenceInterval:
             self._container[value] = self._container.pop(old_ID)
 
     @property
-    def gff_attributes(self):
+    def gff_attributes(self) -> Dict[str, str]:
         return {
             attr: self[attr]
             for attr in self.__dict__
             if attr not in self._fixed_gff3_fields  # skip column 1-8 in gff3
             and attr not in ('_children', '_container',
-                             '_ID')  # internal use only
+                             '_ID', '_original_ID')  # internal use only
             and self[attr] is not None  # no empty attributes
         }
+
+    @property
+    def gtf_attributes(self) -> Dict[str, str]:
+        def get_gtf_type(gff_type):
+            return self._gtf_interval_types.get(gff_type, gff_type)
+        parent_ids = {
+            f'{get_gtf_type(parent.interval_type)}_id': parent.ID
+            for parent in self._get_parents()
+        }
+        return {
+            **self.gff_attributes,
+            **parent_ids
+        }
+
+    @property
+    def parents(self) -> SequenceAnnotation:
+        ann = SequenceAnnotation()
+        for interval in self._get_parents():
+            if interval == self:
+                continue
+            ann[interval.ID] = interval
+        return ann
 
     @property
     def children(self) -> SequenceAnnotation:
@@ -765,7 +795,19 @@ class SequenceInterval:
         )
 
     def to_gtf_line(self) -> str:
-        raise NotImplementedError()
+        """[summary]
+
+        Returns:
+            str: [description]
+        """
+        interval_type = self._gtf_interval_types.get(
+            self.interval_type, self.interval_type
+        )
+        return '\t'.join([
+            self.seqid, self.source, interval_type, str(self.start),
+            str(self.end), str(self.score), self.strand, str(self.phase),
+            format_gtf_attribute_string(self.gtf_attributes)
+        ])
 
     @classmethod
     def from_gff_line(
@@ -919,6 +961,18 @@ class SequenceInterval:
         for child_ID in self._children:
             child = self._container[child_ID]
             yield from child._get_children(_visited=_visited)
+
+    def _get_parents(self, _visited: Optional[set] = None):
+        if _visited is None:
+            _visited = set()
+        if self not in _visited:
+            yield self
+            _visited.add(self)
+        if not self.parent:
+            return
+        for parent_ID in self.parent:
+            parent = self._container[parent_ID]
+            yield from parent._get_parents(_visited=_visited)
 
 
 @dataclass
@@ -1111,6 +1165,50 @@ alphabet=Alphabet(name='DNA', members='-?ACGNT'))
     def _json_iter(self) -> Iterable[Sequence]:
         for entry in json.loads(self.string):
             yield Sequence(entry['header'], entry['sequence'])
+
+
+class BatchSequenceReader(SequenceReader):
+    def __init__(
+        self,
+        string: str = None,
+        filename: str = None,
+        filetype: str = None,
+        batchsize: int = 10,
+    ) -> None:
+        """[summary]
+
+        Args:
+            string (str, optional): [description]. Defaults to None.
+            filename (str, optional): [description]. Defaults to None.
+            filetype (str, optional): [description]. Defaults to None.
+            batchsize (int, optional): [description]. Defaults to 10.
+
+        Returns:
+            [type]: [description]
+
+        Yields:
+            [type]: [description]
+        """
+        super().__init__(string, filename, filetype)
+        self.batchsize = batchsize
+        self._currentbatch = SequenceCollection()
+
+    def __iter__(self) -> Iterable['SequenceCollection']:
+        for s in self._iter():
+            self._currentbatch[s.header] = s
+            if len(self._currentbatch) == self.batchsize:
+                yield self._currentbatch
+                self._currentbatch = SequenceCollection()
+
+    def __next__(self) -> 'SequenceCollection':
+        currentbatch = self._currentbatch
+        self._currentbatch = SequenceCollection()
+        if len(currentbatch) == self.batchsize:
+            return currentbatch
+        for s in self._iter():
+            currentbatch[s.header] = s
+            if len(currentbatch) == self.batchsize:
+                yield currentbatch
 
 
 SequenceIndexKey = Union[int, List[int], slice]
@@ -1358,7 +1456,7 @@ class SequenceCollection(AbstractSequenceCollection):
         self.sequence_annotation = sequence_annotation
 
     def __setitem__(self, header: str, seq: str) -> None:
-        if header in self.headers:
+        if header in self._collection:
             warn(f'Turning duplicate header "{header}" into unique header')
             new_header = header
             modifier = 0
