@@ -23,6 +23,7 @@ jobs:
         uses: abatilo/actions-poetry@v2.0.0
         with:
           poetry-version: ${{ matrix.poetry-version }}
+      - name: Poetry install
         run: poetry install
       - name: Lint with flake8
         run: poetry run flake8
