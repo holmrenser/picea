@@ -1079,6 +1079,16 @@ alphabet=Alphabet(name='AminoAcid', members='*-?ACDEFGHIKLMNPQRSTVWXY'))
     def __getitem__(self, key):
         return Sequence(self.header, self.sequence[key])
 
+    def __len__(self):
+        """Length of the sequence
+
+        Examples:
+            >>> s = Sequence('test_dna', 'ACGTA')
+            >>> len(s)
+            5
+        """
+        return len(self.sequence)
+
     @property
     def reverse(self):
         return Sequence(self.header, self.sequence[::-1])
@@ -1100,6 +1110,11 @@ alphabet=Alphabet(name='AminoAcid', members='*-?ACDEFGHIKLMNPQRSTVWXY'))
 
     def to_dict(self) -> Dict[str, str]:
         """Make dictionary with header and sequence elements
+
+        Examples:
+            >>> s = Sequence('test', 'ACGTA')
+            >>> s.to_dict()
+            {'header': 'test', 'sequence': 'ACGTA'}
 
         Returns:
             Dict[str, str]: sequence dictionary
@@ -1468,8 +1483,8 @@ class AbstractSequenceCollection(metaclass=ABCMeta):
         """
         raise NotImplementedError()
 
-    def batch_rename(self, rename_func: Callable) -> None:
-        """[summary]
+    def batch_rename(self, rename_func: Callable[[str], str]) -> None:
+        """Rename all headers by calling `rename_func` on each header
 
         Args:
             rename_func (Callable): [description]
