@@ -1,6 +1,9 @@
 Deploying to pypi:
+
 ```
-rm -r dist
-python setup.py sdist bdist_wheel
-twine upload dist/*
+poetry version <major,minor,patch>
+poetry run coverage run
+poetry run coverage report
+poetry build
+poetry deploy
 ```
