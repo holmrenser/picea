@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branch: [master, dev]
+
+jobs:
+  ci:
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        python-version: [3.7, 3.8, 3.9]
+        poetry-version: [1.0, 1.1.11]
+        os: [ubuntu-18.04, macos-latest, windows-latest]
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Set up poetry
+        uses: abatilo/actions-poetry@v2.0.0
+        with:
+          poetry-version: ${{ matrix.poetry-version }}
+      - name: Lint with flake8
+        run: poetry run flake8
+      - name: Run test and report coverage with pytest/coverage/coveralls
+        env:
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+        run: |
+          poetry run coverage run
+          poetry run coverage report
+          coveralls
+
+#    - name: Coveralls GitHub Action
+#      uses: coverallsapp/github-action@v1.0.1
+#      with:
+#        github-token: ${{ secrets.GITHUB_TOKEN }}
+#

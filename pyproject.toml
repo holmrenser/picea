@@ -1,0 +1,46 @@
+[tool.poetry]
+name = "picea"
+version = "0.0.20"
+description = "A lightweight python library for working with trees and biological sequence collections"
+authors = ["Rens Holmer"]
+readme = "README.md"
+license = "MIT"
+classifiers = [
+            'Development Status :: 3 - Alpha',
+            'Natural Language :: English',
+            'Operating System :: MacOS',
+            'Operating System :: Microsoft :: Windows',
+            'Operating System :: POSIX',
+            'Operating System :: Unix',
+            'Intended Audience :: Developers',
+            'Intended Audience :: Science/Research',
+            'Topic :: Scientific/Engineering :: Bio-Informatics',
+            'Topic :: Utilities'
+        ]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+numpy = "^1.22.2"
+matplotlib = "^3.5.1"
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.0"
+black = "^22.1.0"
+flake8 = "^4.0.1"
+coverage = {extras = ["toml"], version = "^6.3.1"}
+coveralls = "^3.3.1"
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "--verbose --doctest-modules"
+testpaths = ["picea","tests"]
+python_classes = "*Tests"
+python_functions = "test*"
+python_files = "*tests.py"
+
+[tool.coverage.run]
+branch = true
+command_line = "-m pytest"
+
+[tool.coverage.report]
+omit = ["tests/*", "*__init__.py"]
