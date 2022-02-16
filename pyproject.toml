@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "picea"
-version = "0.0.21"
+version = "0.0" # this is automatically filled based on __init__.py
 description = "A lightweight python library for working with trees and biological sequence collections"
 authors = ["Rens Holmer"]
 readme = "README.md"
@@ -19,7 +19,7 @@ classifiers = [
         ]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "~3.8"
 numpy = "^1.22.2"
 matplotlib = "^3.5.1"
 
@@ -29,6 +29,17 @@ black = "^22.1.0"
 flake8 = "^4.0.1"
 coverage = {extras = ["toml"], version = "^6.3.1"}
 coveralls = "^3.3.1"
+mkdocs = "^1.2.3"
+mkapi = "^1.0.14"
+mkdocs-material = "^8.1.11"
+mkdocs-jupyter = "^0.20.0"
+jupyter = "^1.0.0"
+ipykernel = "^6.9.1"
+scipy = "^1.8.0"
+scikit-learn = "^1.0.2"
+
+[tool.poetry-version-plugin]
+source = "init"
 
 [tool.pytest.ini_options]
 minversion = "7.0"
