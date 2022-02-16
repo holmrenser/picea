@@ -33,7 +33,7 @@ jobs:
         run: |
           poetry run coverage run
           poetry run coverage report
-          coveralls
+          poetry run coveralls
 
 #    - name: Coveralls GitHub Action
 #      uses: coverallsapp/github-action@v1.0.1
