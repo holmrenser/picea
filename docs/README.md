@@ -1,16 +1,19 @@
 Docs are built with [mkdocs](https://www.mkdocs.org/)
 
 Install dependencies
+
 ```
-pip install -r requirements.txt
+poetry install
 ```
 
 Development server
+
 ```
-mkdocs serve
+poetry run mkdocs serve
 ```
 
 Build docs
+
 ```
-mkdocs build
+poetry run mkdocs build
 ```

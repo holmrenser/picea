@@ -25,11 +25,7 @@ TreeDict = Dict[str, Union[str, int, float, List[Optional["TreeDict"]]]]
 
 @dataclass
 class Tree:
-    """[summary]
-
-    Returns:
-        [type]: [description]
-    """
+    """Recursive Tree object"""
 
     name: Optional[str] = None
     length: float = 0.0

@@ -1,3 +1,1 @@
-# Tree containers
-
-![mkapi](picea.Tree)
+:::picea.Tree

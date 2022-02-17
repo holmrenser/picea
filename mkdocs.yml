@@ -1,20 +1,47 @@
 site_name: Picea documentation
 repo_url: https://github.com/holmrenser/picea
-plugins: 
-    - search
-    - mkapi
-    - mkdocs-jupyter:
-        execute: True
+plugins:
+  - search
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          rendering:
+            show_root_heading: yes
+            show_root_full_path: no
+            show_category_heading: yes
+            show_if_no_docstring: yes
+            show_signature_annotations: yes
+      watch:
+        - picea
+  - mkdocs-jupyter:
+      execute: True
+extra_css:
+  - css/material.css
 markdown_extensions:
-    - admonition
-    - codehilite
-    - toc
+  - admonition
+  - codehilite
+  - toc:
+      permalink: true
 theme:
-    name: material
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.top
+  palette:
+    primary: white
+    accent: deep orange
+  font:
+    text: Helvetica
+
 nav:
-    - index.md
-    - Examples:
-        - examples/tree.ipynb
-    - API:
-        - API/sequence.md
-        - API/tree.md
+  - Overview:
+      - Overview: index.md
+      - About: README.md
+      - License: LICENSE.md
+      - Contributing: CONTRIBUTING.md
+  - Examples:
+      - Tree: examples/tree.ipynb
+  - API:
+      - Sequence: api/sequence.md
+      - Tree: api/tree.md

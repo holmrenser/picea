@@ -1,22 +1,7 @@
-# Sequence containers
+:::picea.Alphabet
 
-## Alphabet
-![mkapi](picea.Alphabet)
+:::picea.Sequence
 
-## alphabets
-![mkapi](picea.sequence.Alphabets)
+:::picea.AbstractSequenceCollection
 
-## Sequence
-![mkapi](picea.Sequence)
-
-## AbstractSequenceCollection
-![mkapi](picea.AbstractSequenceCollection)
-
-## SequenceCollection
-![mkapi](picea.SequenceCollection)
-
-## MultipleSequenceAlignment
-![mkapi](picea.MultipleSequenceAlignment)
-
-## SequenceAnnotation
-![mkapi](picea.SequenceAnnotation)
+:::picea.SequenceCollection
