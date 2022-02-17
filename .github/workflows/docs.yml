@@ -11,46 +11,51 @@ jobs:
 
     steps:
       - name: Checkout master
-        uses: actions/checkout@v1
+        uses: actions/checkout@v2
 
       - name: Setup Python 3.8
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2
         with:
           python-version: 3.8
 
-      - name: Setup conda
-        uses: s-weigand/setup-conda@v1.0.5
+      #      - name: Setup conda
+      #        uses: s-weigand/setup-conda@v1.0.5
+      #        with:
+      #          python-version: 3.8
+      #          activate-conda: false
+
+      #      - name: Install dependencies
+      #        run: |
+      #          pip3 install -r docs/requirements.txt
+      #          pip3 install -r requirements.txt
+      #          pip3 install -e .
+      #          python -m ipykernel install --user --name=py38
+      - name: Set up poetry
+        uses: abatilo/actions-poetry@v2.0.0
         with:
-          python-version: 3.8
-          activate-conda: false
-      
-      - name: Install dependencies
-        run: |
-          pip3 install -r docs/requirements.txt
-          pip3 install -r requirements.txt
-          pip3 install -e .
-          python -m ipykernel install --user --name=py38
-      
+          poetry-version: ${{ matrix.poetry-version }}
+
+      - name: Poetry install
+        run: poetry install
+
       - name: Build docs site
-        run: |
-          mkdocs build
-      
-      - name: Deploy
+        run: poetry run mkdocs build
+
+      - name: Deploy to github pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./site
-      
+
       #- name: Set up git
       #  run: |
       #    git config --global user.name "${GITHUB_ACTOR}"
       #    git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
       #    git remote rm origin
       #    git remote add origin https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
-      
+
       #- name: Deploy docs
       #  run: mkdocs gh-deploy --config-file "${GITHUB_WORKSPACE}/mkdocs.yml"  --force
-
 #      - name: Install picea / Deploy docs
 #        run: |
 #          pip3 install mkdocs
@@ -66,4 +71,4 @@ jobs:
 #        uses: mhausenblas/mkdocs-deploy-gh-pages@master
 #        env:
 #          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # REQUIREMENTS: docs/requirements.txt
+# REQUIREMENTS: docs/requirements.txt
