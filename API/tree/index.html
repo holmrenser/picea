@@ -13,7 +13,7 @@
     
     
       
-        <title>Tree containers - Picea documentation</title>
+        <title>Tree - Picea documentation</title>
       
     
     
@@ -22,6 +22,10 @@
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.e6a45f82.min.css">
         
+          
+          
+          <meta name="theme-color" content="#ffffff">
+        
       
     
     
@@ -29,16 +33,14 @@
       
         
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
-        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Helvetica:300,400,400i,700%7C&display=fallback">
+        <style>:root{--md-text-font:"Helvetica";--md-code-font:""}</style>
       
     
     
-      <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.8.1/css/all.css">
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.8.1/css/v4-shims.css">
-    
-      <link rel="stylesheet" href="../../css/mkapi-common.css">
+      <link rel="stylesheet" href="../../css/material.css">
     
     <script>__md_scope=new URL("../..",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
@@ -54,7 +56,7 @@
     
     
     
-    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="white" data-md-color-accent="deep-orange">
   
     
     
@@ -64,7 +66,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#tree-containers" class="md-skip">
+        <a href="#picea.tree.Tree" class="md-skip">
           Skip to content
         </a>
       
@@ -97,7 +99,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Tree containers
+              Tree
             
           </span>
         </div>
@@ -161,6 +163,63 @@
       
         
           
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-tabs__inner md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        Overview
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../examples/tree/" class="md-tabs__link">
+        Examples
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../api/sequence.md" class="md-tabs__link">
+        API
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
         
       
       <main class="md-main" data-md-component="main">
@@ -173,8 +232,10 @@
                   <div class="md-sidebar__inner">
                     
 
+  
 
-<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
     <a href="../.." title="Picea documentation" class="md-nav__button md-logo" aria-label="Picea documentation" data-md-component="logo">
       
@@ -206,10 +267,85 @@
   
   
   
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1" type="checkbox" id="__nav_1" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_1">
+          Overview
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Overview" data-md-level="1">
+        <label class="md-nav__title" for="__nav_1">
+          <span class="md-nav__icon md-icon"></span>
+          Overview
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
     <li class="md-nav__item">
       <a href="../.." class="md-nav__link">
-        _picea_
+        Overview
       </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        About
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../LICENSE/" class="md-nav__link">
+        License
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../CONTRIBUTING/" class="md-nav__link">
+        Contributing
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
     </li>
   
 
@@ -268,14 +404,12 @@
 
   
   
-    
-  
   
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" checked>
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
       
       
       
@@ -298,8 +432,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../sequence/" class="md-nav__link">
-        Sequence containers
+      <a href="../../api/sequence.md" class="md-nav__link">
+        Sequence
       </a>
     </li>
   
@@ -310,21 +444,11 @@
               
   
   
-    
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
-        Tree containers
+    <li class="md-nav__item">
+      <a href="../../api/tree.md" class="md-nav__link">
+        Tree
       </a>
-      
     </li>
   
 
@@ -353,8 +477,249 @@
   
   
   
-    
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#picea.tree.Tree" class="md-nav__link">
+    Tree
+  </a>
+  
+    <nav class="md-nav" aria-label="Tree">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#picea.tree.Tree-attributes" class="md-nav__link">
+    Attributes
+  </a>
+  
+    <nav class="md-nav" aria-label="Attributes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#picea.tree.Tree.ID" class="md-nav__link">
+    ID
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#picea.tree.Tree.children" class="md-nav__link">
+    children
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#picea.tree.Tree.cumulative_length" class="md-nav__link">
+    cumulative_length
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#picea.tree.Tree.depth" class="md-nav__link">
+    depth
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#picea.tree.Tree.iloc" class="md-nav__link">
+    iloc
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#picea.tree.Tree.leaves" class="md-nav__link">
+    leaves
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#picea.tree.Tree.length" class="md-nav__link">
+    length
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#picea.tree.Tree.links" class="md-nav__link">
+    links
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#picea.tree.Tree.loc" class="md-nav__link">
+    loc
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#picea.tree.Tree.name" class="md-nav__link">
+    name
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#picea.tree.Tree.nodes" class="md-nav__link">
+    nodes
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#picea.tree.Tree.parent" class="md-nav__link">
+    parent
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#picea.tree.Tree.root" class="md-nav__link">
+    root
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#picea.tree.Tree-methods" class="md-nav__link">
+    Methods
+  </a>
+  
+    <nav class="md-nav" aria-label="Methods">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#picea.tree.Tree.__eq__" class="md-nav__link">
+    __eq__()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#picea.tree.Tree.__init__" class="md-nav__link">
+    __init__()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#picea.tree.Tree.__post_init__" class="md-nav__link">
+    __post_init__()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#picea.tree.Tree.__repr__" class="md-nav__link">
+    __repr__()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#picea.tree.Tree.breadth_first" class="md-nav__link">
+    breadth_first()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#picea.tree.Tree.depth_first" class="md-nav__link">
+    depth_first()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#picea.tree.Tree.from_dict" class="md-nav__link">
+    from_dict()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#picea.tree.Tree.from_json" class="md-nav__link">
+    from_json()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#picea.tree.Tree.from_newick" class="md-nav__link">
+    from_newick()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#picea.tree.Tree.from_sklearn" class="md-nav__link">
+    from_sklearn()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#picea.tree.Tree.rename_leaves" class="md-nav__link">
+    rename_leaves()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#picea.tree.Tree.to_dict" class="md-nav__link">
+    to_dict()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#picea.tree.Tree.to_json" class="md-nav__link">
+    to_json()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#picea.tree.Tree.to_newick" class="md-nav__link">
+    to_newick()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#picea.tree.Tree.to_sklearn" class="md-nav__link">
+    to_sklearn()
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
   
 </nav>
                   </div>
@@ -371,365 +736,1422 @@
 </a>
 
 
-<h1 id="tree-containers">Tree containers</h1>
-<div class="mkapi-node" id="picea.tree.Tree">
-<div class='mkapi-object-container'>
-  <div class="mkapi-object dataclass code top">
-    <div class="mkapi-object-kind dataclass top">dataclass</div>
-    <div class="mkapi-object-body dataclass top"><code class="mkapi-object-prefix">picea.tree.</code><code class="mkapi-object-name">Tree</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">name=None</code>, <code class="mkapi-object-signature">length=0.0</code>, <code class="mkapi-object-signature">children=&lt;factory&gt;</code>, <code class="mkapi-object-signature">ID=None</code>, <code class="mkapi-object-signature">depth=None</code>, <code class="mkapi-object-signature">parent=None</code>, <code class="mkapi-object-signature">cumulative_length=0.0</code><code class="mkapi-object-parenthesis">)</code></div>
+  <h1>Tree</h1>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="picea.tree.Tree" class="doc doc-heading">
+        <code>
+Tree        </code>
+
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-dataclass"><code>dataclass</code></small>
+  </span>
+
+<a href="#picea.tree.Tree" class="headerlink" title="Permanent link">&para;</a></h2>
+
+    <div class="doc doc-contents first">
+
+      <p>Recursive Tree object</p>
+
+        <details class="quote">
+          <summary>Source code in <code>picea/tree.py</code></summary>
+          <div class="codehilite"><pre><span></span><code><span class="k">class</span> <span class="nc">Tree</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Recursive Tree object&quot;&quot;&quot;</span>
+
+    <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">length</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">children</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="s2">&quot;Tree&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+
+    <span class="n">ID</span><span class="p">:</span> <span class="n">InitVar</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">depth</span><span class="p">:</span> <span class="n">InitVar</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">parent</span><span class="p">:</span> <span class="n">InitVar</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;Tree&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">cumulative_length</span><span class="p">:</span> <span class="n">InitVar</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+    <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ID</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;[summary]</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ID ([type]): [description]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ID</span> <span class="o">=</span> <span class="n">ID</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">loc</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Tree&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Name based index</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; from picea import Tree</span>
+<span class="sd">            &gt;&gt;&gt; newick = &#39;(((a,b),(c,d)),e);&#39;</span>
+<span class="sd">            &gt;&gt;&gt; tree = Tree.from_newick(newick)</span>
+<span class="sd">            &gt;&gt;&gt; tree.loc[&#39;a&#39;]</span>
+<span class="sd">            Tree(name=&#39;a&#39;, length=0.0, children=[])</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tree: tree node matching name</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            IndexError</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">TreeIndex</span><span class="p">(</span>
+            <span class="n">iterator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">depth_first</span><span class="p">,</span> <span class="n">eq_func</span><span class="o">=</span><span class="k">lambda</span> <span class="n">node</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">name</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">iloc</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Tree&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Index based index</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; from picea import Tree</span>
+<span class="sd">            &gt;&gt;&gt; newick = &#39;(((a,b),(c,d)),e);&#39;</span>
+<span class="sd">            &gt;&gt;&gt; tree = Tree.from_newick(newick)</span>
+<span class="sd">            &gt;&gt;&gt; tree.iloc[2]</span>
+<span class="sd">            Tree(name=&#39;&#39;, length=0.0, children=[Tree(name=&#39;a&#39;, length=0.0, \</span>
+<span class="sd">children=[]), Tree(name=&#39;b&#39;, length=0.0, children=[])])</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tree: tree node matching index</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">TreeIndex</span><span class="p">(</span>
+            <span class="n">iterator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">depth_first</span><span class="p">,</span> <span class="n">eq_func</span><span class="o">=</span><span class="k">lambda</span> <span class="n">node</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">ID</span> <span class="o">==</span> <span class="n">index</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">root</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Tree&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Root node of the (sub)tree</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tree: Root node</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">root</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="k">while</span> <span class="n">root</span><span class="o">.</span><span class="n">parent</span><span class="p">:</span>
+            <span class="n">root</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">parent</span>
+        <span class="k">return</span> <span class="n">root</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">nodes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="s2">&quot;Tree&quot;</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;A list of all tree nodes in breadth-first order</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: A list of all tree nodes</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">breadth_first</span><span class="p">())</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">leaves</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="s2">&quot;Tree&quot;</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;A list of leaf nodes only</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: A list of leaf nodes only</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">nodes</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">n</span><span class="o">.</span><span class="n">children</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">links</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="s2">&quot;Tree&quot;</span><span class="p">,</span> <span class="s2">&quot;Tree&quot;</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;A list of all (parent, child) combinations</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: All (parent,child) combinations</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">_links</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">nodes</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
+                    <span class="n">_links</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">node</span><span class="p">,</span> <span class="n">child</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">_links</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_newick</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span> <span class="n">string</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Tree&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Parse a newick formatted string into a Tree object</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            newick_string (string): Newick formatted tree string</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tree: Tree object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">filename</span> <span class="ow">or</span> <span class="n">string</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="p">(</span><span class="n">filename</span> <span class="ow">and</span> <span class="n">string</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">filename</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="k">as</span> <span class="n">filehandle</span><span class="p">:</span>
+                <span class="n">string</span> <span class="o">=</span> <span class="n">filehandle</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="n">tokens</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\s*(;|\(|\)|,|:)\s*&quot;</span><span class="p">,</span> <span class="n">string</span><span class="p">)</span>
+        <span class="n">ID</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">tree</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">ID</span><span class="o">=</span><span class="n">ID</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">cumulative_length</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+        <span class="n">ancestors</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">token</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tokens</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">token</span> <span class="o">==</span> <span class="s2">&quot;(&quot;</span><span class="p">:</span>
+                <span class="n">ID</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">subtree</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">ID</span><span class="o">=</span><span class="n">ID</span><span class="p">)</span>
+                <span class="n">tree</span><span class="o">.</span><span class="n">children</span> <span class="o">=</span> <span class="p">[</span><span class="n">subtree</span><span class="p">]</span>
+                <span class="n">ancestors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tree</span><span class="p">)</span>
+                <span class="n">tree</span> <span class="o">=</span> <span class="n">subtree</span>
+            <span class="k">elif</span> <span class="n">token</span> <span class="o">==</span> <span class="s2">&quot;,&quot;</span><span class="p">:</span>
+                <span class="n">ID</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">subtree</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">ID</span><span class="o">=</span><span class="n">ID</span><span class="p">)</span>
+                <span class="n">ancestors</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">children</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">subtree</span><span class="p">)</span>
+                <span class="n">tree</span> <span class="o">=</span> <span class="n">subtree</span>
+            <span class="k">elif</span> <span class="n">token</span> <span class="o">==</span> <span class="s2">&quot;)&quot;</span><span class="p">:</span>
+                <span class="n">tree</span> <span class="o">=</span> <span class="n">ancestors</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">previous_token</span> <span class="o">=</span> <span class="n">tokens</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">previous_token</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;(&quot;</span><span class="p">,</span> <span class="s2">&quot;)&quot;</span><span class="p">,</span> <span class="s2">&quot;,&quot;</span><span class="p">):</span>
+                    <span class="n">tree</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">token</span>
+                <span class="k">elif</span> <span class="n">previous_token</span> <span class="o">==</span> <span class="s2">&quot;:&quot;</span><span class="p">:</span>
+                    <span class="n">tree</span><span class="o">.</span><span class="n">length</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
+        <span class="n">tree</span><span class="o">.</span><span class="n">depth</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">queue</span> <span class="o">=</span> <span class="p">[</span><span class="n">tree</span><span class="p">]</span>
+        <span class="k">while</span> <span class="n">queue</span><span class="p">:</span>
+            <span class="n">node</span> <span class="o">=</span> <span class="n">queue</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
+                <span class="n">child</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="n">node</span>
+                <span class="n">child</span><span class="o">.</span><span class="n">depth</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">depth</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="n">child</span><span class="o">.</span><span class="n">cumulative_length</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">cumulative_length</span> <span class="o">+</span> <span class="nb">abs</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">length</span><span class="p">)</span>
+            <span class="n">queue</span> <span class="o">+=</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span>
+
+        <span class="k">return</span> <span class="n">tree</span>
+
+    <span class="k">def</span> <span class="nf">to_newick</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">branch_lengths</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Make a Newick formatted string</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            branch_lengths (bool, optional): Whether to include branch lengths\</span>
+<span class="sd">             in the Newick string. Defaults to True.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            String: Newick formatted tree string</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
+            <span class="n">subtree_string</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">to_newick</span><span class="p">(</span><span class="n">branch_lengths</span><span class="o">=</span><span class="n">branch_lengths</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="n">newick</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">subtree_string</span><span class="si">}</span><span class="s2">)</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">newick</span> <span class="o">=</span> <span class="n">name</span>
+
+        <span class="k">if</span> <span class="n">branch_lengths</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">ID</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">length</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">length</span>
+            <span class="k">if</span> <span class="n">length</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">length</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">newick</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;:</span><span class="si">{</span><span class="n">length</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">:</span>
+            <span class="n">newick</span> <span class="o">+=</span> <span class="s2">&quot;;&quot;</span>
+
+        <span class="k">return</span> <span class="n">newick</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_sklearn</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">clustering</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Tree&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Read a tree from sklearn agglomerative clustering</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            clustering (sklearn object): sklearn agglomerative clustering\</span>
+<span class="sd">                 object.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tree: Tree object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">nodes</span> <span class="o">=</span> <span class="n">clustering</span><span class="o">.</span><span class="n">children_</span>
+        <span class="n">n_leaves</span> <span class="o">=</span> <span class="n">nodes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">tree</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">ID</span><span class="o">=</span><span class="n">nodes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="n">queue</span> <span class="o">=</span> <span class="p">[</span><span class="n">tree</span><span class="p">]</span>
+        <span class="k">while</span> <span class="n">queue</span><span class="p">:</span>
+            <span class="n">node</span> <span class="o">=</span> <span class="n">queue</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">ID</span> <span class="o">&lt;</span> <span class="n">n_leaves</span><span class="p">:</span>
+                <span class="n">node</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">ID</span><span class="p">)</span>
+                <span class="k">continue</span>
+            <span class="k">for</span> <span class="n">child_ID</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">ID</span> <span class="o">-</span> <span class="n">n_leaves</span><span class="p">]:</span>
+                <span class="n">child</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">ID</span><span class="o">=</span><span class="n">child_ID</span><span class="p">)</span>
+                <span class="n">child</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="n">node</span>
+                <span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+            <span class="n">queue</span> <span class="o">+=</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span>
+
+        <span class="k">return</span> <span class="n">tree</span>
+
+    <span class="k">def</span> <span class="nf">to_sklearn</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># TODO</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_json</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="c1"># TODO</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">to_json</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indent</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(),</span> <span class="n">indent</span><span class="o">=</span><span class="n">indent</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">tree_dict</span><span class="p">):</span>
+        <span class="c1"># TODO</span>
+        <span class="c1"># raise NotImplementedError()</span>
+        <span class="n">tree</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">tree</span>
+
+    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TreeDict</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;[summary]</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            TreeDict: [description]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">asdict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">breadth_first</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="s2">&quot;Tree&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Generator implementing breadth first search starting at root node&quot;&quot;&quot;</span>
+        <span class="n">queue</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="p">]</span>
+        <span class="k">while</span> <span class="n">queue</span><span class="p">:</span>
+            <span class="n">node</span> <span class="o">=</span> <span class="n">queue</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">queue</span> <span class="o">+=</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span>
+            <span class="k">yield</span> <span class="n">node</span>
+
+    <span class="k">def</span> <span class="nf">depth_first</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">post_order</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="s2">&quot;Tree&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Generator implementing depth first search in either post- or</span>
+<span class="sd">        pre-order traversel</span>
+
+<span class="sd">        Keyword Arguments:</span>
+<span class="sd">            post_order (bool, optional): Depth first search in post-order</span>
+<span class="sd">            traversal or not. Defaults to True</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">post_order</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="bp">self</span>
+        <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
+            <span class="k">yield from</span> <span class="n">child</span><span class="o">.</span><span class="n">depth_first</span><span class="p">(</span><span class="n">post_order</span><span class="o">=</span><span class="n">post_order</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">post_order</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">rename_leaves</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">rename_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;Tree&quot;</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;[summary]&quot;&quot;&quot;</span>
+        <span class="n">tree</span> <span class="o">=</span> <span class="bp">self</span> <span class="k">if</span> <span class="n">inplace</span> <span class="k">else</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">leaf</span> <span class="ow">in</span> <span class="n">tree</span><span class="o">.</span><span class="n">leaves</span><span class="p">:</span>
+            <span class="n">leaf</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">rename_func</span><span class="p">(</span><span class="n">leaf</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+</code></pre></div>
+        </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+<h3 id="picea.tree.Tree-attributes">Attributes<a href="#picea.tree.Tree-attributes" class="headerlink" title="Permanent link">&para;</a></h3>
+
+  <div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="picea.tree.Tree.ID" class="doc doc-heading">
+<code class="codehilite language-python"><span class="n">ID</span><span class="p">:</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">InitVar</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-dataclass-field"><code>dataclass-field</code></small>
+  </span>
+
+<a href="#picea.tree.Tree.ID" class="headerlink" title="Permanent link">&para;</a></h4>
+
+    <div class="doc doc-contents ">
+
+    </div>
+
   </div>
-  
-</div>
-<div class="mkapi-docstring">
-<div class="mkapi-section">
-      <div class="mkapi-section-body"><p>[summary]</p></div>
+
+
+
+  <div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="picea.tree.Tree.children" class="doc doc-heading">
+<code class="codehilite language-python"><span class="n">children</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">picea</span><span class="o">.</span><span class="n">tree</span><span class="o">.</span><span class="n">Tree</span><span class="p">]]</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-dataclass-field"><code>dataclass-field</code></small>
+  </span>
+
+<a href="#picea.tree.Tree.children" class="headerlink" title="Permanent link">&para;</a></h4>
+
+    <div class="doc doc-contents ">
+
     </div>
-  <div class="mkapi-section attributes">
-      <div class="mkapi-section-name attributes">
-          <span class="mkapi-section-name-body attributes">Attributes</span> 
-        </div>
-      <div class="mkapi-section-body attributes"><ul class="mkapi-items">
 
-
-
-
-<li class="readonly-property"><code class="mkapi-item-name">iloc</code>
-
-<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Index based index</span></li>
-
-<li class="readonly-property"><code class="mkapi-item-name">leaves</code>
-
-<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A list of leaf nodes only</span></li>
-
-
-<li class="readonly-property"><code class="mkapi-item-name">links</code>
-
-<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A list of all (parent, child) combinations</span></li>
-
-<li class="readonly-property"><code class="mkapi-item-name">loc</code>
-
-<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Name based index</span></li>
-
-
-<li class="readonly-property"><code class="mkapi-item-name">nodes</code>
-
-<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">A list of all tree nodes in breadth-first order</span></li>
-
-
-<li class="readonly-property"><code class="mkapi-item-name">root</code>
-
-<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Root node of the (sub)tree</span></li>
-
-
-</ul></div>
-    </div>
-  <div class="mkapi-section returns">
-      <div class="mkapi-section-name returns">
-          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">([type])</span>
-        </div>
-      <div class="mkapi-section-body returns"><p>[description]</p></div>
-    </div>
-  <div class="mkapi-section methods">
-      <div class="mkapi-section-name methods">
-          <span class="mkapi-section-name-body methods">Methods</span> 
-        </div>
-      <div class="mkapi-section-body methods"><ul class="mkapi-items">
-<li class="method"><code class="mkapi-item-name"><a href="#picea.tree.Tree.__post_init__">__post_init__</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">ID</code>, <code class="mkapi-object-signature">*args</code>, <code class="mkapi-object-signature">**kwargs</code><code class="mkapi-object-parenthesis">)</code>
-
-<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[summary]</span></li>
-
-<li class="generator"><code class="mkapi-item-name"><a href="#picea.tree.Tree.breadth_first">breadth_first</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code>
-<span class="mkapi-item-type">(generator(Tree))</span>
-<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Generator implementing breadth first search starting at root node</span></li>
-
-<li class="generator"><code class="mkapi-item-name"><a href="#picea.tree.Tree.depth_first">depth_first</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">post_order</code><code class="mkapi-object-parenthesis">)</code>
-<span class="mkapi-item-type">(generator(Tree))</span>
-<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Generator implementing depth first search in either post- or
-pre-order traversel</span></li>
-
-<li class="classmethod"><code class="mkapi-item-name"><a href="#picea.tree.Tree.from_newick">from_newick</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">string</code>, <code class="mkapi-object-signature">filename</code><code class="mkapi-object-parenthesis">)</code>
-<span class="mkapi-item-type">(Tree)</span>
-<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Parse a newick formatted string into a Tree object</span></li>
-
-<li class="classmethod"><code class="mkapi-item-name"><a href="#picea.tree.Tree.from_sklearn">from_sklearn</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">clustering</code><code class="mkapi-object-parenthesis">)</code>
-<span class="mkapi-item-type">(Tree)</span>
-<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Read a tree from sklearn agglomerative clustering</span></li>
-
-<li class="method"><code class="mkapi-item-name"><a href="#picea.tree.Tree.rename_leaves">rename_leaves</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">rename_func</code>, <code class="mkapi-object-signature">inplace</code><code class="mkapi-object-parenthesis">)</code>
-<span class="mkapi-item-type">(Tree, optional)</span>
-<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[summary]</span></li>
-
-<li class="method"><code class="mkapi-item-name"><a href="#picea.tree.Tree.to_dict">to_dict</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code>
-<span class="mkapi-item-type">(TreeDict)</span>
-<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[summary]</span></li>
-
-<li class="method"><code class="mkapi-item-name"><a href="#picea.tree.Tree.to_newick">to_newick</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">branch_lengths</code><code class="mkapi-object-parenthesis">)</code>
-<span class="mkapi-item-type">(String)</span>
-<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Make a Newick formatted string</span></li>
-
-
-</ul></div>
-    </div>
   </div>
 
-  <div class="mkapi-members">
-  
-    <div class="mkapi-member">
-      <div class="mkapi-node" id="picea.tree.Tree.__post_init__">
-<div class='mkapi-object-container'>
-  <div class="mkapi-object method code">
-    <div class="mkapi-object-kind method">method</div>
-    <div class="mkapi-object-body method"><code class="mkapi-object-name">__post_init__</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">ID</code>, <code class="mkapi-object-signature">*args</code>, <code class="mkapi-object-signature">**kwargs</code><code class="mkapi-object-parenthesis">)</code></div>
-  </div>
-  
-</div>
-<div class="mkapi-docstring">
-<div class="mkapi-section">
-      <div class="mkapi-section-body"><p>[summary]</p></div>
+
+
+  <div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="picea.tree.Tree.cumulative_length" class="doc doc-heading">
+<code class="codehilite language-python"><span class="n">cumulative_length</span><span class="p">:</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">InitVar</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-dataclass-field"><code>dataclass-field</code></small>
+  </span>
+
+<a href="#picea.tree.Tree.cumulative_length" class="headerlink" title="Permanent link">&para;</a></h4>
+
+    <div class="doc doc-contents ">
+
     </div>
-  <div class="mkapi-section parameters">
-      <div class="mkapi-section-name parameters">
-          <span class="mkapi-section-name-body parameters">Parameters</span> 
-        </div>
-      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
-<li><code class="mkapi-item-name">ID</code>
-<span class="mkapi-item-type">([type])</span>
-<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">[description]</span></li>
 
-
-
-
-</ul></div>
-    </div>
   </div>
 
-</div>
-    </div>
-  
-    <div class="mkapi-member">
-      <div class="mkapi-node" id="picea.tree.Tree.from_newick">
-<div class='mkapi-object-container'>
-  <div class="mkapi-object classmethod code">
-    <div class="mkapi-object-kind classmethod">classmethod</div>
-    <div class="mkapi-object-body classmethod"><code class="mkapi-object-name">from_newick</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">string=None</code>, <code class="mkapi-object-signature">filename=None</code><code class="mkapi-object-parenthesis">)</code></div>
-  </div>
-  
-</div>
-<div class="mkapi-docstring">
-<div class="mkapi-section">
-      <div class="mkapi-section-body"><p>Parse a newick formatted string into a Tree object</p></div>
-    </div>
-  <div class="mkapi-section parameters">
-      <div class="mkapi-section-name parameters">
-          <span class="mkapi-section-name-body parameters">Parameters</span> 
-        </div>
-      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
 
 
-<li><code class="mkapi-item-name">newick_string</code>
-<span class="mkapi-item-type">(string)</span>
-<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Newick formatted tree string</span></li>
+  <div class="doc doc-object doc-attribute">
 
 
-</ul></div>
+
+<h4 id="picea.tree.Tree.depth" class="doc doc-heading">
+<code class="codehilite language-python"><span class="n">depth</span><span class="p">:</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">InitVar</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-dataclass-field"><code>dataclass-field</code></small>
+  </span>
+
+<a href="#picea.tree.Tree.depth" class="headerlink" title="Permanent link">&para;</a></h4>
+
+    <div class="doc doc-contents ">
+
     </div>
-  <div class="mkapi-section returns">
-      <div class="mkapi-section-name returns">
-          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Tree)</span>
-        </div>
-      <div class="mkapi-section-body returns"><p>Tree object</p></div>
-    </div>
+
   </div>
 
-</div>
-    </div>
-  
-    <div class="mkapi-member">
-      <div class="mkapi-node" id="picea.tree.Tree.to_newick">
-<div class='mkapi-object-container'>
-  <div class="mkapi-object method code">
-    <div class="mkapi-object-kind method">method</div>
-    <div class="mkapi-object-body method"><code class="mkapi-object-name">to_newick</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">branch_lengths=True</code><code class="mkapi-object-parenthesis">)</code></div>
-  </div>
-  
-</div>
-<div class="mkapi-docstring">
-<div class="mkapi-section">
-      <div class="mkapi-section-body"><p>Make a Newick formatted string</p></div>
-    </div>
-  <div class="mkapi-section parameters">
-      <div class="mkapi-section-name parameters">
-          <span class="mkapi-section-name-body parameters">Parameters</span> 
-        </div>
-      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
-<li><code class="mkapi-item-name">branch_lengths</code>
-<span class="mkapi-item-type">(bool, optional)</span>
-<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Whether to include branch lengths             in the Newick string. Defaults to True.</span></li>
 
 
-</ul></div>
-    </div>
-  <div class="mkapi-section returns">
-      <div class="mkapi-section-name returns">
-          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(String)</span>
-        </div>
-      <div class="mkapi-section-body returns"><p>Newick formatted tree string</p></div>
-    </div>
-  </div>
-
-</div>
-    </div>
-  
-    <div class="mkapi-member">
-      <div class="mkapi-node" id="picea.tree.Tree.from_sklearn">
-<div class='mkapi-object-container'>
-  <div class="mkapi-object classmethod code">
-    <div class="mkapi-object-kind classmethod">classmethod</div>
-    <div class="mkapi-object-body classmethod"><code class="mkapi-object-name">from_sklearn</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">clustering</code><code class="mkapi-object-parenthesis">)</code></div>
-  </div>
-  
-</div>
-<div class="mkapi-docstring">
-<div class="mkapi-section">
-      <div class="mkapi-section-body"><p>Read a tree from sklearn agglomerative clustering</p></div>
-    </div>
-  <div class="mkapi-section parameters">
-      <div class="mkapi-section-name parameters">
-          <span class="mkapi-section-name-body parameters">Parameters</span> 
-        </div>
-      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
-<li><code class="mkapi-item-name">clustering</code>
-<span class="mkapi-item-type">(sklearn object)</span>
-<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">sklearn agglomerative clustering                 object.</span></li>
+  <div class="doc doc-object doc-attribute">
 
 
-</ul></div>
-    </div>
-  <div class="mkapi-section returns">
-      <div class="mkapi-section-name returns">
-          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(Tree)</span>
-        </div>
-      <div class="mkapi-section-body returns"><p>Tree object</p></div>
-    </div>
+
+<h4 id="picea.tree.Tree.iloc" class="doc doc-heading">
+<code class="codehilite language-python"><span class="n">iloc</span><span class="p">:</span> <span class="n">Tree</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-property"><code>property</code></small>
+      <small class="doc doc-property doc-property-readonly"><code>readonly</code></small>
+  </span>
+
+<a href="#picea.tree.Tree.iloc" class="headerlink" title="Permanent link">&para;</a></h4>
+
+    <div class="doc doc-contents ">
+
+      <p>Index based index</p>
+
+<p><strong>Examples:</strong></p>
+    <div class="codehilite"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span> <span class="nn">picea</span> <span class="kn">import</span> <span class="n">Tree</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">newick</span> <span class="o">=</span> <span class="s1">&#39;(((a,b),(c,d)),e);&#39;</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">tree</span> <span class="o">=</span> <span class="n">Tree</span><span class="o">.</span><span class="n">from_newick</span><span class="p">(</span><span class="n">newick</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">tree</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+<span class="n">Tree</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">children</span><span class="o">=</span><span class="p">[</span><span class="n">Tree</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">children</span><span class="o">=</span><span class="p">[]),</span> <span class="n">Tree</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">children</span><span class="o">=</span><span class="p">[])])</span>
+</code></pre></div>
+
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>Tree</code></td>
+      <td><p>tree node matching index</p></td>
+    </tr>
+  </tbody>
+</table>    </div>
+
   </div>
 
-</div>
-    </div>
-  
-    <div class="mkapi-member">
-      <div class="mkapi-node" id="picea.tree.Tree.to_dict">
-<div class='mkapi-object-container'>
-  <div class="mkapi-object method code">
-    <div class="mkapi-object-kind method">method</div>
-    <div class="mkapi-object-body method"><code class="mkapi-object-name">to_dict</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code></div>
-  </div>
-  
-</div>
-<div class="mkapi-docstring">
-<div class="mkapi-section">
-      <div class="mkapi-section-body"><p>[summary]</p></div>
-    </div>
-  <div class="mkapi-section returns">
-      <div class="mkapi-section-name returns">
-          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(TreeDict)</span>
-        </div>
-      <div class="mkapi-section-body returns"><p>[description]</p></div>
-    </div>
+
+
+  <div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="picea.tree.Tree.leaves" class="doc doc-heading">
+<code class="codehilite language-python"><span class="n">leaves</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tree</span><span class="p">]</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-property"><code>property</code></small>
+      <small class="doc doc-property doc-property-readonly"><code>readonly</code></small>
+  </span>
+
+<a href="#picea.tree.Tree.leaves" class="headerlink" title="Permanent link">&para;</a></h4>
+
+    <div class="doc doc-contents ">
+
+      <p>A list of leaf nodes only</p>
+
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>list</code></td>
+      <td><p>A list of leaf nodes only</p></td>
+    </tr>
+  </tbody>
+</table>    </div>
+
   </div>
 
-</div>
+
+
+  <div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="picea.tree.Tree.length" class="doc doc-heading">
+<code class="codehilite language-python"><span class="n">length</span><span class="p">:</span> <span class="nb">float</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-dataclass-field"><code>dataclass-field</code></small>
+  </span>
+
+<a href="#picea.tree.Tree.length" class="headerlink" title="Permanent link">&para;</a></h4>
+
+    <div class="doc doc-contents ">
+
     </div>
-  
-    <div class="mkapi-member">
-      <div class="mkapi-node" id="picea.tree.Tree.breadth_first">
-<div class='mkapi-object-container'>
-  <div class="mkapi-object generator code">
-    <div class="mkapi-object-kind generator">generator</div>
-    <div class="mkapi-object-body generator"><code class="mkapi-object-name">breadth_first</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; generator(Tree)</span></div>
-  </div>
-  
-</div>
-<div class="mkapi-docstring">
-<div class="mkapi-section">
-      <div class="mkapi-section-body"><p>Generator implementing breadth first search starting at root node</p></div>
-    </div>
+
   </div>
 
-</div>
-    </div>
-  
-    <div class="mkapi-member">
-      <div class="mkapi-node" id="picea.tree.Tree.depth_first">
-<div class='mkapi-object-container'>
-  <div class="mkapi-object generator code">
-    <div class="mkapi-object-kind generator">generator</div>
-    <div class="mkapi-object-body generator"><code class="mkapi-object-name">depth_first</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">post_order=True</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; generator(Tree)</span></div>
+
+
+  <div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="picea.tree.Tree.links" class="doc doc-heading">
+<code class="codehilite language-python"><span class="n">links</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Tree</span><span class="p">,</span> <span class="n">Tree</span><span class="p">]]</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-property"><code>property</code></small>
+      <small class="doc doc-property doc-property-readonly"><code>readonly</code></small>
+  </span>
+
+<a href="#picea.tree.Tree.links" class="headerlink" title="Permanent link">&para;</a></h4>
+
+    <div class="doc doc-contents ">
+
+      <p>A list of all (parent, child) combinations</p>
+
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>list</code></td>
+      <td><p>All (parent,child) combinations</p></td>
+    </tr>
+  </tbody>
+</table>    </div>
+
   </div>
-  
-</div>
-<div class="mkapi-docstring">
-<div class="mkapi-section">
-      <div class="mkapi-section-body"><p>Generator implementing depth first search in either post- or
+
+
+
+  <div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="picea.tree.Tree.loc" class="doc doc-heading">
+<code class="codehilite language-python"><span class="n">loc</span><span class="p">:</span> <span class="n">Tree</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-property"><code>property</code></small>
+      <small class="doc doc-property doc-property-readonly"><code>readonly</code></small>
+  </span>
+
+<a href="#picea.tree.Tree.loc" class="headerlink" title="Permanent link">&para;</a></h4>
+
+    <div class="doc doc-contents ">
+
+      <p>Name based index</p>
+
+<p><strong>Examples:</strong></p>
+    <div class="codehilite"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span> <span class="nn">picea</span> <span class="kn">import</span> <span class="n">Tree</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">newick</span> <span class="o">=</span> <span class="s1">&#39;(((a,b),(c,d)),e);&#39;</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">tree</span> <span class="o">=</span> <span class="n">Tree</span><span class="o">.</span><span class="n">from_newick</span><span class="p">(</span><span class="n">newick</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">tree</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]</span>
+<span class="n">Tree</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">children</span><span class="o">=</span><span class="p">[])</span>
+</code></pre></div>
+
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>Tree</code></td>
+      <td><p>tree node matching name</p></td>
+    </tr>
+  </tbody>
+</table>    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="picea.tree.Tree.name" class="doc doc-heading">
+<code class="codehilite language-python"><span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-dataclass-field"><code>dataclass-field</code></small>
+  </span>
+
+<a href="#picea.tree.Tree.name" class="headerlink" title="Permanent link">&para;</a></h4>
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="picea.tree.Tree.nodes" class="doc doc-heading">
+<code class="codehilite language-python"><span class="n">nodes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tree</span><span class="p">]</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-property"><code>property</code></small>
+      <small class="doc doc-property doc-property-readonly"><code>readonly</code></small>
+  </span>
+
+<a href="#picea.tree.Tree.nodes" class="headerlink" title="Permanent link">&para;</a></h4>
+
+    <div class="doc doc-contents ">
+
+      <p>A list of all tree nodes in breadth-first order</p>
+
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>list</code></td>
+      <td><p>A list of all tree nodes</p></td>
+    </tr>
+  </tbody>
+</table>    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="picea.tree.Tree.parent" class="doc doc-heading">
+<code class="codehilite language-python"><span class="n">parent</span><span class="p">:</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">InitVar</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">Tree</span><span class="p">]]</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-dataclass-field"><code>dataclass-field</code></small>
+  </span>
+
+<a href="#picea.tree.Tree.parent" class="headerlink" title="Permanent link">&para;</a></h4>
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="picea.tree.Tree.root" class="doc doc-heading">
+<code class="codehilite language-python"><span class="n">root</span><span class="p">:</span> <span class="n">Tree</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-property"><code>property</code></small>
+      <small class="doc doc-property doc-property-readonly"><code>readonly</code></small>
+  </span>
+
+<a href="#picea.tree.Tree.root" class="headerlink" title="Permanent link">&para;</a></h4>
+
+    <div class="doc doc-contents ">
+
+      <p>Root node of the (sub)tree</p>
+
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>Tree</code></td>
+      <td><p>Root node</p></td>
+    </tr>
+  </tbody>
+</table>    </div>
+
+  </div>
+
+
+
+
+<h3 id="picea.tree.Tree-methods">Methods<a href="#picea.tree.Tree-methods" class="headerlink" title="Permanent link">&para;</a></h3>
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h4 id="picea.tree.Tree.__eq__" class="doc doc-heading">
+<code class="codehilite language-python"><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-special"><code>special</code></small>
+  </span>
+
+<a href="#picea.tree.Tree.__eq__" class="headerlink" title="Permanent link">&para;</a></h4>
+
+    <div class="doc doc-contents ">
+
+
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h4 id="picea.tree.Tree.__init__" class="doc doc-heading">
+<code class="codehilite language-python"><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">length</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">children</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tree</span><span class="p">]]</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">factory</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">ID</span><span class="p">:</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">InitVar</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">depth</span><span class="p">:</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">InitVar</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">parent</span><span class="p">:</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">InitVar</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">Tree</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">cumulative_length</span><span class="p">:</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">InitVar</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-special"><code>special</code></small>
+  </span>
+
+<a href="#picea.tree.Tree.__init__" class="headerlink" title="Permanent link">&para;</a></h4>
+
+    <div class="doc doc-contents ">
+
+
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h4 id="picea.tree.Tree.__post_init__" class="doc doc-heading">
+<code class="codehilite language-python"><span class="n">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ID</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-special"><code>special</code></small>
+  </span>
+
+<a href="#picea.tree.Tree.__post_init__" class="headerlink" title="Permanent link">&para;</a></h4>
+
+    <div class="doc doc-contents ">
+
+      <p>[summary]</p>
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>ID</code></td>
+        <td><code>[type]</code></td>
+        <td><p>[description]</p></td>
+        <td><em>required</em></td>
+      </tr>
+  </tbody>
+</table>
+        <details class="quote">
+          <summary>Source code in <code>picea/tree.py</code></summary>
+          <div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ID</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;[summary]</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        ID ([type]): [description]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">ID</span> <span class="o">=</span> <span class="n">ID</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h4 id="picea.tree.Tree.__repr__" class="doc doc-heading">
+<code class="codehilite language-python"><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-special"><code>special</code></small>
+  </span>
+
+<a href="#picea.tree.Tree.__repr__" class="headerlink" title="Permanent link">&para;</a></h4>
+
+    <div class="doc doc-contents ">
+
+
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h4 id="picea.tree.Tree.breadth_first" class="doc doc-heading">
+<code class="codehilite language-python"><span class="n">breadth_first</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">Tree</span><span class="p">,</span> <span class="n">NoneType</span><span class="p">,</span> <span class="n">NoneType</span><span class="p">]</span></code>
+
+
+<a href="#picea.tree.Tree.breadth_first" class="headerlink" title="Permanent link">&para;</a></h4>
+
+    <div class="doc doc-contents ">
+
+      <p>Generator implementing breadth first search starting at root node</p>
+
+        <details class="quote">
+          <summary>Source code in <code>picea/tree.py</code></summary>
+          <div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">breadth_first</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="s2">&quot;Tree&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Generator implementing breadth first search starting at root node&quot;&quot;&quot;</span>
+    <span class="n">queue</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="p">]</span>
+    <span class="k">while</span> <span class="n">queue</span><span class="p">:</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="n">queue</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">queue</span> <span class="o">+=</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span>
+        <span class="k">yield</span> <span class="n">node</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h4 id="picea.tree.Tree.depth_first" class="doc doc-heading">
+<code class="codehilite language-python"><span class="n">depth_first</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">post_order</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">Tree</span><span class="p">,</span> <span class="n">NoneType</span><span class="p">,</span> <span class="n">NoneType</span><span class="p">]</span></code>
+
+
+<a href="#picea.tree.Tree.depth_first" class="headerlink" title="Permanent link">&para;</a></h4>
+
+    <div class="doc doc-contents ">
+
+      <p>Generator implementing depth first search in either post- or
 pre-order traversel</p>
-<p>Keyword Arguments:
-    post_order (bool, optional): Depth first search in post-order
-    traversal or not. Defaults to True</p></div>
+
+<p><strong>Keyword arguments:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>post_order</code></td>
+        <td><code>bool</code></td>
+        <td><p>Depth first search in post-order</p></td>
+      </tr>
+  </tbody>
+</table>
+        <details class="quote">
+          <summary>Source code in <code>picea/tree.py</code></summary>
+          <div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">depth_first</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">post_order</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="s2">&quot;Tree&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Generator implementing depth first search in either post- or</span>
+<span class="sd">    pre-order traversel</span>
+
+<span class="sd">    Keyword Arguments:</span>
+<span class="sd">        post_order (bool, optional): Depth first search in post-order</span>
+<span class="sd">        traversal or not. Defaults to True</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">post_order</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="bp">self</span>
+    <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
+        <span class="k">yield from</span> <span class="n">child</span><span class="o">.</span><span class="n">depth_first</span><span class="p">(</span><span class="n">post_order</span><span class="o">=</span><span class="n">post_order</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">post_order</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="bp">self</span>
+</code></pre></div>
+        </details>
     </div>
+
   </div>
 
-</div>
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h4 id="picea.tree.Tree.from_dict" class="doc doc-heading">
+<code class="codehilite language-python"><span class="n">from_dict</span><span class="p">(</span><span class="n">tree_dict</span><span class="p">)</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-classmethod"><code>classmethod</code></small>
+  </span>
+
+<a href="#picea.tree.Tree.from_dict" class="headerlink" title="Permanent link">&para;</a></h4>
+
+    <div class="doc doc-contents ">
+
+
+        <details class="quote">
+          <summary>Source code in <code>picea/tree.py</code></summary>
+          <div class="codehilite"><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="k">def</span> <span class="nf">from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">tree_dict</span><span class="p">):</span>
+    <span class="c1"># TODO</span>
+    <span class="c1"># raise NotImplementedError()</span>
+    <span class="n">tree</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">tree</span>
+</code></pre></div>
+        </details>
     </div>
-  
-    <div class="mkapi-member">
-      <div class="mkapi-node" id="picea.tree.Tree.rename_leaves">
-<div class='mkapi-object-container'>
-  <div class="mkapi-object method code">
-    <div class="mkapi-object-kind method">method</div>
-    <div class="mkapi-object-body method"><code class="mkapi-object-name">rename_leaves</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">rename_func</code>, <code class="mkapi-object-signature">inplace=True</code><code class="mkapi-object-parenthesis">)</code><span class="mkapi-item-type"> &#x2192; Tree, optional</span></div>
-  </div>
-  
-</div>
-<div class="mkapi-docstring">
-<div class="mkapi-section">
-      <div class="mkapi-section-body"><p>[summary]</p></div>
-    </div>
+
   </div>
 
-</div>
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h4 id="picea.tree.Tree.from_json" class="doc doc-heading">
+<code class="codehilite language-python"><span class="n">from_json</span><span class="p">()</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-classmethod"><code>classmethod</code></small>
+  </span>
+
+<a href="#picea.tree.Tree.from_json" class="headerlink" title="Permanent link">&para;</a></h4>
+
+    <div class="doc doc-contents ">
+
+
+        <details class="quote">
+          <summary>Source code in <code>picea/tree.py</code></summary>
+          <div class="codehilite"><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="k">def</span> <span class="nf">from_json</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+    <span class="c1"># TODO</span>
+    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+</code></pre></div>
+        </details>
     </div>
-  
+
   </div>
 
-</div>
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h4 id="picea.tree.Tree.from_newick" class="doc doc-heading">
+<code class="codehilite language-python"><span class="n">from_newick</span><span class="p">(</span><span class="n">string</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tree</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-classmethod"><code>classmethod</code></small>
+  </span>
+
+<a href="#picea.tree.Tree.from_newick" class="headerlink" title="Permanent link">&para;</a></h4>
+
+    <div class="doc doc-contents ">
+
+      <p>Parse a newick formatted string into a Tree object</p>
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>newick_string</code></td>
+        <td><code>string</code></td>
+        <td><p>Newick formatted tree string</p></td>
+        <td><em>required</em></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>Tree</code></td>
+      <td><p>Tree object</p></td>
+    </tr>
+  </tbody>
+</table>
+        <details class="quote">
+          <summary>Source code in <code>picea/tree.py</code></summary>
+          <div class="codehilite"><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="k">def</span> <span class="nf">from_newick</span><span class="p">(</span>
+    <span class="bp">cls</span><span class="p">,</span> <span class="n">string</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Tree&quot;</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Parse a newick formatted string into a Tree object</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        newick_string (string): Newick formatted tree string</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Tree: Tree object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="n">filename</span> <span class="ow">or</span> <span class="n">string</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="p">(</span><span class="n">filename</span> <span class="ow">and</span> <span class="n">string</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">filename</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="k">as</span> <span class="n">filehandle</span><span class="p">:</span>
+            <span class="n">string</span> <span class="o">=</span> <span class="n">filehandle</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    <span class="n">tokens</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\s*(;|\(|\)|,|:)\s*&quot;</span><span class="p">,</span> <span class="n">string</span><span class="p">)</span>
+    <span class="n">ID</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">tree</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">ID</span><span class="o">=</span><span class="n">ID</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">cumulative_length</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+    <span class="n">ancestors</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">token</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tokens</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">token</span> <span class="o">==</span> <span class="s2">&quot;(&quot;</span><span class="p">:</span>
+            <span class="n">ID</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">subtree</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">ID</span><span class="o">=</span><span class="n">ID</span><span class="p">)</span>
+            <span class="n">tree</span><span class="o">.</span><span class="n">children</span> <span class="o">=</span> <span class="p">[</span><span class="n">subtree</span><span class="p">]</span>
+            <span class="n">ancestors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tree</span><span class="p">)</span>
+            <span class="n">tree</span> <span class="o">=</span> <span class="n">subtree</span>
+        <span class="k">elif</span> <span class="n">token</span> <span class="o">==</span> <span class="s2">&quot;,&quot;</span><span class="p">:</span>
+            <span class="n">ID</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">subtree</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">ID</span><span class="o">=</span><span class="n">ID</span><span class="p">)</span>
+            <span class="n">ancestors</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">children</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">subtree</span><span class="p">)</span>
+            <span class="n">tree</span> <span class="o">=</span> <span class="n">subtree</span>
+        <span class="k">elif</span> <span class="n">token</span> <span class="o">==</span> <span class="s2">&quot;)&quot;</span><span class="p">:</span>
+            <span class="n">tree</span> <span class="o">=</span> <span class="n">ancestors</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">previous_token</span> <span class="o">=</span> <span class="n">tokens</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">previous_token</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;(&quot;</span><span class="p">,</span> <span class="s2">&quot;)&quot;</span><span class="p">,</span> <span class="s2">&quot;,&quot;</span><span class="p">):</span>
+                <span class="n">tree</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">token</span>
+            <span class="k">elif</span> <span class="n">previous_token</span> <span class="o">==</span> <span class="s2">&quot;:&quot;</span><span class="p">:</span>
+                <span class="n">tree</span><span class="o">.</span><span class="n">length</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
+    <span class="n">tree</span><span class="o">.</span><span class="n">depth</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">queue</span> <span class="o">=</span> <span class="p">[</span><span class="n">tree</span><span class="p">]</span>
+    <span class="k">while</span> <span class="n">queue</span><span class="p">:</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="n">queue</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
+            <span class="n">child</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="n">node</span>
+            <span class="n">child</span><span class="o">.</span><span class="n">depth</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">depth</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="n">child</span><span class="o">.</span><span class="n">cumulative_length</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">cumulative_length</span> <span class="o">+</span> <span class="nb">abs</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">length</span><span class="p">)</span>
+        <span class="n">queue</span> <span class="o">+=</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span>
+
+    <span class="k">return</span> <span class="n">tree</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h4 id="picea.tree.Tree.from_sklearn" class="doc doc-heading">
+<code class="codehilite language-python"><span class="n">from_sklearn</span><span class="p">(</span><span class="n">clustering</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tree</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-classmethod"><code>classmethod</code></small>
+  </span>
+
+<a href="#picea.tree.Tree.from_sklearn" class="headerlink" title="Permanent link">&para;</a></h4>
+
+    <div class="doc doc-contents ">
+
+      <p>Read a tree from sklearn agglomerative clustering</p>
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>clustering</code></td>
+        <td><code>sklearn object</code></td>
+        <td><p>sklearn agglomerative clustering                 object.</p></td>
+        <td><em>required</em></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>Tree</code></td>
+      <td><p>Tree object</p></td>
+    </tr>
+  </tbody>
+</table>
+        <details class="quote">
+          <summary>Source code in <code>picea/tree.py</code></summary>
+          <div class="codehilite"><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="k">def</span> <span class="nf">from_sklearn</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">clustering</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Tree&quot;</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Read a tree from sklearn agglomerative clustering</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        clustering (sklearn object): sklearn agglomerative clustering\</span>
+<span class="sd">             object.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Tree: Tree object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">nodes</span> <span class="o">=</span> <span class="n">clustering</span><span class="o">.</span><span class="n">children_</span>
+    <span class="n">n_leaves</span> <span class="o">=</span> <span class="n">nodes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">tree</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">ID</span><span class="o">=</span><span class="n">nodes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="n">queue</span> <span class="o">=</span> <span class="p">[</span><span class="n">tree</span><span class="p">]</span>
+    <span class="k">while</span> <span class="n">queue</span><span class="p">:</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="n">queue</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">ID</span> <span class="o">&lt;</span> <span class="n">n_leaves</span><span class="p">:</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">ID</span><span class="p">)</span>
+            <span class="k">continue</span>
+        <span class="k">for</span> <span class="n">child_ID</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">ID</span> <span class="o">-</span> <span class="n">n_leaves</span><span class="p">]:</span>
+            <span class="n">child</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">ID</span><span class="o">=</span><span class="n">child_ID</span><span class="p">)</span>
+            <span class="n">child</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="n">node</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+        <span class="n">queue</span> <span class="o">+=</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span>
+
+    <span class="k">return</span> <span class="n">tree</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h4 id="picea.tree.Tree.rename_leaves" class="doc doc-heading">
+<code class="codehilite language-python"><span class="n">rename_leaves</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rename_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tree</span><span class="p">]</span></code>
+
+
+<a href="#picea.tree.Tree.rename_leaves" class="headerlink" title="Permanent link">&para;</a></h4>
+
+    <div class="doc doc-contents ">
+
+      <p>[summary]</p>
+
+        <details class="quote">
+          <summary>Source code in <code>picea/tree.py</code></summary>
+          <div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">rename_leaves</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span> <span class="n">rename_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;Tree&quot;</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;[summary]&quot;&quot;&quot;</span>
+    <span class="n">tree</span> <span class="o">=</span> <span class="bp">self</span> <span class="k">if</span> <span class="n">inplace</span> <span class="k">else</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">leaf</span> <span class="ow">in</span> <span class="n">tree</span><span class="o">.</span><span class="n">leaves</span><span class="p">:</span>
+        <span class="n">leaf</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">rename_func</span><span class="p">(</span><span class="n">leaf</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h4 id="picea.tree.Tree.to_dict" class="doc doc-heading">
+<code class="codehilite language-python"><span class="n">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">TreeDict</span><span class="p">]]]]</span></code>
+
+
+<a href="#picea.tree.Tree.to_dict" class="headerlink" title="Permanent link">&para;</a></h4>
+
+    <div class="doc doc-contents ">
+
+      <p>[summary]</p>
+
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>TreeDict</code></td>
+      <td><p>[description]</p></td>
+    </tr>
+  </tbody>
+</table>
+        <details class="quote">
+          <summary>Source code in <code>picea/tree.py</code></summary>
+          <div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TreeDict</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;[summary]</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        TreeDict: [description]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">asdict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h4 id="picea.tree.Tree.to_json" class="doc doc-heading">
+<code class="codehilite language-python"><span class="n">to_json</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indent</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span></code>
+
+
+<a href="#picea.tree.Tree.to_json" class="headerlink" title="Permanent link">&para;</a></h4>
+
+    <div class="doc doc-contents ">
+
+
+        <details class="quote">
+          <summary>Source code in <code>picea/tree.py</code></summary>
+          <div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">to_json</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indent</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(),</span> <span class="n">indent</span><span class="o">=</span><span class="n">indent</span><span class="p">)</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h4 id="picea.tree.Tree.to_newick" class="doc doc-heading">
+<code class="codehilite language-python"><span class="n">to_newick</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">branch_lengths</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span></code>
+
+
+<a href="#picea.tree.Tree.to_newick" class="headerlink" title="Permanent link">&para;</a></h4>
+
+    <div class="doc doc-contents ">
+
+      <p>Make a Newick formatted string</p>
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>branch_lengths</code></td>
+        <td><code>bool</code></td>
+        <td><p>Whether to include branch lengths             in the Newick string. Defaults to True.</p></td>
+        <td><code>True</code></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>String</code></td>
+      <td><p>Newick formatted tree string</p></td>
+    </tr>
+  </tbody>
+</table>
+        <details class="quote">
+          <summary>Source code in <code>picea/tree.py</code></summary>
+          <div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">to_newick</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">branch_lengths</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Make a Newick formatted string</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        branch_lengths (bool, optional): Whether to include branch lengths\</span>
+<span class="sd">         in the Newick string. Defaults to True.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        String: Newick formatted tree string</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
+        <span class="n">subtree_string</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">to_newick</span><span class="p">(</span><span class="n">branch_lengths</span><span class="o">=</span><span class="n">branch_lengths</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">newick</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">subtree_string</span><span class="si">}</span><span class="s2">)</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">newick</span> <span class="o">=</span> <span class="n">name</span>
+
+    <span class="k">if</span> <span class="n">branch_lengths</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">ID</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">length</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">length</span>
+        <span class="k">if</span> <span class="n">length</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">length</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">newick</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;:</span><span class="si">{</span><span class="n">length</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="k">if</span> <span class="bp">self</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">:</span>
+        <span class="n">newick</span> <span class="o">+=</span> <span class="s2">&quot;;&quot;</span>
+
+    <span class="k">return</span> <span class="n">newick</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h4 id="picea.tree.Tree.to_sklearn" class="doc doc-heading">
+<code class="codehilite language-python"><span class="n">to_sklearn</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code>
+
+
+<a href="#picea.tree.Tree.to_sklearn" class="headerlink" title="Permanent link">&para;</a></h4>
+
+    <div class="doc doc-contents ">
+
+
+        <details class="quote">
+          <summary>Source code in <code>picea/tree.py</code></summary>
+          <div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">to_sklearn</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="c1"># TODO</span>
+    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+
+
+  </div>
+
+    </div>
+
+  </div>
 
               
             </article>
           </div>
         </div>
         
+          <a href="#" class="md-top md-icon" data-md-component="top" data-md-state="hidden">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"/></svg>
+            Back to top
+          </a>
+        
       </main>
       
         <footer class="md-footer">
-  
-    <nav class="md-footer__inner md-grid" aria-label="Footer">
-      
-        
-        <a href="../sequence/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Sequence containers" rel="prev">
-          <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
-          </div>
-          <div class="md-footer__title">
-            <div class="md-ellipsis">
-              <span class="md-footer__direction">
-                Previous
-              </span>
-              Sequence containers
-            </div>
-          </div>
-        </a>
-      
-      
-    </nav>
   
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">
@@ -751,12 +2173,10 @@ pre-order traversel</p>
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": "../..", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../assets/javascripts/workers/search.092fa1f6.min.js"}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.top"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../../assets/javascripts/workers/search.092fa1f6.min.js"}</script>
     
     
       <script src="../../assets/javascripts/bundle.5a9542cf.min.js"></script>
-      
-        <script src="../../js/mkapi.js"></script>
       
     
   </body>

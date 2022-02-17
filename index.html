@@ -13,7 +13,7 @@
     
     
       
-        <title>Picea documentation</title>
+        <title>Overview - Picea documentation</title>
       
     
     
@@ -22,6 +22,10 @@
         
         <link rel="stylesheet" href="assets/stylesheets/palette.e6a45f82.min.css">
         
+          
+          
+          <meta name="theme-color" content="#ffffff">
+        
       
     
     
@@ -29,16 +33,14 @@
       
         
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
-        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Helvetica:300,400,400i,700%7C&display=fallback">
+        <style>:root{--md-text-font:"Helvetica";--md-code-font:""}</style>
       
     
     
-      <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.8.1/css/all.css">
+      <link rel="stylesheet" href="assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.8.1/css/v4-shims.css">
-    
-      <link rel="stylesheet" href="css/mkapi-common.css">
+      <link rel="stylesheet" href="css/material.css">
     
     <script>__md_scope=new URL(".",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
@@ -54,7 +56,7 @@
     
     
     
-    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="white" data-md-color-accent="deep-orange">
   
     
     
@@ -97,7 +99,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              _picea_
+              Overview
             
           </span>
         </div>
@@ -161,6 +163,65 @@
       
         
           
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-tabs__inner md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+    
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="." class="md-tabs__link md-tabs__link--active">
+        Overview
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="examples/tree/" class="md-tabs__link">
+        Examples
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="api/sequence.md" class="md-tabs__link">
+        API
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
         
       
       <main class="md-main" data-md-component="main">
@@ -173,8 +234,10 @@
                   <div class="md-sidebar__inner">
                     
 
+  
 
-<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
     <a href="." title="Picea documentation" class="md-nav__button md-logo" aria-label="Picea documentation" data-md-component="logo">
       
@@ -208,6 +271,34 @@
     
   
   
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1" type="checkbox" id="__nav_1" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_1">
+          Overview
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Overview" data-md-level="1">
+        <label class="md-nav__title" for="__nav_1">
+          <span class="md-nav__icon md-icon"></span>
+          Overview
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+    
+  
+  
     <li class="md-nav__item md-nav__item--active">
       
       <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
@@ -217,9 +308,58 @@
       
       
       <a href="." class="md-nav__link md-nav__link--active">
-        _picea_
+        Overview
       </a>
       
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="README.md" class="md-nav__link">
+        About
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="LICENSE/" class="md-nav__link">
+        License
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="CONTRIBUTING/" class="md-nav__link">
+        Contributing
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
     </li>
   
 
@@ -306,8 +446,8 @@
   
   
     <li class="md-nav__item">
-      <a href="API/sequence/" class="md-nav__link">
-        Sequence containers
+      <a href="api/sequence.md" class="md-nav__link">
+        Sequence
       </a>
     </li>
   
@@ -320,8 +460,8 @@
   
   
     <li class="md-nav__item">
-      <a href="API/tree/" class="md-nav__link">
-        Tree containers
+      <a href="api/tree.md" class="md-nav__link">
+        Tree
       </a>
     </li>
   
@@ -369,7 +509,7 @@
 </a>
 
 
-<h1 id="picea"><em>picea</em></h1>
+<h1 id="picea"><em>picea</em><a class="headerlink" href="#picea" title="Permanent link">&para;</a></h1>
 <p>Lightweight python library for working with trees and sequence collections</p>
 <p><a href="https://github.com/holmrenser/picea/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/holmrenser/picea/actions/workflows/ci.yml/badge.svg" /></a>
 <img alt="docs" src="https://github.com/holmrenser/picea/workflows/docs/badge.svg?branch=master" />
@@ -403,6 +543,11 @@
           </div>
         </div>
         
+          <a href="#" class="md-top md-icon" data-md-component="top" data-md-state="hidden">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"/></svg>
+            Back to top
+          </a>
+        
       </main>
       
         <footer class="md-footer">
@@ -411,13 +556,13 @@
       
       
         
-        <a href="examples/tree/" class="md-footer__link md-footer__link--next" aria-label="Next: Tree" rel="next">
+        <a href="LICENSE/" class="md-footer__link md-footer__link--next" aria-label="Next: License" rel="next">
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
                 Next
               </span>
-              Tree
+              License
             </div>
           </div>
           <div class="md-footer__button md-icon">
@@ -447,12 +592,10 @@
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": ".", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "assets/javascripts/workers/search.092fa1f6.min.js"}</script>
+    <script id="__config" type="application/json">{"base": ".", "features": ["navigation.tabs", "navigation.top"], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "assets/javascripts/workers/search.092fa1f6.min.js"}</script>
     
     
       <script src="assets/javascripts/bundle.5a9542cf.min.js"></script>
-      
-        <script src="js/mkapi.js"></script>
       
     
   </body>
