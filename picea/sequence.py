@@ -263,7 +263,18 @@ def format_gff_attribute_string(
         for key, value in attributes.items()
     }
     partially_formatted["ID"] = partially_formatted.pop("Id")
-    return ";".join(f"{key}={value}" for key, value in partially_formatted.items())
+
+    def sort_key(key):
+        if key == 'ID':
+            return 0
+        elif key == 'Parent':
+            return 1
+        else:
+            return 2
+    return ";".join(
+        f"{key}={partially_formatted[key]}"
+        for key in sorted(partially_formatted.keys(), key=sort_key)
+    )
 
 
 def unquote_gff3(attribute_value: str) -> str:
@@ -550,7 +561,7 @@ class SequenceAnnotation(DirectedAcyclicGraph):
         Returns:
             str: [description]
         """
-        return "\n".join(interval.to_gff_line() for interval in self)
+        return ''.join(interval.to_gff_line(trailing_newline=True) for interval in self)
 
     @classmethod
     def from_json(
@@ -701,7 +712,8 @@ class SequenceInterval(DAGElement):
 
         # Set attributes with predefined meanings in the gff spec to None
         for attr in self._predefined_gff3_attributes:
-            if attr == "ID":
+            # ID and parent are handled separately in DAG superclass
+            if attr in {"ID", "parent"}:
                 continue
             self[attr] = kwargs.get(attr, None)
 
@@ -745,12 +757,11 @@ class SequenceInterval(DAGElement):
 
     @property
     def gff_attributes(self) -> Dict[str, str]:
-        return {
-            attr: self[attr]
+        gff_attributes = {
+            attr: self[attr]  # dictionary comprehension
             for attr in self.__dict__
             if attr not in self._fixed_gff3_fields  # skip column 1-8 in gff3
-            and attr
-            not in (
+            and attr not in (
                 "_parents",
                 "_children",
                 "_container",
@@ -759,6 +770,13 @@ class SequenceInterval(DAGElement):
             )  # internal use only
             and self[attr] is not None  # no empty attributes
         }
+
+        # Add attributes handled by DAG
+        gff_attributes['ID'] = [self.ID]
+        if self._parents:
+            gff_attributes['Parent'] = self._parents
+
+        return gff_attributes
 
     @property
     def gtf_attributes(self) -> Dict[str, str]:
@@ -886,22 +904,15 @@ class SequenceInterval(DAGElement):
             **attributes,
         )
 
-    def to_gff_line(self) -> str:
+    def to_gff_line(self, trailing_newline: bool = False) -> str:
         """[summary]
 
         Returns:
             str: [description]
         """
-        attributes = defaultdict(list)
-        attributes.update(self.gff_attributes)
-        for attribute in self._predefined_gff3_attributes:
-            attribute_value = getattr(self, attribute)
-            if attribute_value is not None:
-                attributes[attribute] = attribute_value
+        # attributes = dict(ID=self.ID, **self.gff_attributes)
 
-        attributes["ID"] = [attributes["ID"]]
-
-        return "\t".join(
+        gff_line = '\t'.join(
             [
                 self.seqid,
                 self.source,
@@ -911,9 +922,12 @@ class SequenceInterval(DAGElement):
                 str(self.score),
                 self.strand,
                 str(self.phase),
-                format_gff_attribute_string(attributes),
+                format_gff_attribute_string(self.gff_attributes),
             ]
         )
+        if trailing_newline:
+            gff_line = f'{gff_line}\n'
+        return gff_line
 
     @classmethod
     def from_dict(cls, interval_dict: Dict[str, Any]) -> "SequenceInterval":
