@@ -7,9 +7,9 @@ class DAGElement(metaclass=ABCMeta):
     def __init__(
         self,
         ID: str,
-        container: 'DirectedAcyclicGraph',
+        container: "DirectedAcyclicGraph",
         children: List[str] = None,
-        parents: List[str] = None
+        parents: List[str] = None,
     ):
         self._ID = ID
         self._original_ID = ID
@@ -23,7 +23,7 @@ class DAGElement(metaclass=ABCMeta):
 
     def __repr__(self):
         classname = type(self).__name__
-        return f'<{classname} ID={self.ID} at {hex(id(self))}>'
+        return f"<{classname} ID={self.ID} at {hex(id(self))}>"
 
     @property
     def ID(self):
@@ -37,25 +37,23 @@ class DAGElement(metaclass=ABCMeta):
         self._ID = value
         for child in self.children:
             if child._parents:
-                child._parents = [
-                    value if p == old_ID else p for p in child._parents
-                ]
+                child._parents = [value if p == old_ID else p for p in child._parents]
         if self._container:
             self._container[value] = self._container.pop(old_ID)
 
     @property
-    def parents(self) -> 'DirectedAcyclicGraph':
+    def parents(self) -> "DirectedAcyclicGraph":
         graph = self._container.__class__()
-        for element in self._traverse(direction='parents'):
+        for element in self._traverse(direction="parents"):
             if element == self:
                 continue
             graph[element.ID] = element
         return graph
 
     @property
-    def children(self) -> 'DirectedAcyclicGraph':
+    def children(self) -> "DirectedAcyclicGraph":
         graph = self._container.__class__()
-        for element in self._traverse(direction='children'):
+        for element in self._traverse(direction="children"):
             if element == self:
                 continue
             graph[element.ID] = element
@@ -63,28 +61,24 @@ class DAGElement(metaclass=ABCMeta):
 
     def _traverse(
         self,
-        direction: str = 'children',
+        direction: str = "children",
         visited: Optional[set] = None,
-    ) -> Iterable['DAGElement']:
+    ) -> Iterable["DAGElement"]:
         if visited is None:
             visited = set()
         if self not in visited:
             yield self
             visited.add(self)
-        if not getattr(self, f'_{direction}'):
+        if not getattr(self, f"_{direction}"):
             return
-        for next_ID in getattr(self, f'_{direction}'):
+        for next_ID in getattr(self, f"_{direction}"):
             next_element = self._container[next_ID]
-            yield from next_element._traverse(
-                direction=direction,
-                visited=visited
-            )
+            yield from next_element._traverse(direction=direction, visited=visited)
 
 
 class DirectedAcyclicGraph:
     def __init__(self) -> None:
-        """[summary]
-        """
+        """[summary]"""
         self._elements: Dict[str, DAGElement] = dict()
 
     def __getitem__(self, ID: str) -> DAGElement:

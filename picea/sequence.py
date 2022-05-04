@@ -265,12 +265,13 @@ def format_gff_attribute_string(
     partially_formatted["ID"] = partially_formatted.pop("Id")
 
     def sort_key(key):
-        if key == 'ID':
+        if key == "ID":
             return 0
-        elif key == 'Parent':
+        elif key == "Parent":
             return 1
         else:
             return 2
+
     return ";".join(
         f"{key}={partially_formatted[key]}"
         for key in sorted(partially_formatted.keys(), key=sort_key)
@@ -561,7 +562,7 @@ class SequenceAnnotation(DirectedAcyclicGraph):
         Returns:
             str: [description]
         """
-        return ''.join(interval.to_gff_line(trailing_newline=True) for interval in self)
+        return "".join(interval.to_gff_line(trailing_newline=True) for interval in self)
 
     @classmethod
     def from_json(
@@ -697,7 +698,7 @@ class SequenceInterval(DAGElement):
         # interval ID is a property (see below) with getter and setter
         # self._ID = ID
         # self._original_ID = ID
-        parents = kwargs.pop('parent', None)
+        parents = kwargs.pop("parent", None)
         super().__init__(ID=ID, children=children, container=container, parents=parents)
 
         # Standard gff fields
@@ -761,7 +762,8 @@ class SequenceInterval(DAGElement):
             attr: self[attr]  # dictionary comprehension
             for attr in self.__dict__
             if attr not in self._fixed_gff3_fields  # skip column 1-8 in gff3
-            and attr not in (
+            and attr
+            not in (
                 "_parents",
                 "_children",
                 "_container",
@@ -772,9 +774,9 @@ class SequenceInterval(DAGElement):
         }
 
         # Add attributes handled by DAG
-        gff_attributes['ID'] = [self.ID]
+        gff_attributes["ID"] = [self.ID]
         if self._parents:
-            gff_attributes['Parent'] = self._parents
+            gff_attributes["Parent"] = self._parents
 
         return gff_attributes
 
@@ -912,7 +914,7 @@ class SequenceInterval(DAGElement):
         """
         # attributes = dict(ID=self.ID, **self.gff_attributes)
 
-        gff_line = '\t'.join(
+        gff_line = "\t".join(
             [
                 self.seqid,
                 self.source,
@@ -926,7 +928,7 @@ class SequenceInterval(DAGElement):
             ]
         )
         if trailing_newline:
-            gff_line = f'{gff_line}\n'
+            gff_line = f"{gff_line}\n"
         return gff_line
 
     @classmethod
@@ -1274,27 +1276,39 @@ class AbstractSequenceCollection(metaclass=ABCMeta):
         sequences: Optional[Iterable[Sequence]] = None,
         sequence_annotation: Optional["SequenceAnnotation"] = None,
     ) -> None:
-        raise NotImplementedError((
-            "Classes extending from AbstractSequenceCollection should "
-            "implement __init__ method"))
+        raise NotImplementedError(
+            (
+                "Classes extending from AbstractSequenceCollection should "
+                "implement __init__ method"
+            )
+        )
 
     @abstractmethod
     def __setitem__(self, header: str, seq: str) -> None:
-        raise NotImplementedError((
-            "Classes extending from AbstractSequenceCollection should "
-            "implement __setitem__ method"))
+        raise NotImplementedError(
+            (
+                "Classes extending from AbstractSequenceCollection should "
+                "implement __setitem__ method"
+            )
+        )
 
     @abstractmethod
     def __getitem__(self, header: str) -> Sequence:
-        raise NotImplementedError((
-            "Classes extending from AbstractSequenceCollection should "
-            "implement __getitem__ method"))
+        raise NotImplementedError(
+            (
+                "Classes extending from AbstractSequenceCollection should "
+                "implement __getitem__ method"
+            )
+        )
 
     @abstractmethod
     def __delitem__(self, header: str) -> None:
-        raise NotImplementedError((
-            "Classes extending from AbstractSequenceCollection should "
-            "implement __delitem__ method"))
+        raise NotImplementedError(
+            (
+                "Classes extending from AbstractSequenceCollection should "
+                "implement __delitem__ method"
+            )
+        )
 
     def __iter__(self) -> Iterable[Sequence]:
         for header in self.headers:
@@ -1314,9 +1328,12 @@ class AbstractSequenceCollection(metaclass=ABCMeta):
         Returns:
             List[str]: List of sequence headers
         """
-        raise NotImplementedError((
-            "Classes extending from AbstractSequenceCollection should "
-            "implement headers property"))
+        raise NotImplementedError(
+            (
+                "Classes extending from AbstractSequenceCollection should "
+                "implement headers property"
+            )
+        )
 
     @property
     def iloc(self) -> SequenceIndex:
@@ -1347,9 +1364,12 @@ class AbstractSequenceCollection(metaclass=ABCMeta):
         Returns:
             int: number of sequences
         """
-        raise NotImplementedError((
-            "Classes extending from AbstractSequenceCollection should "
-            "implement n_seqs property"))
+        raise NotImplementedError(
+            (
+                "Classes extending from AbstractSequenceCollection should "
+                "implement n_seqs property"
+            )
+        )
 
     @classmethod
     def from_sequence_iter(
@@ -1435,9 +1455,12 @@ class AbstractSequenceCollection(metaclass=ABCMeta):
         Returns:
             Sequence: [description]
         """
-        raise NotImplementedError((
-            "Classes extending from AbstractSequenceCollection should "
-            "implement pop method"))
+        raise NotImplementedError(
+            (
+                "Classes extending from AbstractSequenceCollection should "
+                "implement pop method"
+            )
+        )
 
     def batch_rename(self, rename_func: Callable[[str], str]) -> None:
         """Rename all headers by calling `rename_func` on each header

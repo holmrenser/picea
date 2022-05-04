@@ -5,7 +5,7 @@ from picea import Tree
 
 class TreeTests(TestCase):
     def setUp(self):
-        self.newick = '(((a,b),(c,d)),e);'
+        self.newick = "(((a,b),(c,d)),e);"
 
     def test_empty_init(self):
         Tree()
@@ -19,14 +19,14 @@ class TreeTests(TestCase):
 
     def test_root(self):
         tree = Tree.from_newick(self.newick)
-        deep_node = tree.loc['a']
+        deep_node = tree.loc["a"]
         self.assertEqual(deep_node.root, tree)
 
-    '''
+    """
     def test_quoted_fasttree_newick(self):
         print(__file__)
         print('hi')
         Tree.from_newick(
             filename='./tests/data/fasttree.quoted_labels.newick'
         )
-    '''
+    """

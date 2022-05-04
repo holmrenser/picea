@@ -19,7 +19,4 @@ from .sequence import (  # noqa
     SequenceInterval,
 )
 
-from .ontology import ( # noqa
-    Ontology,
-    OntologyTerm
-)
+from .ontology import Ontology, OntologyTerm  # noqa
