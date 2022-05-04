@@ -17,6 +17,7 @@ classifiers = [
             'Topic :: Scientific/Engineering :: Bio-Informatics',
             'Topic :: Utilities'
         ]
+repository = 'https://github.com/holmrenser/picea'
 
 [tool.poetry.dependencies]
 python = ">=3.8, <3.11"

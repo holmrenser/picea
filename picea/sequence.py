@@ -12,6 +12,7 @@ from functools import reduce
 import re
 from dataclasses import dataclass, field
 from copy import deepcopy
+from .dag import DAGElement, DirectedAcyclicGraph
 
 
 # (character, code) tuples for encoding special characters in gff3
@@ -352,7 +353,7 @@ def parse_gff_attribute_string(
     return attributes
 
 
-class SequenceAnnotation:
+class SequenceAnnotation(DirectedAcyclicGraph):
     def __init__(self, sequence: Optional["Sequence"] = None) -> None:
         """[summary]
 
@@ -360,33 +361,11 @@ class SequenceAnnotation:
             sequence (Optional[Sequence], optional): [description]. Defaults\
                  to None.
         """
+        super().__init__()
         if sequence:
             sequence.annotation = self
         self.sequence = sequence
-        self._intervals = dict()
         self._gff_headers = list()
-
-    def __getitem__(self, ID: str) -> "SequenceInterval":
-        return self._intervals[ID]
-
-    def __setitem__(self, ID: str, interval: "SequenceInterval"):
-        if ID in self._intervals:
-            warn(f"Turning duplicate ID {ID} into unique ID")
-            interval._original_ID = ID
-            modifier = 0
-            new_ID = ID
-            while new_ID in self._intervals:
-                modifier += 1
-                new_ID = f"{ID}_{modifier}"
-            ID = new_ID
-            interval._ID = ID
-        self._intervals[ID] = interval
-
-    def __iter__(self):
-        try:
-            yield from self._intervals.values()
-        except StopIteration:
-            return
 
     @property
     def intervals(self):
@@ -644,7 +623,7 @@ class SequenceAnnotation:
         return result
 
 
-class SequenceInterval:
+class SequenceInterval(DAGElement):
     _predefined_gff3_attributes = (
         "ID",
         "name",
@@ -705,8 +684,10 @@ class SequenceInterval:
                 Defaults to None.
         """
         # interval ID is a property (see below) with getter and setter
-        self._ID = ID
-        self._original_ID = ID
+        # self._ID = ID
+        # self._original_ID = ID
+        parents = kwargs.pop('parent', None)
+        super().__init__(ID=ID, children=children, container=container, parents=parents)
 
         # Standard gff fields
         self.seqid = seqid
@@ -729,10 +710,10 @@ class SequenceInterval:
             self[key] = value
 
         # Additional fields, used internally
-        self._container = container
-        if children is None:
-            children = []
-        self._children = children
+        # self._container = container
+        # if children is None:
+        #     children = []
+        # self._children = children
 
     def __repr__(self):
         return (
@@ -759,20 +740,8 @@ class SequenceInterval:
         return new_interval
 
     @property
-    def ID(self):
-        return self._ID
-
-    @ID.setter
-    def ID(self, value):
-        old_ID = self._ID
-        if not self._original_ID:
-            self._original_ID = old_ID
-        self._ID = value
-        for child in self.children:
-            if child.parent:
-                child.parent = [value if p == old_ID else p for p in child.parent]
-        if self._container:
-            self._container[value] = self._container.pop(old_ID)
+    def parent(self):
+        return self._parents
 
     @property
     def gff_attributes(self) -> Dict[str, str]:
@@ -782,6 +751,7 @@ class SequenceInterval:
             if attr not in self._fixed_gff3_fields  # skip column 1-8 in gff3
             and attr
             not in (
+                "_parents",
                 "_children",
                 "_container",
                 "_ID",
@@ -800,24 +770,6 @@ class SequenceInterval:
             for parent in self._get_parents()
         }
         return {**self.gff_attributes, **parent_ids}
-
-    @property
-    def parents(self) -> SequenceAnnotation:
-        ann = SequenceAnnotation()
-        for interval in self._get_parents():
-            if interval == self:
-                continue
-            ann[interval.ID] = interval
-        return ann
-
-    @property
-    def children(self) -> SequenceAnnotation:
-        ann = SequenceAnnotation()
-        for interval in self._get_children():
-            if interval == self:
-                continue
-            ann[interval.ID] = interval
-        return ann
 
     @classmethod
     def from_gtf_line(
@@ -1015,30 +967,6 @@ class SequenceInterval:
         return json.dumps(
             self.to_dict(include_children=include_children), indent=indent
         )
-
-    def _get_children(self, _visited: Optional[set] = None):
-        if _visited is None:
-            _visited = set()
-        if self not in _visited:
-            yield self
-            _visited.add(self)
-        if not self._children:
-            return
-        for child_ID in self._children:
-            child = self._container[child_ID]
-            yield from child._get_children(_visited=_visited)
-
-    def _get_parents(self, _visited: Optional[set] = None):
-        if _visited is None:
-            _visited = set()
-        if self not in _visited:
-            yield self
-            _visited.add(self)
-        if not self.parent:
-            return
-        for parent_ID in self.parent:
-            parent = self._container[parent_ID]
-            yield from parent._get_parents(_visited=_visited)
 
 
 @dataclass
@@ -1332,19 +1260,27 @@ class AbstractSequenceCollection(metaclass=ABCMeta):
         sequences: Optional[Iterable[Sequence]] = None,
         sequence_annotation: Optional["SequenceAnnotation"] = None,
     ) -> None:
-        raise NotImplementedError("Not implemented in base class")
+        raise NotImplementedError((
+            "Classes extending from AbstractSequenceCollection should "
+            "implement __init__ method"))
 
     @abstractmethod
     def __setitem__(self, header: str, seq: str) -> None:
-        raise NotImplementedError()
+        raise NotImplementedError((
+            "Classes extending from AbstractSequenceCollection should "
+            "implement __setitem__ method"))
 
     @abstractmethod
     def __getitem__(self, header: str) -> Sequence:
-        raise NotImplementedError()
+        raise NotImplementedError((
+            "Classes extending from AbstractSequenceCollection should "
+            "implement __getitem__ method"))
 
     @abstractmethod
     def __delitem__(self, header: str) -> None:
-        raise NotImplementedError()
+        raise NotImplementedError((
+            "Classes extending from AbstractSequenceCollection should "
+            "implement __delitem__ method"))
 
     def __iter__(self) -> Iterable[Sequence]:
         for header in self.headers:
@@ -1364,7 +1300,9 @@ class AbstractSequenceCollection(metaclass=ABCMeta):
         Returns:
             List[str]: List of sequence headers
         """
-        raise NotImplementedError()
+        raise NotImplementedError((
+            "Classes extending from AbstractSequenceCollection should "
+            "implement headers property"))
 
     @property
     def iloc(self) -> SequenceIndex:
@@ -1395,7 +1333,9 @@ class AbstractSequenceCollection(metaclass=ABCMeta):
         Returns:
             int: number of sequences
         """
-        raise NotImplementedError()
+        raise NotImplementedError((
+            "Classes extending from AbstractSequenceCollection should "
+            "implement n_seqs property"))
 
     @classmethod
     def from_sequence_iter(
@@ -1481,7 +1421,9 @@ class AbstractSequenceCollection(metaclass=ABCMeta):
         Returns:
             Sequence: [description]
         """
-        raise NotImplementedError()
+        raise NotImplementedError((
+            "Classes extending from AbstractSequenceCollection should "
+            "implement pop method"))
 
     def batch_rename(self, rename_func: Callable[[str], str]) -> None:
         """Rename all headers by calling `rename_func` on each header

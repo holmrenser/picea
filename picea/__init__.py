@@ -18,3 +18,8 @@ from .sequence import (  # noqa
     SequenceAnnotation,
     SequenceInterval,
 )
+
+from .ontology import ( # noqa
+    Ontology,
+    OntologyTerm
+)
