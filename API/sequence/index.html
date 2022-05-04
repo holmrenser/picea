@@ -2411,19 +2411,27 @@ and serves as a template only</p></td>
         <span class="n">sequences</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">Sequence</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">sequence_annotation</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;SequenceAnnotation&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Not implemented in base class&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">((</span>
+            <span class="s2">&quot;Classes extending from AbstractSequenceCollection should &quot;</span>
+            <span class="s2">&quot;implement __init__ method&quot;</span><span class="p">))</span>
 
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">seq</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">((</span>
+            <span class="s2">&quot;Classes extending from AbstractSequenceCollection should &quot;</span>
+            <span class="s2">&quot;implement __setitem__ method&quot;</span><span class="p">))</span>
 
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">((</span>
+            <span class="s2">&quot;Classes extending from AbstractSequenceCollection should &quot;</span>
+            <span class="s2">&quot;implement __getitem__ method&quot;</span><span class="p">))</span>
 
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="fm">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">((</span>
+            <span class="s2">&quot;Classes extending from AbstractSequenceCollection should &quot;</span>
+            <span class="s2">&quot;implement __delitem__ method&quot;</span><span class="p">))</span>
 
     <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Sequence</span><span class="p">]:</span>
         <span class="k">for</span> <span class="n">header</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">headers</span><span class="p">:</span>
@@ -2443,7 +2451,9 @@ and serves as a template only</p></td>
 <span class="sd">        Returns:</span>
 <span class="sd">            List[str]: List of sequence headers</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">((</span>
+            <span class="s2">&quot;Classes extending from AbstractSequenceCollection should &quot;</span>
+            <span class="s2">&quot;implement headers property&quot;</span><span class="p">))</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">iloc</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SequenceIndex</span><span class="p">:</span>
@@ -2474,7 +2484,9 @@ and serves as a template only</p></td>
 <span class="sd">        Returns:</span>
 <span class="sd">            int: number of sequences</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">((</span>
+            <span class="s2">&quot;Classes extending from AbstractSequenceCollection should &quot;</span>
+            <span class="s2">&quot;implement n_seqs property&quot;</span><span class="p">))</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">from_sequence_iter</span><span class="p">(</span>
@@ -2560,7 +2572,9 @@ and serves as a template only</p></td>
 <span class="sd">        Returns:</span>
 <span class="sd">            Sequence: [description]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">((</span>
+            <span class="s2">&quot;Classes extending from AbstractSequenceCollection should &quot;</span>
+            <span class="s2">&quot;implement pop method&quot;</span><span class="p">))</span>
 
     <span class="k">def</span> <span class="nf">batch_rename</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rename_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Rename all headers by calling `rename_func` on each header</span>
@@ -2761,7 +2775,9 @@ Overridden in subclasses</p>
           <summary>Source code in <code>picea/sequence.py</code></summary>
           <div class="codehilite"><pre><span></span><code><span class="nd">@abstractmethod</span>
 <span class="k">def</span> <span class="fm">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">((</span>
+        <span class="s2">&quot;Classes extending from AbstractSequenceCollection should &quot;</span>
+        <span class="s2">&quot;implement __delitem__ method&quot;</span><span class="p">))</span>
 </code></pre></div>
         </details>
     </div>
@@ -2790,7 +2806,9 @@ Overridden in subclasses</p>
           <summary>Source code in <code>picea/sequence.py</code></summary>
           <div class="codehilite"><pre><span></span><code><span class="nd">@abstractmethod</span>
 <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">:</span>
-    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">((</span>
+        <span class="s2">&quot;Classes extending from AbstractSequenceCollection should &quot;</span>
+        <span class="s2">&quot;implement __getitem__ method&quot;</span><span class="p">))</span>
 </code></pre></div>
         </details>
     </div>
@@ -2823,7 +2841,9 @@ Overridden in subclasses</p>
     <span class="n">sequences</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">Sequence</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">sequence_annotation</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;SequenceAnnotation&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Not implemented in base class&quot;</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">((</span>
+        <span class="s2">&quot;Classes extending from AbstractSequenceCollection should &quot;</span>
+        <span class="s2">&quot;implement __init__ method&quot;</span><span class="p">))</span>
 </code></pre></div>
         </details>
     </div>
@@ -2909,7 +2929,9 @@ Overridden in subclasses</p>
           <summary>Source code in <code>picea/sequence.py</code></summary>
           <div class="codehilite"><pre><span></span><code><span class="nd">@abstractmethod</span>
 <span class="k">def</span> <span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">seq</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">((</span>
+        <span class="s2">&quot;Classes extending from AbstractSequenceCollection should &quot;</span>
+        <span class="s2">&quot;implement __setitem__ method&quot;</span><span class="p">))</span>
 </code></pre></div>
         </details>
     </div>
@@ -3248,7 +3270,9 @@ Overridden in subclasses</p>
 <span class="sd">    Returns:</span>
 <span class="sd">        Sequence: [description]</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">((</span>
+        <span class="s2">&quot;Classes extending from AbstractSequenceCollection should &quot;</span>
+        <span class="s2">&quot;implement pop method&quot;</span><span class="p">))</span>
 </code></pre></div>
         </details>
     </div>
