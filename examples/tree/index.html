@@ -2422,7 +2422,7 @@ ax.scatter((0,0),(0,0),c='red')</div>
 
 
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
-<pre>&lt;matplotlib.collections.PathCollection at 0x7f9dc6c4fe20&gt;</pre>
+<pre>&lt;matplotlib.collections.PathCollection at 0x7fa5faebf940&gt;</pre>
 </div>
 
 </div>
@@ -2604,7 +2604,7 @@ c</div>
 
 
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
-<pre>TwoDCoordinate(x=1.0000000000000002, y=1.0000000000000002)</pre>
+<pre>TwoDCoordinate(x=1.0000000000000002, y=1.0)</pre>
 </div>
 
 </div>
@@ -2661,7 +2661,7 @@ c</div>
 
 
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
-<pre>TwoDCoordinate(x=0.9999999999999999, y=1.0)</pre>
+<pre>TwoDCoordinate(x=1.0, y=1.0)</pre>
 </div>
 
 </div>
@@ -2746,7 +2746,7 @@ ax2.scatter(*zip(*[[*p.to_polar()] for p in points]))</div>
 
 
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
-<pre>&lt;matplotlib.collections.PathCollection at 0x7f9dc6b24e80&gt;</pre>
+<pre>&lt;matplotlib.collections.PathCollection at 0x7fa5fad863d0&gt;</pre>
 </div>
 
 </div>
@@ -2835,12 +2835,12 @@ Input <span class="ansi-green-fg">In [19]</span>, in <span class="ansi-cyan-fg">
 <span class="ansi-green-intense-fg ansi-bold">      3</span> msa <span style="color: rgb(98,98,98)">=</span> _msa<span style="color: rgb(98,98,98)">.</span>_collection
 <span class="ansi-green-intense-fg ansi-bold">      4</span> msa<span style="color: rgb(98,98,98)">.</span>shape
 
-File <span class="ansi-green-fg">~/work/picea/picea/docs/examples/../../picea/sequence.py:1509</span>, in <span class="ansi-cyan-fg">SequenceCollection.align</span><span class="ansi-blue-fg">(self, method, method_kwargs)</span>
-<span class="ansi-green-intense-fg ansi-bold">   1507</span> fasta <span style="color: rgb(98,98,98)">=</span> <span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>to_fasta()
-<span class="ansi-green-intense-fg ansi-bold">   1508</span> command <span style="color: rgb(98,98,98)">=</span> [method, <span style="color: rgb(98,98,98)">*</span>chain(<span style="color: rgb(98,98,98)">*</span>method_kwargs<span style="color: rgb(98,98,98)">.</span>items()), <span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">-</span><span style="color: rgb(175,0,0)">&#34;</span>]
-<span class="ansi-green-fg">-&gt; 1509</span> process <span style="color: rgb(98,98,98)">=</span> <span class="ansi-yellow-bg">Popen</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">command</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">stdin</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">=</span><span class="ansi-yellow-bg">PIPE</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">stdout</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">=</span><span class="ansi-yellow-bg">PIPE</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">stderr</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">=</span><span class="ansi-yellow-bg">PIPE</span><span class="ansi-yellow-bg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">   1510</span> stdout, stderr <span style="color: rgb(98,98,98)">=</span> process<span style="color: rgb(98,98,98)">.</span>communicate(<span style="color: rgb(0,135,0)">input</span><span style="color: rgb(98,98,98)">=</span>fasta<span style="color: rgb(98,98,98)">.</span>encode())
-<span class="ansi-green-intense-fg ansi-bold">   1511</span> aligned_fasta <span style="color: rgb(98,98,98)">=</span> stdout<span style="color: rgb(98,98,98)">.</span>decode()<span style="color: rgb(98,98,98)">.</span>strip()
+File <span class="ansi-green-fg">~/work/picea/picea/docs/examples/../../picea/sequence.py:1532</span>, in <span class="ansi-cyan-fg">SequenceCollection.align</span><span class="ansi-blue-fg">(self, method, method_kwargs)</span>
+<span class="ansi-green-intense-fg ansi-bold">   1530</span> fasta <span style="color: rgb(98,98,98)">=</span> <span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>to_fasta()
+<span class="ansi-green-intense-fg ansi-bold">   1531</span> command <span style="color: rgb(98,98,98)">=</span> [method, <span style="color: rgb(98,98,98)">*</span>chain(<span style="color: rgb(98,98,98)">*</span>method_kwargs<span style="color: rgb(98,98,98)">.</span>items()), <span style="color: rgb(175,0,0)">&#34;</span><span style="color: rgb(175,0,0)">-</span><span style="color: rgb(175,0,0)">&#34;</span>]
+<span class="ansi-green-fg">-&gt; 1532</span> process <span style="color: rgb(98,98,98)">=</span> <span class="ansi-yellow-bg">Popen</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">command</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">stdin</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">=</span><span class="ansi-yellow-bg">PIPE</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">stdout</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">=</span><span class="ansi-yellow-bg">PIPE</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">stderr</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">=</span><span class="ansi-yellow-bg">PIPE</span><span class="ansi-yellow-bg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">   1533</span> stdout, stderr <span style="color: rgb(98,98,98)">=</span> process<span style="color: rgb(98,98,98)">.</span>communicate(<span style="color: rgb(0,135,0)">input</span><span style="color: rgb(98,98,98)">=</span>fasta<span style="color: rgb(98,98,98)">.</span>encode())
+<span class="ansi-green-intense-fg ansi-bold">   1534</span> aligned_fasta <span style="color: rgb(98,98,98)">=</span> stdout<span style="color: rgb(98,98,98)">.</span>decode()<span style="color: rgb(98,98,98)">.</span>strip()
 
 File <span class="ansi-green-fg">/opt/hostedtoolcache/Python/3.8.12/x64/lib/python3.8/subprocess.py:858</span>, in <span class="ansi-cyan-fg">Popen.__init__</span><span class="ansi-blue-fg">(self, args, bufsize, executable, stdin, stdout, stderr, preexec_fn, close_fds, shell, cwd, env, universal_newlines, startupinfo, creationflags, restore_signals, start_new_session, pass_fds, encoding, errors, text)</span>
 <span class="ansi-green-intense-fg ansi-bold">    854</span>         <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> <span style="color: rgb(0,135,0)">self</span><span style="color: rgb(98,98,98)">.</span>text_mode:
