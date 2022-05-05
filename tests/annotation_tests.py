@@ -23,7 +23,8 @@ class AnnotationTests(TestCase):
     maxDiff = None
 
     def setUp(self):
-        # gff string taken from https://github.com/The-Sequence-Ontology/Specifications/blob/master/gff3.md  # noqa
+        # gff string taken from
+        # https://github.com/The-Sequence-Ontology/Specifications/blob/master/gff3.md
         # modified to have unique CDS IDs
         self.gff3 = (
             # '##gff-version 3.1.26\n'
