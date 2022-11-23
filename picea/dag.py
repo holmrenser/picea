@@ -1,6 +1,8 @@
 from warnings import warn
 from abc import ABCMeta
-from typing import Optional, List, Iterable, Dict
+from typing import Optional, List, Iterable, Dict, DefaultDict, Callable
+from collections import defaultdict
+from copy import deepcopy
 
 
 class DAGElement(metaclass=ABCMeta):
@@ -24,6 +26,24 @@ class DAGElement(metaclass=ABCMeta):
     def __repr__(self):
         classname = type(self).__name__
         return f"<{classname} ID={self.ID} at {hex(id(self))}>"
+
+    def __getitem__(self, key):
+        return self.__dict__[key]
+
+    def __setitem__(self, key, value):
+        self.__dict__[key] = value
+
+    def __deepcopy__(self, memo):
+        """
+        Deep copy of a DAG element, container (DAG) is explicitly not copied
+        User has to reassign copied DAG element to original DAG if desired
+        """
+        new_element = self.__class__(ID=self.ID, container=self._container.__class__())
+        for key, value in vars(self).items():
+            # _container is strictly a reference, do not deepcopy
+            if key != "_container":
+                new_element[key] = deepcopy(value)
+        return new_element
 
     @property
     def ID(self):
@@ -97,6 +117,9 @@ class DirectedAcyclicGraph:
             element._ID = ID
         self._elements[ID] = element
 
+    def __contains__(self, ID):
+        return ID in self._elements
+
     def __iter__(self) -> Iterable[DAGElement]:
         try:
             yield from self._elements.values()
@@ -109,3 +132,23 @@ class DirectedAcyclicGraph:
     @property
     def elements(self) -> List[DAGElement]:
         return list(self)
+
+    def add(self, element: DAGElement) -> None:
+        self[element.ID] = element
+
+    def pop(self, ID: str) -> DAGElement:
+        return self._elements.pop(ID)
+
+    def groupby(self, group_key) -> DefaultDict[str, "DirectedAcyclicGraph"]:
+        grouped = defaultdict(self.__class__)
+        for interval in self:
+            grouped[interval[group_key]][interval.ID] = interval
+            interval._container = self
+        return grouped
+
+    def filter(self, filter_func: Callable) -> "DirectedAcyclicGraph":
+        result = self.__class__()
+        for interval in self:
+            if filter_func(interval):
+                result[interval.ID] = interval
+        return result

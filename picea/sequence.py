@@ -2,8 +2,8 @@ from warnings import warn
 from itertools import groupby, chain
 from subprocess import Popen, PIPE
 from collections import defaultdict, Counter
-from typing import Iterable, List, Tuple, Dict, Any, Optional, Callable, Union
-from abc import ABCMeta, abstractmethod, abstractproperty
+from typing import Iterable, List, Tuple, Dict, Any, Optional, Callable, Union, TypeVar
+from abc import ABCMeta, abstractmethod
 import uuid
 import numpy as np
 import numpy.typing as npt
@@ -13,6 +13,8 @@ import re
 from dataclasses import dataclass, field
 from copy import deepcopy
 from .dag import DAGElement, DirectedAcyclicGraph
+
+T = TypeVar("T")  # Used for multiple dispatch
 
 
 # (character, code) tuples for encoding special characters in gff3
@@ -39,6 +41,7 @@ DECODE_SPECIAL_CHARACTERS = (
     ("%25", "%"),
 )
 
+# Translate dna codons to amino acids
 TRANSLATION = dict(
     ACC="T",
     ACA="T",
@@ -116,6 +119,11 @@ class Alphabet(set):
         >>> DNA
         Alphabet(name='DNA', members='ACGT')
 
+        >>> Protein = Alphabet('AminoAcid', '*-?ACDEFGHIKLMNPQRSTVWXY')
+        >>> Protein
+        Alphabet(name='AminoAcid', members='*-?ACDEFGHIKLMNPQRSTVWXY')
+
+
     Args:
         name (str): Alphabet name
         members (Iterable[str]): Letters of the alphabet
@@ -168,28 +176,68 @@ class Alphabet(set):
         return sum(1 if s not in self else 0 for s in sequence) == 0
 
     def complement(self, sequence: str) -> str:
-        if self.name != "DNA":
-            raise TypeError("Cannot complement non-DNA alphabet")
-        dna_complement = dict(zip("acgtnACGTN-?", "tgcanTGCAN-?"))
-        return "".join(dna_complement[s] for s in sequence)
+        """Returns complementary strand of DNA or RNA sequence strings
+
+        Examples:
+            >>> DNA = Alphabet('DNA', 'ACGT')
+            >>> DNA.complement('AACTACG')
+            'TTGATGC'
+
+        Args:
+            sequence (str): Sequence string
+
+        Returns:
+            str: complementary strand sequence string
+        """
+        if self.name == "DNA":
+            complement = dict(zip("acgtnACGTN-?", "tgcanTGCAN-?"))
+        elif self.name == "RNA":
+            complement = dict(zip("acgunACGUN-?", "ugcanUGCAN-?"))
+        else:
+            raise TypeError("Cannot complement non-DNA or non-RNA alphabet")
+        return "".join(complement[s] for s in sequence)
 
     def translate(self, sequence: str) -> str:
-        if self.name != "DNA":
-            raise TypeError("Cannot translate non-DNA alphabet")
+        """Translate DNA or RNA sequence string to amino acid string
+
+        Examples:
+            >>> DNA = Alphabet('DNA', 'ACGT')
+            >>> DNA.translate('ATGACGACGTAA')
+            'MTT*'
+
+        Args:
+            sequence (str): Sequence string (sequence length must be multiple of 3)
+
+        Returns:
+            str: Amino acid string
+        """
+        if self.name not in ("DNA", "RNA"):
+            raise TypeError("Cannot translate non-DNA or non-RNA alphabet")
         codons = re.findall("...", sequence.upper())
         return "".join(TRANSLATION.get(codon, "X") for codon in codons)
 
 
 def alphabet_factory(alphabet):
+    """
+    Factory function that returns a specific alphabet
+    """
     return dict(
-        DNA=lambda: Alphabet("DNA", "-?ACGNT"),
-        AminoAcid=lambda: Alphabet("AminoAcid", "*-?ACDEFGHIKLMNPQRSTVWXY"),
+        DNA=lambda: Alphabet("DNA", "-?acgtnACGNT"),
+        RNA=lambda: Alphabet("RNA", "-?acgtnACGNU"),
+        AminoAcid=lambda: Alphabet(
+            "AminoAcid", "*-?acdefghiklmnpqrstvwxyACDEFGHIKLMNPQRSTVWXY"
+        ),
     )[alphabet]
 
 
 @dataclass(frozen=True)
 class Alphabets:
+    """
+    Immutable container with commonly used biological sequence alphabets
+    """
+
     DNA: Alphabet = field(default_factory=alphabet_factory("DNA"))
+    # RNA: Alphabet = field(default_factory=alphabet_factory("RNA"))
     AminoAcid: Alphabet = field(default_factory=alphabet_factory("AminoAcid"))
 
     def __iter__(self):
@@ -383,12 +431,31 @@ class SequenceAnnotation(DirectedAcyclicGraph):
     def intervals(self):
         return list(self)
 
+    def _link_parents(self) -> None:
+        """
+        Add explicit link from parent to child intervals
+        GFF/GTF files only contain links of child to parent
+        This modifies elements in place
+        """
+        for interval in self:
+            if interval.parent:
+                for parent_ID in interval.parent:
+                    try:
+                        parent = self[parent_ID]
+                    except KeyError as exc:
+                        raise KeyError(
+                            f"Interval {interval.ID} is listing {parent_ID} "
+                            "as Parent, but parent could not be found."
+                        ) from exc
+                    parent._children.append(interval.ID)
+
     @classmethod
     def from_gtf(
         cls,
         filename: Optional[str] = None,
         string: Optional[str] = None,
         sequence: Optional["Sequence"] = None,
+        link_parents: Optional[bool] = True,
     ) -> "SequenceAnnotation":
         """[summary]
 
@@ -456,17 +523,8 @@ class SequenceAnnotation(DirectedAcyclicGraph):
         sequence_annotation._intervals = new_intervals
 
         # set children
-        for interval in sequence_annotation:
-            if interval.parent:
-                for parent_ID in interval.parent:
-                    try:
-                        parent = sequence_annotation[parent_ID]
-                    except IndexError:
-                        raise IndexError(
-                            "Interval {interval.ID} is listing {parent_ID} "
-                            "as Parent, but parent could not be found."
-                        )
-                    parent._children.append(interval.ID)
+        if link_parents:
+            sequence_annotation._link_parents()
 
         # fix gene and transcript start and stop coordinates
         genes = sequence_annotation.groupby("interval_type")["gene"]
@@ -542,17 +600,7 @@ class SequenceAnnotation(DirectedAcyclicGraph):
             sequence_annotation[interval.ID] = interval
 
         if link_parents:
-            for interval in sequence_annotation:
-                if interval.parent:
-                    for parent_ID in interval.parent:
-                        try:
-                            parent = sequence_annotation[parent_ID]
-                        except IndexError:
-                            raise IndexError(
-                                "Interval {interval.ID} is listing {parent_ID}"
-                                " as Parent, but parent could not be found."
-                            )
-                        parent._children.append(interval.ID)
+            sequence_annotation._link_parents()
 
         return sequence_annotation
 
@@ -614,25 +662,25 @@ class SequenceAnnotation(DirectedAcyclicGraph):
         interval_dicts = [interval.to_dict() for interval in self]
         return json.dumps(interval_dicts, indent=indent)
 
-    def add(self, interval: "SequenceInterval"):
-        self[interval.ID] = interval
+    # def add(self, interval: "SequenceInterval"):
+    #    self[interval.ID] = interval
 
-    def pop(self, value: str) -> "SequenceInterval":
-        return self._intervals.pop(value)
+    # def pop(self, value: str) -> "SequenceInterval":
+    #    return self._intervals.pop(value)
 
-    def groupby(self, key="seqid") -> Dict[str, "SequenceAnnotation"]:
-        grouped = defaultdict(SequenceAnnotation)
-        for interval in self:
-            grouped[interval[key]][interval.ID] = interval
-            interval._container = self
-        return grouped
+    # def groupby(self, key="seqid") -> Dict[str, "SequenceAnnotation"]:
+    #    grouped = defaultdict(SequenceAnnotation)
+    #    for interval in self:
+    #        grouped[interval[key]][interval.ID] = interval
+    #        interval._container = self
+    #    return grouped
 
-    def filter(self, filter_func: Callable) -> "SequenceAnnotation":
-        result = SequenceAnnotation()
-        for interval in self:
-            if filter_func(interval):
-                result[interval.ID] = interval
-        return result
+    # def filter(self, filter_func: Callable) -> "SequenceAnnotation":
+    #    result = SequenceAnnotation()
+    #    for interval in self:
+    #        if filter_func(interval):
+    #            result[interval.ID] = interval
+    #    return result
 
 
 class SequenceInterval(DAGElement):
@@ -736,25 +784,15 @@ class SequenceInterval(DAGElement):
             f"at {hex(id(self))}>"
         )
 
-    def __getitem__(self, key):
-        return self.__dict__[key]
-
-    def __setitem__(self, key, value):
-        self.__dict__[key] = value
-
-    def __deepcopy__(self, memo):
-        new_interval = SequenceInterval()
-        for key, value in vars(self).items():
-            # _container is strictly a reference, do not deepcopy
-            if key == "_container":
-                new_interval[key] = value
-            else:
-                new_interval[key] = deepcopy(value)
-        return new_interval
-
     @property
     def parent(self):
         return self._parents
+
+    @parent.setter
+    def parent(self, parent_ID: Union[List[str], str]):
+        if isinstance(parent_ID, str):
+            parent_ID = [parent_ID]
+        self._parents = parent_ID
 
     @property
     def gff_attributes(self) -> Dict[str, str]:
@@ -787,7 +825,7 @@ class SequenceInterval(DAGElement):
 
         parent_ids = {
             f"{get_gtf_type(parent.interval_type)}_id": parent.ID
-            for parent in self._get_parents()
+            for parent in self.parents
         }
         return {**self.gff_attributes, **parent_ids}
 
@@ -949,7 +987,7 @@ class SequenceInterval(DAGElement):
         Returns:
             Dict[str, Any]: [description]
         """
-        attributes = dict(**self.attributes)
+        attributes = dict(**self.gff_attributes)
         attributes.pop("ID")
         interval_dict = dict(
             ID=self.ID,
@@ -993,11 +1031,12 @@ class Sequence:
         >>> s1 = Sequence('test_dna', 'ACGATCGACTAGCA')
         >>> s1
         Sequence(header='test_dna', \
-alphabet=Alphabet(name='DNA', members='-?ACGNT'))
+alphabet=Alphabet(name='DNA', members='-?acgtnACGNT'))
         >>> s2 = Sequence('test_aa', 'QAPISAIWPOIWQ*')
         >>> s2
         Sequence(header='test_aa', \
-alphabet=Alphabet(name='AminoAcid', members='*-?ACDEFGHIKLMNPQRSTVWXY'))
+alphabet=Alphabet(name='AminoAcid', \
+members='*-?acdefghiklmnpqrstvwxyACDEFGHIKLMNPQRSTVWXY'))
 
     Returns:
         [type]: [description]
@@ -1073,7 +1112,7 @@ alphabet=Alphabet(name='AminoAcid', members='*-?ACDEFGHIKLMNPQRSTVWXY'))
             >>> fasta_string = '>test\\nACGT'
             >>> Sequence.from_fasta(fasta_string)
             Sequence(header='test', \
-alphabet=Alphabet(name='DNA', members='-?ACGNT'))
+alphabet=Alphabet(name='DNA', members='-?acgtnACGNT'))
 
         Arguments:
             string (str)
@@ -1117,7 +1156,7 @@ class SequenceReader:
 filetype='fasta')
             >>> next(fasta_reader)
             Sequence(header='1', \
-alphabet=Alphabet(name='DNA', members='-?ACGNT'))
+alphabet=Alphabet(name='DNA', members='-?acgtnACGNT'))
         """
         assert bool(string) ^ bool(
             filename
@@ -1317,7 +1356,12 @@ class AbstractSequenceCollection(metaclass=ABCMeta):
     def __len__(self) -> int:
         return len(self.headers)
 
-    @abstractproperty
+    def __add__(self: T, other: T) -> T:
+        new_collection = self.__class__()
+        return new_collection
+
+    @property
+    @abstractmethod
     def headers(self) -> List[str]:
         """List of sequences headers.
         Overridden in subclasses.
@@ -1353,7 +1397,8 @@ class AbstractSequenceCollection(metaclass=ABCMeta):
         """
         return [self[header].sequence for header in self.headers]
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def n_seqs(self) -> int:
         """Return the number of sequences in the collection.
         Overridden in subclasses
@@ -1589,16 +1634,6 @@ class MultipleSequenceAlignment(SequenceCollection):
         sequence = self._collection[idx].view(f"S{n_chars}")[0].decode()
         return Sequence(header, sequence)
 
-    def __delitem__(self, header: str) -> None:
-        """WIP!
-
-        Args:
-            header (str): [description]
-        """
-        idx = self._header_idx[header]
-        self._collection = np.delete(self._collection, idx, axis=0)
-        # del
-
     @property
     def headers(self) -> List[str]:
         return list(self._header_idx.keys())
@@ -1614,6 +1649,19 @@ class MultipleSequenceAlignment(SequenceCollection):
     @property
     def shape(self) -> int:
         return self._collection.shape
+
+    def to_nexus(self) -> str:
+        """ """
+        sequences = "\n".join([f"{s.header} {s.sequence}" for s in self])
+        return (
+            "begin data;"
+            f"\tdimensions ntax={self.n_seqs} nchar={self.n_chars};"
+            "\tformat datatype=dna gap=-;"
+            "\tmatrix"
+            f"\t{sequences}"
+            "\t;"
+            "end;"
+        )
 
     def pop(self, header: str) -> Sequence:
         pop_idx = self._header_idx[header]

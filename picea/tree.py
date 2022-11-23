@@ -537,7 +537,7 @@ def treeplot(
             )
 
     xmin, xmax = ax.get_xlim()
-    xspacer = 0.25  # 0.01 * (xmax - xmin)
+    xspacer = 0.0  # 25  # 0.01 * (xmax - xmin)
 
     if isinstance(leaf_marker, str):
 

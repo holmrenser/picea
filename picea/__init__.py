@@ -1,5 +1,5 @@
 __author__ = "Rens Holmer"
-__version__ = "0.0.22"
+__version__ = "0.0.23_alpha"
 
 from .tree import (  # noqa
     Tree,

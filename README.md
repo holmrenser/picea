@@ -1,22 +1,24 @@
 # _picea_
 
-Lightweight python library for working with trees and sequence collections
+Sprucing up bioinformatics analysis
 
 [![CI](https://github.com/holmrenser/picea/actions/workflows/ci.yml/badge.svg)](https://github.com/holmrenser/picea/actions/workflows/ci.yml)
 ![docs](https://github.com/holmrenser/picea/workflows/docs/badge.svg?branch=master)
 [![Coverage Status](https://coveralls.io/repos/github/holmrenser/picea/badge.svg?branch=master)](https://coveralls.io/github/holmrenser/picea?branch=master)
+
 [![PyPI version](https://badge.fury.io/py/picea.svg)](https://badge.fury.io/py/picea)
 [![PyPI pyversions](https://img.shields.io/pypi/pyversions/picea.svg)](https://pypi.python.org/pypi/ansicolortags/)
 [![PyPI status](https://img.shields.io/pypi/status/picea.svg)](https://pypi.python.org/pypi/ansicolortags/)
+
 ![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)
 
 ```
 pip install picea
 ```
 
-![example figure](https://github.com/holmrenser/picea/raw/master/docs/example1.png)
+_picea_ has datastructures and methods to perform common bioinformatics tasks. Currently sequences, sequence annotations, trees, and ontologies are supported.
 
-The above figure can be generated with the following code
+Example:
 
 ```python
 from picea import Tree, treeplot

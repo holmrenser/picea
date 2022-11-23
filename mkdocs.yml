@@ -42,6 +42,10 @@ nav:
       - Contributing: CONTRIBUTING.md
   - Examples:
       - Tree: examples/tree.ipynb
+      - Ontology: examples/ontology.ipynb
+      - Sequence annotation: examples/sequence_annotation.ipynb
+      - Sequence interval: examples/sequence_interval.ipynb
   - API:
       - Sequence: api/sequence.md
       - Tree: api/tree.md
+      - Ontology: api/ontology.md
