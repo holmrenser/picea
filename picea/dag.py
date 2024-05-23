@@ -104,6 +104,9 @@ class DirectedAcyclicGraph:
     def __init__(self) -> None:
         self._elements: Dict[Hashable, DAGElement] = dict()
 
+    def __len__(self) -> int:
+        return len(self._elements)
+
     def __getitem__(self, ID: Hashable) -> DAGElement:
         return self._elements[ID]
 
