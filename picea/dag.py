@@ -132,9 +132,6 @@ class DirectedAcyclicGraph:
         except StopIteration:
             return
 
-    def __len__(self):
-        return len(self._elements.keys())
-
     @property
     def elements(self) -> List[DAGElement]:
         return list(self)
@@ -163,9 +160,9 @@ class DirectedAcyclicGraph:
                 subclasses
         """
         grouped = defaultdict(self.__class__)
-        for interval in self:
-            grouped[group_func(interval)][interval.ID] = interval
-            interval._container = self
+        for element in self:
+            grouped[group_func(element)][element.ID] = element
+            element._container = self
         return grouped
 
     def filter(
@@ -185,7 +182,7 @@ class DirectedAcyclicGraph:
             DirectedAcyclicGraph subclass with unwanted elements removed
         """
         result = self.__class__()
-        for interval in self:
-            if filter_func(interval):
-                result[interval.ID] = interval
+        for element in self:
+            if filter_func(element):
+                result[element.ID] = element
         return result

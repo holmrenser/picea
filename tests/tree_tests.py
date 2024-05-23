@@ -22,6 +22,10 @@ class TreeTests(TestCase):
         deep_node = tree.loc["a"]
         self.assertEqual(deep_node.root, tree)
 
+    #def test_number_of_elements(self):
+    #    tree = Tree.from_newick(self.newick)
+    #    self.assertEqual(10, len(tree))
+
     """
     def test_quoted_fasttree_newick(self):
         print(__file__)
