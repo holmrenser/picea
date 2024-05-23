@@ -1,20 +1,22 @@
-from warnings import warn
-from itertools import groupby, chain
-from subprocess import Popen, PIPE
-from collections import defaultdict, Counter
-from typing import Iterable, List, Tuple, Dict, Any, Optional, Callable, Union, TypeVar
-from abc import ABCMeta, abstractmethod
+import json
+import re
 import uuid
+from abc import ABCMeta, abstractmethod
+from collections import Counter, defaultdict
+from copy import deepcopy
+from dataclasses import dataclass, field
+from functools import reduce
+from itertools import chain, groupby
+from subprocess import PIPE, Popen
+from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Tuple, TypeVar, Union
+from warnings import warn
+
 import numpy as np
 import numpy.typing as npt
-import json
-from functools import reduce
-import re
-from dataclasses import dataclass, field
-from copy import deepcopy
+
 from .dag import DAGElement, DirectedAcyclicGraph
 
-T = TypeVar("T")  # Used for multiple dispatch
+SequenceType = TypeVar("SequenceType")  # Used for multiple dispatch
 
 
 # (character, code) tuples for encoding special characters in gff3
@@ -372,7 +374,7 @@ def parse_gtf_attribute_string(gtf_attribute_string: str) -> Dict[str, List[str]
             key, value = string_part.split(" ", maxsplit=1)
         except Exception as e:
             print(gtf_attribute_string, string_part)
-            raise Exception(e)
+            raise Exception('Error parsing gtf string') from e
         attributes[key].append(value.strip('"'))
     return attributes
 
@@ -394,7 +396,10 @@ def parse_gff_attribute_string(
             key, value = string_part.split("=", maxsplit=1)
         except Exception as e:
             print(gff_attribute_string, string_part)
-            raise Exception(e)
+            raise Exception(
+                f"{e}. Offending string part: {string_part}. "
+                f"Offending attribute string: {gff_attribute_string}"
+            ) from e
         # The gff spec lists the predefined attribute fields as starting with
         # a capital letter, but we process in lowercase so we don't miss
         # anything from poorly formatted files. When writing to gff we convert
@@ -645,11 +650,11 @@ class SequenceAnnotation(DirectedAcyclicGraph):
                 for parent_ID in interval.parent:
                     try:
                         parent = sequence_annotation[parent_ID]
-                    except IndexError:
+                    except IndexError as err:
                         raise IndexError(
                             "Interval {interval.ID} is listing {parent_ID} "
                             "as Parent, but parent could not be found."
-                        )
+                        ) from err
                     parent._children.append(interval.ID)
         return sequence_annotation
 
@@ -890,20 +895,20 @@ class SequenceInterval(DAGElement):
         try:
             start = int(start)
             end = int(end)
-        except ValueError:
+        except ValueError as err:
             error = "GFF start and end fields must be integer"
             if line_number:
                 error = f"{error}, gff line {line_number}"
-            raise ValueError(error)
+            raise ValueError(error) from err
 
         if score != ".":
             try:
                 score = float(score)
-            except ValueError:
+            except ValueError as err:
                 error = "GFF score field must be a float"
                 if line_number:
                     error = f"{error}, gff line {line_number}"
-                raise ValueError(error)
+                raise ValueError(error) from err
 
         if strand not in ("+", "-", "."):
             error = 'GFF strand must be one of "+", "-" or "."'
@@ -1356,7 +1361,7 @@ class AbstractSequenceCollection(metaclass=ABCMeta):
     def __len__(self) -> int:
         return len(self.headers)
 
-    def __add__(self: T, other: T) -> T:
+    def __add__(self: SequenceType, other: SequenceType) -> SequenceType:
         new_collection = self.__class__()
         return new_collection
 
@@ -1561,21 +1566,27 @@ class SequenceCollection(AbstractSequenceCollection):
     def n_seqs(self) -> int:
         return len(self._collection.keys())
 
-    def align(self, method: str = "mafft", method_kwargs: Dict[str, str] = dict()):
+    def align(
+        self,
+        method: Optional[str] = "mafft",
+        method_kwargs: Optional[Mapping[str, str]] = None
+    ) -> 'MultipleSequenceAlignment':
         """[summary]
 
         Args:
             method (str, optional): [description]. Defaults to 'mafft'.
-            method_kwargs (Dict[str, str], optional): [description]. \
+            method_kwargs (Mapping[str, str], optional): [description]. \
                 Defaults to dict().
 
         Returns:
             [type]: [description]
         """
+        if not method_kwargs:
+            method_kwargs = dict()
         fasta = self.to_fasta()
         command = [method, *chain(*method_kwargs.items()), "-"]
         process = Popen(command, stdin=PIPE, stdout=PIPE, stderr=PIPE)
-        stdout, stderr = process.communicate(input=fasta.encode())
+        stdout, _ = process.communicate(input=fasta.encode())
         aligned_fasta = stdout.decode().strip()
         return MultipleSequenceAlignment.from_fasta(string=aligned_fasta)
 
@@ -1585,14 +1596,15 @@ class SequenceCollection(AbstractSequenceCollection):
 
 
 class MultipleSequenceAlignment(SequenceCollection):
+    """
+    A container for multiple aligned DNA or amino acid sequences
+    """
     def __init__(
         self,
         sequences: Optional[Iterable[Sequence]] = None,
         sequence_annotation: Optional["SequenceAnnotation"] = None,
     ) -> None:
-        """
-        A container for multiple aligned DNA or amino acid sequences
-        """
+        super(MultipleSequenceAlignment).__init__()
         self._collection = np.empty((0, 0), dtype="uint8")
         self._header_idx = dict()
         if sequences:

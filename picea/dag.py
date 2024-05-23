@@ -1,11 +1,14 @@
-from warnings import warn
-from abc import ABCMeta
-from typing import Optional, List, Iterable, Dict, DefaultDict, Callable
+"""Direct Acyclic Graphs"""
 from collections import defaultdict
 from copy import deepcopy
+from typing import Callable, DefaultDict, Dict, Hashable, Iterable, List, Optional
+from warnings import warn
 
 
-class DAGElement(metaclass=ABCMeta):
+class DAGElement:
+    """
+    Element in a DAG, intended to be used as BaseClass
+    """
     def __init__(
         self,
         ID: str,
@@ -97,14 +100,14 @@ class DAGElement(metaclass=ABCMeta):
 
 
 class DirectedAcyclicGraph:
+    """"Base DAG class"""
     def __init__(self) -> None:
-        """[summary]"""
-        self._elements: Dict[str, DAGElement] = dict()
+        self._elements: Dict[Hashable, DAGElement] = dict()
 
-    def __getitem__(self, ID: str) -> DAGElement:
+    def __getitem__(self, ID: Hashable) -> DAGElement:
         return self._elements[ID]
 
-    def __setitem__(self, ID: str, element: DAGElement) -> None:
+    def __setitem__(self, ID: Hashable, element: DAGElement) -> None:
         if ID in self._elements:
             warn(f"Turning duplicate ID {ID} into unique ID")
             element._original_ID = ID
@@ -136,17 +139,48 @@ class DirectedAcyclicGraph:
     def add(self, element: DAGElement) -> None:
         self[element.ID] = element
 
-    def pop(self, ID: str) -> DAGElement:
+    def pop(self, ID: Hashable) -> DAGElement:
         return self._elements.pop(ID)
 
-    def groupby(self, group_key) -> DefaultDict[str, "DirectedAcyclicGraph"]:
+    def groupby(
+        self,
+        group_func: Callable[[DAGElement], Hashable]
+    ) -> DefaultDict[Hashable, "DirectedAcyclicGraph"]:
+        """
+        Group elements in the current collection by calling 'group_func' and using \
+        the results as a dictionary key
+
+        Args:
+            group_func: Callable[[DagElement], Hashable] receives as input an element \
+                of the current collection and should return something that can be used \
+                as a dictionary key (i.e. it should be hashable)
+
+        Returns:
+            Dictionary with keys for groups and values individual DirectedAcyclicGraph \
+                subclasses
+        """
         grouped = defaultdict(self.__class__)
         for interval in self:
-            grouped[interval[group_key]][interval.ID] = interval
+            grouped[group_func(interval)][interval.ID] = interval
             interval._container = self
         return grouped
 
-    def filter(self, filter_func: Callable) -> "DirectedAcyclicGraph":
+    def filter(
+        self,
+        filter_func: Callable[[DAGElement], bool]
+    ) -> "DirectedAcyclicGraph":
+        """
+        Filter elements in the current collection based on the output of filter_func
+
+        Args:
+            filter_func: Callable[[DagElement], bool] receives as input an element \
+                of the current collection and returns a boolean indicating whether the \
+                element should be kept (i.e. an element with a 'True' return value will\
+                be kept)
+
+        Returns:
+            DirectedAcyclicGraph subclass with unwanted elements removed
+        """
         result = self.__class__()
         for interval in self:
             if filter_func(interval):

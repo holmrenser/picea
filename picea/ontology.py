@@ -1,8 +1,9 @@
-from typing import List
-from itertools import groupby
-from collections import defaultdict
 import warnings
-from .dag import DirectedAcyclicGraph, DAGElement
+from collections import defaultdict
+from itertools import groupby
+from typing import List
+
+from .dag import DAGElement, DirectedAcyclicGraph
 
 
 class OntologyTerm(DAGElement):

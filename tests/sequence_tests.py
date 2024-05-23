@@ -1,11 +1,11 @@
 from unittest import TestCase
 
 from picea import (
-    Sequence,
-    SequenceReader,
     BatchSequenceReader,
-    SequenceCollection,
     MultipleSequenceAlignment,
+    Sequence,
+    SequenceCollection,
+    SequenceReader,
     alphabets,
 )
 

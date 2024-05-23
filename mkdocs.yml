@@ -37,7 +37,6 @@ theme:
 nav:
   - Overview:
       - Overview: index.md
-      - About: README.md
       - License: LICENSE.md
       - Contributing: CONTRIBUTING.md
   - Examples:

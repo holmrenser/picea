@@ -1,24 +1,25 @@
+import json
 import re
+from collections import defaultdict
+from copy import deepcopy
+from dataclasses import InitVar, asdict, dataclass, field
+from enum import Enum
 from typing import (
-    Iterable,
     Callable,
+    DefaultDict,
+    Dict,
+    Generator,
+    Iterable,
     List,
     Optional,
-    Generator,
-    Dict,
-    Union,
     Tuple,
     Type,
-    DefaultDict,
+    Union,
 )
-from enum import Enum
-import json
-from dataclasses import dataclass, field, InitVar, asdict
-from collections import defaultdict
+
+import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.axes import SubplotBase
-import numpy as np
-from copy import deepcopy
 
 TreeDict = Dict[str, Union[str, int, float, List[Optional["TreeDict"]]]]
 

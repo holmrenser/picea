@@ -6,40 +6,43 @@ authors = ["Rens Holmer"]
 readme = "README.md"
 license = "MIT"
 classifiers = [
-            'Development Status :: 3 - Alpha',
-            'Natural Language :: English',
-            'Operating System :: MacOS',
-            'Operating System :: Microsoft :: Windows',
-            'Operating System :: POSIX',
-            'Operating System :: Unix',
-            'Intended Audience :: Developers',
-            'Intended Audience :: Science/Research',
-            'Topic :: Scientific/Engineering :: Bio-Informatics',
-            'Topic :: Utilities'
-        ]
+    'Development Status :: 3 - Alpha',
+    'Natural Language :: English',
+    'Operating System :: MacOS',
+    'Operating System :: Microsoft :: Windows',
+    'Operating System :: POSIX',
+    'Operating System :: Unix',
+    'Intended Audience :: Developers',
+    'Intended Audience :: Science/Research',
+    'Topic :: Scientific/Engineering :: Bio-Informatics',
+    'Topic :: Utilities',
+]
 repository = 'https://github.com/holmrenser/picea'
 
 [tool.poetry.dependencies]
-python = ">=3.8, <3.11"
+python = ">=3.8, <3.12"
 numpy = "^1.22.2"
 matplotlib = "^3.5.1"
-mkdocs = "^1.4.2"
+
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^7.0"
-black = "^22.1.0"
-flake8 = "^4.0.1"
-coverage = {extras = ["toml"], version = "^6.3.1"}
+pytest = "^7.2.0"
+black = "^22.10.0"
+coverage = { extras = ["toml"], version = "^6.5.0" }
 coveralls = "^3.3.1"
-mkdocs = "^1.2.3"
+mkdocs = "^1.4.2"
 mkapi = "^1.0.14"
-mkdocs-material = "^8.1.11"
-mkdocs-jupyter = "^0.20.0"
-mkdocstrings = "^0.18.0"
+mkdocs-material = "^8.5.10"
+mkdocs-jupyter = "^0.22.0"
+mkdocstrings = "^0.19.0"
 jupyter = "^1.0.0"
-ipykernel = "^6.9.1"
-scipy = "^1.8.0"
+ipykernel = "^6.17.1"
+scipy = "^1.9.3"
 scikit-learn = "^1.0.2"
+mkdocstrings-python = "^0.8.2"
+jupytext = "^1.14.1"
+jupyterlab = "^3.5.0"
+ruff = "^0.4.5"
 
 [tool.poetry-version-plugin]
 source = "init"
@@ -47,7 +50,7 @@ source = "init"
 [tool.pytest.ini_options]
 minversion = "7.0"
 addopts = "--verbose --doctest-modules"
-testpaths = ["picea","tests"]
+testpaths = ["picea", "tests"]
 python_classes = "*Tests"
 python_functions = "test*"
 python_files = "*tests.py"
@@ -58,3 +61,25 @@ command_line = "-m pytest"
 
 [tool.coverage.report]
 omit = ["tests/*", "*__init__.py"]
+
+[tool.black]
+line-length = 120
+
+[tool.ruff]
+line-length = 120
+exclude = ['docs/*']
+lint.select = [
+    "E", # pycodestyle errors (settings from FastAPI, thanks, @tiangolo!)
+    "W", # pycodestyle warnings
+    "F", # pyflakes
+    "I", # isort
+    "C", # flake8-comprehensions
+    "B", # flake8-bugbear
+]
+lint.ignore = [
+    "E501", # line too long, handled by black
+    "C901", # too complex
+    "C408", # allow explicit `dict` and `list` calls
+    "B028", # don't want to always specify stacklevel for warnings
+
+]
