@@ -72,3 +72,12 @@ class AnnotationTests(TestCase):
     def test_get_number_of_elements(self):
         ann = SequenceAnnotation.from_gff(string=self.gff3)
         self.assertEqual(23, len(ann))
+
+    def test_groupby(self):
+        ann = SequenceAnnotation.from_gff(string=self.gff3)
+        groups = ann.groupby(lambda el: el.interval_type)
+        self.assertEqual(5, len(groups))
+        self.assertSetEqual(
+            {'gene','TF_binding_site','mRNA','exon','CDS'},
+            set(groups.keys())
+        )

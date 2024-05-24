@@ -20,7 +20,7 @@ classifiers = [
 repository = 'https://github.com/holmrenser/picea'
 
 [tool.poetry.dependencies]
-python = ">=3.8, <3.12"
+python = ">=3.8, <=3.12"
 numpy = "^1.22.2"
 matplotlib = "^3.5.1"
 
@@ -81,5 +81,4 @@ lint.ignore = [
     "C901", # too complex
     "C408", # allow explicit `dict` and `list` calls
     "B028", # don't want to always specify stacklevel for warnings
-
 ]

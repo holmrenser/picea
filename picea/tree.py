@@ -16,6 +16,7 @@ from typing import (
     Type,
     Union,
 )
+from warnings import warn
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -29,13 +30,13 @@ class Tree:
     """Recursive Tree object"""
 
     name: Optional[str] = None
-    length: float = 0.0
+    length: Optional[float] = None
     children: Optional[List["Tree"]] = field(default_factory=list)
 
     ID: InitVar[Optional[int]] = None
     depth: InitVar[Optional[int]] = None
     parent: InitVar[Optional["Tree"]] = None
-    cumulative_length: InitVar[float] = 0.0
+    cumulative_length: InitVar[Optional[float]] = None
 
     def __post_init__(self, ID, *args, **kwargs):
         """[summary]
@@ -54,7 +55,7 @@ class Tree:
             >>> newick = '(((a,b),(c,d)),e);'
             >>> tree = Tree.from_newick(newick)
             >>> tree.loc['a']
-            Tree(name='a', length=0.0, children=[])
+            Tree(name='a', length=None, children=[])
 
         Returns:
             Tree: tree node matching name
@@ -75,8 +76,8 @@ class Tree:
             >>> newick = '(((a,b),(c,d)),e);'
             >>> tree = Tree.from_newick(newick)
             >>> tree.iloc[2]
-            Tree(name='', length=0.0, children=[Tree(name='a', length=0.0, \
-children=[]), Tree(name='b', length=0.0, children=[])])
+            Tree(name='', length=None, children=[Tree(name='a', length=None, \
+children=[]), Tree(name='b', length=None, children=[])])
 
         Returns:
             Tree: tree node matching index
@@ -146,10 +147,11 @@ children=[]), Tree(name='b', length=0.0, children=[])])
         if filename:
             with open(filename) as filehandle:
                 string = filehandle.read()
-        tokens = re.split(r"\s*(;|\(|\)|,|:)\s*", string)
+        tokens: list[str] = re.split(r"\s*(;|\(|\)|,|:)\s*", string)
         ID = 0
-        tree = cls(ID=ID, length=0.0, cumulative_length=0.0)
-        ancestors = list()
+        tree = cls(ID=ID)
+        ancestors: list[Tree] = list()
+        found_branchlengths = False
         for i, token in enumerate(tokens):
             if token == "(":
                 ID += 1
@@ -169,20 +171,30 @@ children=[]), Tree(name='b', length=0.0, children=[])])
                 if previous_token in ("(", ")", ","):
                     tree.name = token
                 elif previous_token == ":":
+                    found_branchlengths = True
                     tree.length = float(token)
+                    tree.cumulative_length = 0.0
         tree.depth = 0
-        queue = [tree]
+        queue: list[Tree] = [tree]
         while queue:
             node = queue.pop(0)
+            if found_branchlengths:
+                if node.length is None:
+                    warn('Found branchlengths on some parts of the tree, but node '
+                        f'{node.ID} has no branchlength specified, setting to '
+                        'branchlength 0.0')
+                    node.length = 0.0
+                    node.cumulative_length = 0.0
             for child in node.children:
                 child.parent = node
                 child.depth = node.depth + 1
-                child.cumulative_length = node.cumulative_length + abs(child.length)
+                if child.length:
+                    child.cumulative_length = node.cumulative_length + abs(child.length)
             queue += node.children
 
         return tree
 
-    def to_newick(self, branch_lengths: bool = True) -> str:
+    def to_newick(self, branch_lengths: bool = False) -> str:
         """Make a Newick formatted string
 
         Args:
@@ -207,6 +219,10 @@ children=[]), Tree(name='b', length=0.0, children=[])])
 
         if branch_lengths and self.ID != 0:
             length = self.length
+            if length is None:
+                warn('Trying to write branch length for node that has no branch length \
+                     set, defaulting to zero length branch.')
+                length = 0
             if length == 0:
                 length = int(0)
             newick += f":{length}"
@@ -260,9 +276,9 @@ children=[]), Tree(name='b', length=0.0, children=[])])
     @classmethod
     def from_dict(cls, tree_dict):
         # TODO
-        # raise NotImplementedError()
-        tree = cls()
-        return tree
+        raise NotImplementedError()
+        #tree = cls()
+        #return tree
 
     def to_dict(self) -> TreeDict:
         """[summary]
