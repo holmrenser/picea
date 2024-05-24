@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "picea"
-version = "0.0" # this is automatically filled based on __init__.py
+version = "0.0.23_alpha"
 description = "A lightweight python library for working with trees and biological sequence collections"
 authors = ["Rens Holmer"]
 readme = "README.md"
@@ -43,9 +43,6 @@ mkdocstrings-python = "^0.8.2"
 jupytext = "^1.14.1"
 jupyterlab = "^3.5.0"
 ruff = "^0.4.5"
-
-[tool.poetry-version-plugin]
-source = "init"
 
 [tool.pytest.ini_options]
 minversion = "7.0"

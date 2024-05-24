@@ -1,5 +1,6 @@
-__author__ = "Rens Holmer"
-__version__ = "0.0.23_alpha"
+from importlib.metadata import version
+
+__version__ = version(__name__)
 
 from .tree import (  # noqa
     Tree,
