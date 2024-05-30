@@ -20,7 +20,7 @@ classifiers = [
 repository = 'https://github.com/holmrenser/picea'
 
 [tool.poetry.dependencies]
-python = ">=3.8, <=3.12"
+python = ">=3.8, <3.13"
 numpy = "^1.22.2"
 matplotlib = "^3.5.1"
 
