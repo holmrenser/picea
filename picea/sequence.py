@@ -812,7 +812,11 @@ class SequenceInterval(DAGElement):
             parent_ids = {f"{get_gtf_type(parent.interval_type)}_id": parent.ID for parent in self.parents}
         else:
             parent_ids = dict()
-        return {**self.gff_attributes, **parent_ids}
+
+        attributes = self.gff_attributes
+        if self.interval_type == "gene":
+            attributes["gene_id"] = self.ID
+        return {**attributes, **parent_ids}
 
     @classmethod
     def from_gtf_line(cls, gtf_line: Optional[str] = None, line_number: Optional[int] = None) -> "SequenceInterval":
