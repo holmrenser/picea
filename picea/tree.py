@@ -63,9 +63,7 @@ class Tree:
         Raises:
             IndexError
         """
-        return TreeIndex(
-            iterator=self.depth_first, eq_func=lambda node, name: node.name == name
-        )
+        return TreeIndex(iterator=self.depth_first, eq_func=lambda node, name: node.name == name)
 
     @property
     def iloc(self) -> "Tree":
@@ -82,9 +80,7 @@ children=[]), Tree(name='b', length=None, children=[])])
         Returns:
             Tree: tree node matching index
         """
-        return TreeIndex(
-            iterator=self.depth_first, eq_func=lambda node, index: node.ID == index
-        )
+        return TreeIndex(iterator=self.depth_first, eq_func=lambda node, index: node.ID == index)
 
     @property
     def root(self) -> "Tree":
@@ -131,9 +127,7 @@ children=[]), Tree(name='b', length=None, children=[])])
         return _links
 
     @classmethod
-    def from_newick(
-        cls, string: Optional[str] = None, filename: Optional[str] = None
-    ) -> "Tree":
+    def from_newick(cls, string: Optional[str] = None, filename: Optional[str] = None) -> "Tree":
         """Parse a newick formatted string into a Tree object
 
         Arguments:
@@ -180,9 +174,11 @@ children=[]), Tree(name='b', length=None, children=[])])
             node = queue.pop(0)
             if found_branchlengths:
                 if node.length is None:
-                    warn('Found branchlengths on some parts of the tree, but node '
-                        f'{node.ID} has no branchlength specified, setting to '
-                        'branchlength 0.0')
+                    warn(
+                        "Found branchlengths on some parts of the tree, but node "
+                        f"{node.ID} has no branchlength specified, setting to "
+                        "branchlength 0.0"
+                    )
                     node.length = 0.0
                     node.cumulative_length = 0.0
             for child in node.children:
@@ -210,9 +206,7 @@ children=[]), Tree(name='b', length=None, children=[])])
             name = ""
 
         if self.children:
-            subtree_string = ",".join(
-                [c.to_newick(branch_lengths=branch_lengths) for c in self.children]
-            )
+            subtree_string = ",".join([c.to_newick(branch_lengths=branch_lengths) for c in self.children])
             newick = f"({subtree_string}){name}"
         else:
             newick = name
@@ -220,8 +214,10 @@ children=[]), Tree(name='b', length=None, children=[])])
         if branch_lengths and self.ID != 0:
             length = self.length
             if length is None:
-                warn('Trying to write branch length for node that has no branch length \
-                     set, defaulting to zero length branch.')
+                warn(
+                    "Trying to write branch length for node that has no branch length \
+                     set, defaulting to zero length branch."
+                )
                 length = 0
             if length == 0:
                 length = int(0)
@@ -277,8 +273,8 @@ children=[]), Tree(name='b', length=None, children=[])])
     def from_dict(cls, tree_dict):
         # TODO
         raise NotImplementedError()
-        #tree = cls()
-        #return tree
+        # tree = cls()
+        # return tree
 
     def to_dict(self) -> TreeDict:
         """[summary]
@@ -311,9 +307,7 @@ children=[]), Tree(name='b', length=None, children=[])])
         if post_order:
             yield self
 
-    def rename_leaves(
-        self, rename_func: Callable, inplace: bool = True
-    ) -> Optional["Tree"]:
+    def rename_leaves(self, rename_func: Callable, inplace: bool = True) -> Optional["Tree"]:
         """[summary]"""
         tree = self if inplace else deepcopy(self)
         for leaf in tree.leaves:
@@ -339,9 +333,7 @@ class TreeIndex(object):
         raise IndexError(f"{key} is not valid index")
 
 
-def unequal_separation(
-    node_a: "Tree", node_b: "Tree", sep_1: float = 1.0, sep_2: float = 2.0
-) -> float:
+def unequal_separation(node_a: "Tree", node_b: "Tree", sep_1: float = 1.0, sep_2: float = 2.0) -> float:
     """[summary]
 
     Args:
@@ -384,9 +376,7 @@ class TwoDCoordinate:
         return TwoDCoordinate(x=self.x * np.cos(self.y), y=self.x * np.sin(self.y))
 
     def to_cartesian(self):
-        return TwoDCoordinate(
-            x=np.sqrt(self.x**2 + self.y**2), y=np.arctan2(self.y, self.x)
-        )
+        return TwoDCoordinate(x=np.sqrt(self.x**2 + self.y**2), y=np.arctan2(self.y, self.x))
 
 
 Ax = Type[SubplotBase]
@@ -482,9 +472,7 @@ def treeplot(
     Returns:
         Union[Ax, Tuple[Ax, LayoutDict]]: [description]
     """
-    layout = calculate_tree_layout(
-        tree=tree, style=style, ltr=ltr, branchlengths=branchlengths
-    )
+    layout = calculate_tree_layout(tree=tree, style=style, ltr=ltr, branchlengths=branchlengths)
 
     if not ax:
         _, ax = plt.subplots(figsize=(6, 6))
@@ -520,12 +508,8 @@ def treeplot(
                 verticalalignment="center_baseline",
             )
         if style == "square":
-            ax.plot(
-                (node1_x, node1_x), (node1_y, node2_y), **linestyle_fun((node1, node2))
-            )
-            ax.plot(
-                (node1_x, node2_x), (node2_y, node2_y), **linestyle_fun((node1, node2))
-            )
+            ax.plot((node1_x, node1_x), (node1_y, node2_y), **linestyle_fun((node1, node2)))
+            ax.plot((node1_x, node2_x), (node2_y, node2_y), **linestyle_fun((node1, node2)))
         elif style == "radial":
             if node2.root == node1:
                 ax.plot(
@@ -534,9 +518,7 @@ def treeplot(
                     **linestyle_fun((node1, node2)),
                 )
             else:
-                corner = TwoDCoordinate(
-                    x=node1_coords.to_cartesian().x, y=node2_coords.to_cartesian().y
-                ).to_polar()
+                corner = TwoDCoordinate(x=node1_coords.to_cartesian().x, y=node2_coords.to_cartesian().y).to_polar()
 
                 ax.plot(
                     (node1_x, corner.x),
@@ -549,9 +531,7 @@ def treeplot(
                     **linestyle_fun((node1, node2)),
                 )
         else:
-            ax.plot(
-                (node1_x, node2_x), (node1_y, node2_y), **linestyle_fun((node1, node2))
-            )
+            ax.plot((node1_x, node2_x), (node1_y, node2_y), **linestyle_fun((node1, node2)))
 
     xmin, xmax = ax.get_xlim()
     xspacer = 0.0  # 25  # 0.01 * (xmax - xmin)

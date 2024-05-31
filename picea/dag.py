@@ -1,4 +1,5 @@
 """Direct Acyclic Graphs"""
+
 from collections import defaultdict
 from copy import deepcopy
 from typing import Callable, DefaultDict, Dict, Hashable, Iterable, List, Optional
@@ -9,6 +10,7 @@ class DAGElement:
     """
     Element in a DAG, intended to be used as BaseClass
     """
+
     def __init__(
         self,
         ID: str,
@@ -100,7 +102,8 @@ class DAGElement:
 
 
 class DirectedAcyclicGraph:
-    """"Base DAG class"""
+    """Base DAG class"""
+
     def __init__(self) -> None:
         self._elements: Dict[Hashable, DAGElement] = dict()
 
@@ -142,10 +145,7 @@ class DirectedAcyclicGraph:
     def pop(self, ID: Hashable) -> DAGElement:
         return self._elements.pop(ID)
 
-    def groupby(
-        self,
-        group_func: Callable[[DAGElement], Hashable]
-    ) -> DefaultDict[Hashable, "DirectedAcyclicGraph"]:
+    def groupby(self, group_func: Callable[[DAGElement], Hashable]) -> DefaultDict[Hashable, "DirectedAcyclicGraph"]:
         """
         Group elements in the current collection by calling 'group_func' and using \
         the results as a dictionary key
@@ -165,10 +165,7 @@ class DirectedAcyclicGraph:
             element._container = self
         return grouped
 
-    def filter(
-        self,
-        filter_func: Callable[[DAGElement], bool]
-    ) -> "DirectedAcyclicGraph":
+    def filter(self, filter_func: Callable[[DAGElement], bool]) -> "DirectedAcyclicGraph":
         """
         Filter elements in the current collection based on the output of filter_func
 

@@ -226,9 +226,7 @@ def alphabet_factory(alphabet):
     return dict(
         DNA=lambda: Alphabet("DNA", "-?acgtnACGNT"),
         RNA=lambda: Alphabet("RNA", "-?acgtnACGNU"),
-        AminoAcid=lambda: Alphabet(
-            "AminoAcid", "*-?acdefghiklmnpqrstvwxyACDEFGHIKLMNPQRSTVWXY"
-        ),
+        AminoAcid=lambda: Alphabet("AminoAcid", "*-?acdefghiklmnpqrstvwxyACDEFGHIKLMNPQRSTVWXY"),
     )[alphabet]
 
 
@@ -276,9 +274,7 @@ def encode_attribute_value(attribute_value: Iterable[Union[int, str, float]]) ->
     return ",".join(quote_gff3(v) for v in attribute_value)
 
 
-def format_gtf_attribute_string(
-    attributes: Dict[str, Iterable[Union[int, str, float]]]
-) -> str:
+def format_gtf_attribute_string(attributes: Dict[str, Iterable[Union[int, str, float]]]) -> str:
     """[summary]
 
     Args:
@@ -287,15 +283,10 @@ def format_gtf_attribute_string(
     Returns:
         str: [description]
     """
-    return "".join(
-        f' {key} "{encode_attribute_value(value)}";'
-        for key, value in attributes.items()
-    ).strip()
+    return "".join(f' {key} "{encode_attribute_value(value)}";' for key, value in attributes.items()).strip()
 
 
-def format_gff_attribute_string(
-    attributes: Dict[str, Iterable[Union[int, str, float]]]
-) -> str:
+def format_gff_attribute_string(attributes: Dict[str, Iterable[Union[int, str, float]]]) -> str:
     """[summary]
 
     Args:
@@ -305,11 +296,9 @@ def format_gff_attribute_string(
         str: [description]
     """
     partially_formatted = {
-        (
-            key.capitalize()
-            if key in SequenceInterval._predefined_gff3_attributes
-            else key
-        ): encode_attribute_value(value)
+        (key.capitalize() if key in SequenceInterval._predefined_gff3_attributes else key): encode_attribute_value(
+            value
+        )
         for key, value in attributes.items()
     }
     partially_formatted["ID"] = partially_formatted.pop("Id")
@@ -322,10 +311,7 @@ def format_gff_attribute_string(
         else:
             return 2
 
-    return ";".join(
-        f"{key}={partially_formatted[key]}"
-        for key in sorted(partially_formatted.keys(), key=sort_key)
-    )
+    return ";".join(f"{key}={partially_formatted[key]}" for key in sorted(partially_formatted.keys(), key=sort_key))
 
 
 def unquote_gff3(attribute_value: str) -> str:
@@ -374,7 +360,7 @@ def parse_gtf_attribute_string(gtf_attribute_string: str) -> Dict[str, List[str]
             key, value = string_part.split(" ", maxsplit=1)
         except Exception as e:
             print(gtf_attribute_string, string_part)
-            raise Exception('Error parsing gtf string') from e
+            raise Exception("Error parsing gtf string") from e
         attributes[key].append(value.strip('"'))
     return attributes
 
@@ -397,8 +383,7 @@ def parse_gff_attribute_string(
         except Exception as e:
             print(gff_attribute_string, string_part)
             raise Exception(
-                f"{e}. Offending string part: {string_part}. "
-                f"Offending attribute string: {gff_attribute_string}"
+                f"{e}. Offending string part: {string_part}. " f"Offending attribute string: {gff_attribute_string}"
             ) from e
         # The gff spec lists the predefined attribute fields as starting with
         # a capital letter, but we process in lowercase so we don't miss
@@ -490,9 +475,7 @@ class SequenceAnnotation(DirectedAcyclicGraph):
                 continue
             else:
                 header = False
-            interval = SequenceInterval.from_gtf_line(
-                gtf_line=line, line_number=line_number
-            )
+            interval = SequenceInterval.from_gtf_line(gtf_line=line, line_number=line_number)
             interval._container = sequence_annotation
             sequence_annotation[interval.ID] = interval
         # fix missing gene and transcript intervals
@@ -598,9 +581,7 @@ class SequenceAnnotation(DirectedAcyclicGraph):
             else:
                 header = False
 
-            interval = SequenceInterval.from_gff_line(
-                gff_line=line, line_number=line_number
-            )
+            interval = SequenceInterval.from_gff_line(gff_line=line, line_number=line_number)
             interval._container = sequence_annotation
             sequence_annotation[interval.ID] = interval
 
@@ -652,8 +633,7 @@ class SequenceAnnotation(DirectedAcyclicGraph):
                         parent = sequence_annotation[parent_ID]
                     except IndexError as err:
                         raise IndexError(
-                            "Interval {interval.ID} is listing {parent_ID} "
-                            "as Parent, but parent could not be found."
+                            "Interval {interval.ID} is listing {parent_ID} " "as Parent, but parent could not be found."
                         ) from err
                     parent._children.append(interval.ID)
         return sequence_annotation
@@ -828,16 +808,11 @@ class SequenceInterval(DAGElement):
         def get_gtf_type(gff_type):
             return self._gtf_interval_types.get(gff_type, gff_type)
 
-        parent_ids = {
-            f"{get_gtf_type(parent.interval_type)}_id": parent.ID
-            for parent in self.parents
-        }
+        parent_ids = {f"{get_gtf_type(parent.interval_type)}_id": parent.ID for parent in self.parent}
         return {**self.gff_attributes, **parent_ids}
 
     @classmethod
-    def from_gtf_line(
-        cls, gtf_line: Optional[str] = None, line_number: Optional[int] = None
-    ) -> "SequenceInterval":
+    def from_gtf_line(cls, gtf_line: Optional[str] = None, line_number: Optional[int] = None) -> "SequenceInterval":
         """[summary]
 
         Returns:
@@ -854,9 +829,7 @@ class SequenceInterval(DAGElement):
         Returns:
             str: [description]
         """
-        interval_type = self._gtf_interval_types.get(
-            self.interval_type, self.interval_type
-        )
+        interval_type = self._gtf_interval_types.get(self.interval_type, self.interval_type)
         return "\t".join(
             [
                 self.seqid,
@@ -1011,9 +984,7 @@ class SequenceInterval(DAGElement):
             interval_dict["children"] = children
         return interval_dict
 
-    def to_json(
-        self, include_children: bool = False, indent: Optional[int] = None
-    ) -> str:
+    def to_json(self, include_children: bool = False, indent: Optional[int] = None) -> str:
         """[summary]
 
         Args:
@@ -1023,9 +994,7 @@ class SequenceInterval(DAGElement):
         Returns:
             str: [description]
         """
-        return json.dumps(
-            self.to_dict(include_children=include_children), indent=indent
-        )
+        return json.dumps(self.to_dict(include_children=include_children), indent=indent)
 
 
 @dataclass
@@ -1050,9 +1019,7 @@ members='*-?acdefghiklmnpqrstvwxyACDEFGHIKLMNPQRSTVWXY'))
     header: str = None
     sequence: str = field(repr=False, default=None)
     alphabet: Alphabet = None
-    annotation: Optional[SequenceAnnotation] = field(
-        default_factory=SequenceAnnotation, repr=False
-    )
+    annotation: Optional[SequenceAnnotation] = field(default_factory=SequenceAnnotation, repr=False)
 
     def __post_init__(self):
         if self.alphabet is not None:
@@ -1060,9 +1027,7 @@ members='*-?acdefghiklmnpqrstvwxyACDEFGHIKLMNPQRSTVWXY'))
         if self.sequence is None:
             self.alphabet = alphabets.DNA
         else:
-            self.alphabet = sorted(
-                alphabets, key=lambda alphabet: alphabet.score(self.sequence)
-            ).pop()
+            self.alphabet = sorted(alphabets, key=lambda alphabet: alphabet.score(self.sequence)).pop()
 
     def __getitem__(self, key):
         return Sequence(self.header, self.sequence[key])
@@ -1145,9 +1110,7 @@ class FastaParseError(Exception):
 
 
 class SequenceReader:
-    def __init__(
-        self, string: str = None, filename: str = None, filetype: str = None
-    ) -> None:
+    def __init__(self, string: str = None, filename: str = None, filetype: str = None) -> None:
         """Iterator over fasta/json formatted sequence strings
 
         Args:
@@ -1163,9 +1126,7 @@ filetype='fasta')
             Sequence(header='1', \
 alphabet=Alphabet(name='DNA', members='-?acgtnACGNT'))
         """
-        assert bool(string) ^ bool(
-            filename
-        ), "Must specify exactly one of string or filename"  # exclusive OR
+        assert bool(string) ^ bool(filename), "Must specify exactly one of string or filename"  # exclusive OR
         if filename:
             with open(filename, "r") as filehandle:
                 string = filehandle.read().strip()
@@ -1207,12 +1168,7 @@ alphabet=Alphabet(name='DNA', members='-?acgtnACGNT'))
                 'First character in fasta format\
                  must be ">"'
             )
-        fasta_iter = (
-            x
-            for _, x in groupby(
-                self.string.strip().split("\n"), lambda line: line[:1] == ">"
-            )
-        )
+        fasta_iter = (x for _, x in groupby(self.string.strip().split("\n"), lambda line: line[:1] == ">"))
         for header in fasta_iter:
             header = next(header)[1:].strip()
             seq = "".join(s.strip() for s in next(fasta_iter))
@@ -1321,37 +1277,25 @@ class AbstractSequenceCollection(metaclass=ABCMeta):
         sequence_annotation: Optional["SequenceAnnotation"] = None,
     ) -> None:
         raise NotImplementedError(
-            (
-                "Classes extending from AbstractSequenceCollection should "
-                "implement __init__ method"
-            )
+            ("Classes extending from AbstractSequenceCollection should " "implement __init__ method")
         )
 
     @abstractmethod
     def __setitem__(self, header: str, seq: str) -> None:
         raise NotImplementedError(
-            (
-                "Classes extending from AbstractSequenceCollection should "
-                "implement __setitem__ method"
-            )
+            ("Classes extending from AbstractSequenceCollection should " "implement __setitem__ method")
         )
 
     @abstractmethod
     def __getitem__(self, header: str) -> Sequence:
         raise NotImplementedError(
-            (
-                "Classes extending from AbstractSequenceCollection should "
-                "implement __getitem__ method"
-            )
+            ("Classes extending from AbstractSequenceCollection should " "implement __getitem__ method")
         )
 
     @abstractmethod
     def __delitem__(self, header: str) -> None:
         raise NotImplementedError(
-            (
-                "Classes extending from AbstractSequenceCollection should "
-                "implement __delitem__ method"
-            )
+            ("Classes extending from AbstractSequenceCollection should " "implement __delitem__ method")
         )
 
     def __iter__(self) -> Iterable[Sequence]:
@@ -1378,10 +1322,7 @@ class AbstractSequenceCollection(metaclass=ABCMeta):
             List[str]: List of sequence headers
         """
         raise NotImplementedError(
-            (
-                "Classes extending from AbstractSequenceCollection should "
-                "implement headers property"
-            )
+            ("Classes extending from AbstractSequenceCollection should " "implement headers property")
         )
 
     @property
@@ -1415,16 +1356,11 @@ class AbstractSequenceCollection(metaclass=ABCMeta):
             int: number of sequences
         """
         raise NotImplementedError(
-            (
-                "Classes extending from AbstractSequenceCollection should "
-                "implement n_seqs property"
-            )
+            ("Classes extending from AbstractSequenceCollection should " "implement n_seqs property")
         )
 
     @classmethod
-    def from_sequence_iter(
-        cls, sequence_iter: Iterable[Sequence]
-    ) -> "SequenceCollection":
+    def from_sequence_iter(cls, sequence_iter: Iterable[Sequence]) -> "SequenceCollection":
         """[summary]
 
         Raises:
@@ -1468,9 +1404,7 @@ class AbstractSequenceCollection(metaclass=ABCMeta):
         return "\n".join([seq.to_fasta(linewidth=linewidth) for seq in self])
 
     @classmethod
-    def from_json(
-        cls, filename: Optional[str] = None, string: Optional[str] = None
-    ) -> "SequenceCollection":
+    def from_json(cls, filename: Optional[str] = None, string: Optional[str] = None) -> "SequenceCollection":
         """[summary]
 
         Keyword Arguments:
@@ -1505,12 +1439,7 @@ class AbstractSequenceCollection(metaclass=ABCMeta):
         Returns:
             Sequence: [description]
         """
-        raise NotImplementedError(
-            (
-                "Classes extending from AbstractSequenceCollection should "
-                "implement pop method"
-            )
-        )
+        raise NotImplementedError(("Classes extending from AbstractSequenceCollection should " "implement pop method"))
 
     def batch_rename(self, rename_func: Callable[[str], str]) -> None:
         """Rename all headers by calling `rename_func` on each header
@@ -1567,10 +1496,8 @@ class SequenceCollection(AbstractSequenceCollection):
         return len(self._collection.keys())
 
     def align(
-        self,
-        method: Optional[str] = "mafft",
-        method_kwargs: Optional[Mapping[str, str]] = None
-    ) -> 'MultipleSequenceAlignment':
+        self, method: Optional[str] = "mafft", method_kwargs: Optional[Mapping[str, str]] = None
+    ) -> "MultipleSequenceAlignment":
         """[summary]
 
         Args:
@@ -1599,6 +1526,7 @@ class MultipleSequenceAlignment(SequenceCollection):
     """
     A container for multiple aligned DNA or amino acid sequences
     """
+
     def __init__(
         self,
         sequences: Optional[Iterable[Sequence]] = None,
@@ -1680,14 +1608,9 @@ class MultipleSequenceAlignment(SequenceCollection):
         n_chars = self._collection.shape[1]
         sequence = self._collection[pop_idx].view(f"S{n_chars}")[0].decode()
         del self._header_idx[header]
-        self._header_idx = {
-            h: (idx if idx < pop_idx else idx - 1)
-            for h, idx in self._header_idx.items()
-        }
+        self._header_idx = {h: (idx if idx < pop_idx else idx - 1) for h, idx in self._header_idx.items()}
         self._collection = np.delete(self._collection, (pop_idx,), axis=0)
         return Sequence(header, sequence)
 
-    def pairwise_distances(
-        self, distance_measure: str = "identity"
-    ) -> npt.NDArray[np.float64]:
+    def pairwise_distances(self, distance_measure: str = "identity") -> npt.NDArray[np.float64]:
         pass

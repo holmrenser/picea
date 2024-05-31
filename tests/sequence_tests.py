@@ -14,9 +14,7 @@ class SequenceTests(TestCase):
     def setUp(self):
         self.fasta = ">A\nABC\n>B\nDEF"
         self.big_fasta = ">A\nABC\n>B\nDEF\n>C\nGHI\n>D\nJKL"
-        self.json = (
-            '[{"header":"A","sequence":"ABC"},' '{"header":"B","sequence":"DEF"}]'
-        )
+        self.json = '[{"header":"A","sequence":"ABC"},' '{"header":"B","sequence":"DEF"}]'
         self.rename_func = lambda x: f"{x}.test"
 
     def test_empty_init_sequencereader(self):
@@ -32,9 +30,7 @@ class SequenceTests(TestCase):
 
     def test_batchsequencereader(self):
         n_batches = 0
-        for batch in BatchSequenceReader(
-            string=self.big_fasta, filetype="fasta", batchsize=2
-        ):
+        for batch in BatchSequenceReader(string=self.big_fasta, filetype="fasta", batchsize=2):
             n_batches += 1
             self.assertEqual(len(batch), 2)
         self.assertEqual(n_batches, 2)

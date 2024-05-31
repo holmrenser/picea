@@ -29,16 +29,11 @@ class Ontology(DirectedAcyclicGraph):
         if not term._children and not term._parents and term.__dict__.get("alt_id"):
             alt_id = term.__dict__.get("alt_id")[0]
             term = self._elements[alt_id]
-            warnings.warn(
-                f"Accessed GO term by alt ID {ID}, "
-                f"returning main GO term with ID {alt_id}"
-            )
+            warnings.warn(f"Accessed GO term by alt ID {ID}, " f"returning main GO term with ID {alt_id}")
         return term
 
     @classmethod
-    def from_obo(
-        cls, filename: str = None, string: str = None, skip_obsolete=True
-    ) -> "Ontology":
+    def from_obo(cls, filename: str = None, string: str = None, skip_obsolete=True) -> "Ontology":
         assert filename or string
         assert not (filename and string)
         ontology = cls()
@@ -46,12 +41,7 @@ class Ontology(DirectedAcyclicGraph):
             with open(filename) as filehandle:
                 string = filehandle.read()
 
-        obo_iter = (
-            el
-            for _, el in groupby(
-                string.strip().split("\n"), lambda line: line[:1] == "["
-            )
-        )
+        obo_iter = (el for _, el in groupby(string.strip().split("\n"), lambda line: line[:1] == "["))
 
         ontology._header = list(next(obo_iter))
 

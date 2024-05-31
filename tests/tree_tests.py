@@ -6,10 +6,10 @@ from picea import Tree
 class TreeTests(TestCase):
     def setUp(self):
         # Very simple tree
-        self.newick1 = '(((a,b),(c,d)),e);'
+        self.newick1 = "(((a,b),(c,d)),e);"
         # Tree with internal node names and branch lengths
-        self.newick2 = '((p_patens:1,a_trichopoda:1)N1:1,((z_mays:1,o_sativa:1)N3:1,\
-            (a_thaliana:1,(m_truncatula:1,g_max:1)N5:1)N4:1)N2:1)N0:0;'
+        self.newick2 = "((p_patens:1,a_trichopoda:1)N1:1,((z_mays:1,o_sativa:1)N3:1,\
+            (a_thaliana:1,(m_truncatula:1,g_max:1)N5:1)N4:1)N2:1)N0:0;"
 
     def test_empty_init(self):
         Tree()
@@ -20,7 +20,7 @@ class TreeTests(TestCase):
 
     def test_newick_writing(self):
         tree1 = Tree.from_newick(string=self.newick1)
-        newick1= tree1.to_newick()
+        newick1 = tree1.to_newick()
         self.assertEqual(newick1, self.newick1)
 
     def test_input_output(self):

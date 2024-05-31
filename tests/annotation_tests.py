@@ -13,10 +13,14 @@ class IntervalTests(TestCase):
     def test_from_gff_line(self):
         SequenceInterval.from_gff_line(self.gff3_line)
 
-    def test_input_output(self):
+    def test_to_gff_line(self):
         interval = SequenceInterval.from_gff_line(self.gff3_line)
         gff3_line = interval.to_gff_line()
         self.assertEqual(gff3_line, self.gff3_line)
+
+    def test_to_gtf_line(self):
+        interval = SequenceInterval.from_gff_line(self.gff3_line)
+        interval.to_gtf_line()
 
 
 class AnnotationTests(TestCase):
@@ -77,7 +81,4 @@ class AnnotationTests(TestCase):
         ann = SequenceAnnotation.from_gff(string=self.gff3)
         groups = ann.groupby(lambda el: el.interval_type)
         self.assertEqual(5, len(groups))
-        self.assertSetEqual(
-            {'gene','TF_binding_site','mRNA','exon','CDS'},
-            set(groups.keys())
-        )
+        self.assertSetEqual({"gene", "TF_binding_site", "mRNA", "exon", "CDS"}, set(groups.keys()))
