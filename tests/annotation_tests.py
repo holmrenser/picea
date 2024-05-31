@@ -72,6 +72,7 @@ class AnnotationTests(TestCase):
         ann = SequenceAnnotation.from_gff(string=self.gff3)
         gff3 = ann.to_gff()
         self.assertEqual(gff3, self.gff3)
+        gtf = ann.to_gtf()
 
     def test_get_number_of_elements(self):
         ann = SequenceAnnotation.from_gff(string=self.gff3)

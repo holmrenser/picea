@@ -805,10 +805,13 @@ class SequenceInterval(DAGElement):
 
     @property
     def gtf_attributes(self) -> Dict[str, str]:
-        def get_gtf_type(gff_type):
-            return self._gtf_interval_types.get(gff_type, gff_type)
+        def get_gtf_type(gff_interval_type):
+            return self._gtf_interval_types.get(gff_interval_type, gff_interval_type)
 
-        parent_ids = {f"{get_gtf_type(parent.interval_type)}_id": parent.ID for parent in self.parent}
+        if self.parents:
+            parent_ids = {f"{get_gtf_type(parent.interval_type)}_id": parent.ID for parent in self.parents}
+        else:
+            parent_ids = dict()
         return {**self.gff_attributes, **parent_ids}
 
     @classmethod
