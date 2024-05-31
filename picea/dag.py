@@ -162,7 +162,7 @@ class DirectedAcyclicGraph:
         grouped = defaultdict(self.__class__)
         for element in self:
             grouped[group_func(element)][element.ID] = element
-            element._container = self
+            # element._container = self
         return grouped
 
     def filter(self, filter_func: Callable[[DAGElement], bool]) -> "DirectedAcyclicGraph":
