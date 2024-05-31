@@ -22,7 +22,7 @@ repository = 'https://github.com/holmrenser/picea'
 [tool.poetry.dependencies]
 python = ">=3.10, <3.13"
 numpy = "1.26"
-matplotlib = "3.5.1"
+matplotlib = "3.9.0"
 
 
 [tool.poetry.group.dev.dependencies]
