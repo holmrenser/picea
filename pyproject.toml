@@ -22,27 +22,27 @@ repository = 'https://github.com/holmrenser/picea'
 [tool.poetry.dependencies]
 python = ">=3.10, <3.13"
 numpy = "1.26"
-matplotlib = "3.9.0"
+matplotlib = "^3.9.0"
 
 
 [tool.poetry.group.dev.dependencies]
-pytest = "8.2.1"
-black = "24.4.2"
-coverage = { extras = ["toml"], version = "6.5.0" }
-coveralls = "3.3.1"
-mkdocs = "1.6.0"
-mkapi = "2.1.0"
-mkdocs-material = "9.5.25"
-mkdocs-jupyter = "0.24.7"
-mkdocstrings = "0.25.1"
-jupyter = "1.0.0"
-ipykernel = "6.17.1"
-scipy = "1.13.1"
-scikit-learn = "1.5.0"
-mkdocstrings-python = "0.8.2"
-jupytext = "1.16.2"
-jupyterlab = "3.5.0"
-ruff = "0.4.5"
+pytest = "^8.2.1"
+black = "^24.4.2"
+coverage = { extras = ["toml"], version = "^7.5.3" }
+coveralls = "^4.0.1"
+mkdocs = "^1.6.0"
+mkapi = "^2.1.0"
+mkdocs-material = "^9.5.25"
+mkdocs-jupyter = "^0.24.7"
+mkdocstrings = "^0.25.1"
+jupyter = "^1.0.0"
+ipykernel = "^6.29.4"
+scipy = "^1.13.1"
+scikit-learn = "^1.5.0"
+mkdocstrings-python = "^1.10.3"
+jupytext = "^1.16.2"
+jupyterlab = "^4.2.1"
+ruff = "^0.4.5"
 
 [tool.pytest.ini_options]
 minversion = "7.0"
