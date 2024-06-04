@@ -647,26 +647,6 @@ class SequenceAnnotation(DirectedAcyclicGraph):
         interval_dicts = [interval.to_dict() for interval in self]
         return json.dumps(interval_dicts, indent=indent)
 
-    # def add(self, interval: "SequenceInterval"):
-    #    self[interval.ID] = interval
-
-    # def pop(self, value: str) -> "SequenceInterval":
-    #    return self._intervals.pop(value)
-
-    # def groupby(self, key="seqid") -> Dict[str, "SequenceAnnotation"]:
-    #    grouped = defaultdict(SequenceAnnotation)
-    #    for interval in self:
-    #        grouped[interval[key]][interval.ID] = interval
-    #        interval._container = self
-    #    return grouped
-
-    # def filter(self, filter_func: Callable) -> "SequenceAnnotation":
-    #    result = SequenceAnnotation()
-    #    for interval in self:
-    #        if filter_func(interval):
-    #            result[interval.ID] = interval
-    #    return result
-
 
 class SequenceInterval(DAGElement):
     _predefined_gff3_attributes = (
@@ -728,9 +708,6 @@ class SequenceInterval(DAGElement):
             container (Optional[SequenceAnnotation], optional): [description].
                 Defaults to None.
         """
-        # interval ID is a property (see below) with getter and setter
-        # self._ID = ID
-        # self._original_ID = ID
         parents = kwargs.pop("parent", None)
         super().__init__(ID=ID, children=children, container=container, parents=parents)
 
@@ -754,12 +731,6 @@ class SequenceInterval(DAGElement):
         # Any additional attributes
         for key, value in kwargs.items():
             self[key] = value
-
-        # Additional fields, used internally
-        # self._container = container
-        # if children is None:
-        #     children = []
-        # self._children = children
 
     def __repr__(self):
         return (
@@ -1036,10 +1007,20 @@ members='*-?acdefghiklmnpqrstvwxyACDEFGHIKLMNPQRSTVWXY'))
         else:
             self.alphabet = sorted(alphabets, key=lambda alphabet: alphabet.score(self.sequence)).pop()
 
-    def __getitem__(self, key):
+    def __getitem__(self, key) -> "Sequence":
+        """Subset a sequence based on a key (can be int or slice)
+
+        Examples:
+            >>> s = Sequence('test_dna', 'ACGTA')
+            >>> s[2:]
+            Sequence(header='test_dna', \
+alphabet=Alphabet(name='DNA', members='-?acgtnACGNT'))
+            >>> len(s[2:])
+            3
+        """
         return Sequence(self.header, self.sequence[key])
 
-    def __len__(self):
+    def __len__(self) -> int:
         """Length of the sequence
 
         Examples:
@@ -1050,19 +1031,72 @@ members='*-?acdefghiklmnpqrstvwxyACDEFGHIKLMNPQRSTVWXY'))
         return len(self.sequence)
 
     @property
-    def reverse(self):
+    def uppercase(self) -> "Sequence":
+        """All sequence characters in uppercase
+
+        Examples:
+            >>> s = Sequence('test_dna', 'acgTA')
+            >>> s.uppercase.sequence
+            'ACGTA'
+        """
+        return Sequence(self.header, self.sequence.upper())
+
+    @property
+    def lowercase(self) -> "Sequence":
+        """All sequence characters in lowercase
+
+        Examples:
+            >>> s = Sequence('test_dna', 'acgTA')
+            >>> s.lowercase.sequence
+            'acgta'
+        """
+        return Sequence(self.header, self.sequence.lower())
+
+    @property
+    def reverse(self) -> "Sequence":
+        """Reverse sequence order
+
+        Examples:
+            >>> s = Sequence('test_dna', 'ACGTA')
+            >>> s.reverse.sequence
+            'ATGCA'
+        """
         return Sequence(self.header, self.sequence[::-1])
 
     @property
-    def complement(self):
+    def complement(self) -> "Sequence":
+        """Complement DNA sequences based on watson-crick pairing
+
+        Examples:
+            >>> s = Sequence('test_dna', 'ACGTA')
+            >>> s.complement.sequence
+            'TGCAT'
+        """
         return Sequence(self.header, self.alphabet.complement(self.sequence))
 
     @property
-    def reverse_complement(self):
+    def reverse_complement(self) -> "Sequence":
+        """Reverse sequence order and complement nucleotides vased on watson-crick pairing.
+        This is the same as accessing the reversed and then complemented sequence (in arbitrary order)
+
+        Examples:
+            >>> s = Sequence('test_dna', 'ACGTA')
+            >>> s.reverse_complement.sequence
+            'TACGT'
+            >>> s.reverse_complement.sequence == s.reverse.complement.sequence == s.complement.reverse.sequence
+            True
+        """
         return Sequence(self.header, self.alphabet.complement(self.sequence[::-1]))
 
     @property
-    def amino_acids(self):
+    def amino_acids(self) -> "Sequence":
+        """Translate nucleotide codon triplets into amino acids
+
+        Examples:
+            >>> s = Sequence('test_dna', 'ATGATGTAA')
+            >>> s.amino_acids.sequence
+            'MM*'
+        """
         if self.alphabet.name == "AminoAcid":
             return self
         else:
@@ -1104,6 +1138,14 @@ alphabet=Alphabet(name='DNA', members='-?acgtnACGNT'))
 
     def to_fasta(self, linewidth: int = 80) -> str:
         """Make fasta formatted sequence entry
+
+        Examples:
+            >>> s = Sequence('test_dna', 'ACGTA')
+            >>> s.to_fasta()
+            '>test_dna\\nACGTA'
+
+        Arguments:
+            linewidth (int)
 
         Returns:
             str: sequence in fasta format
