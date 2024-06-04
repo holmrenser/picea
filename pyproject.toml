@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "picea"
-version = "0.0.29"
+version = "0.0.30"
 description = "A lightweight python library for working with trees and biological sequence collections"
 authors = ["Rens Holmer"]
 readme = "README.md"
