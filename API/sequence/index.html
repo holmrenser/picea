@@ -874,15 +874,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#picea.AbstractSequenceCollection.batch_rename" class="md-nav__link">
-    <span class="md-ellipsis">
-      batch_rename
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#picea.AbstractSequenceCollection.from_fasta" class="md-nav__link">
     <span class="md-ellipsis">
       from_fasta
@@ -910,9 +901,27 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#picea.AbstractSequenceCollection.modify_inplace" class="md-nav__link">
+    <span class="md-ellipsis">
+      modify_inplace
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#picea.AbstractSequenceCollection.pop" class="md-nav__link">
     <span class="md-ellipsis">
       pop
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#picea.AbstractSequenceCollection.rename_inplace" class="md-nav__link">
+    <span class="md-ellipsis">
+      rename_inplace
     </span>
   </a>
   
@@ -3465,7 +3474,11 @@ and serves as a template only</p>
 <span class="normal">1499</span>
 <span class="normal">1500</span>
 <span class="normal">1501</span>
-<span class="normal">1502</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">AbstractSequenceCollection</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
+<span class="normal">1502</span>
+<span class="normal">1503</span>
+<span class="normal">1504</span>
+<span class="normal">1505</span>
+<span class="normal">1506</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">AbstractSequenceCollection</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    (Partially) Abstract Base Class for sequence collections.</span>
 <span class="sd">    Classes extending from this baseclass should override</span>
@@ -3654,18 +3667,22 @@ and serves as a template only</p>
 <span class="sd">        Returns:</span>
 <span class="sd">            Sequence: [description]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">((</span><span class="s2">&quot;Classes extending from AbstractSequenceCollection should &quot;</span> <span class="s2">&quot;implement pop method&quot;</span><span class="p">))</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Classes extending from AbstractSequenceCollection should implement pop method&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">batch_rename</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rename_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">modify_inplace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mod_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Change headers and/or sequences in place by calling mod_func and storing the result&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">header</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">headers</span><span class="p">:</span>
+            <span class="n">s</span><span class="p">:</span> <span class="n">Sequence</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">header</span><span class="p">)</span>
+            <span class="n">new_header</span><span class="p">,</span> <span class="n">new_sequence</span> <span class="o">=</span> <span class="n">mod_func</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">header</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">sequence</span><span class="p">)</span>
+            <span class="bp">self</span><span class="p">[</span><span class="n">new_header</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_sequence</span>
+
+    <span class="k">def</span> <span class="nf">rename_inplace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rename_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Rename all headers by calling `rename_func` on each header</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            rename_func (Callable): [description]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">for</span> <span class="n">header</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">headers</span><span class="p">:</span>
-            <span class="n">s</span><span class="p">:</span> <span class="n">Sequence</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">header</span><span class="p">)</span>
-            <span class="n">s</span><span class="o">.</span><span class="n">header</span> <span class="o">=</span> <span class="n">rename_func</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">header</span><span class="p">)</span>
-            <span class="bp">self</span><span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">header</span><span class="p">]</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">sequence</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">modify_inplace</span><span class="p">(</span><span class="k">lambda</span> <span class="n">header</span><span class="p">,</span> <span class="n">sequence</span><span class="p">:</span> <span class="p">(</span><span class="n">rename_func</span><span class="p">(</span><span class="n">header</span><span class="p">),</span> <span class="n">sequence</span><span class="p">))</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -3860,75 +3877,6 @@ Overridden in subclasses</p>
 </div>
 
 
-
-<div class="doc doc-object doc-function">
-
-
-<h2 id="picea.AbstractSequenceCollection.batch_rename" class="doc doc-heading">
-            <code class=" language-python"><span class="n">batch_rename</span><span class="p">(</span><span class="n">rename_func</span><span class="p">)</span></code>
-
-<a href="#picea.AbstractSequenceCollection.batch_rename" class="headerlink" title="Permanent link">&para;</a></h2>
-
-
-    <div class="doc doc-contents ">
-
-      <p>Rename all headers by calling <code>rename_func</code> on each header</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td><code>rename_func</code></td>
-            <td>
-                  <code><span title="typing.Callable">Callable</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>[description]</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-            <details class="quote">
-              <summary>Source code in <code>picea/sequence.py</code></summary>
-              <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1493</span>
-<span class="normal">1494</span>
-<span class="normal">1495</span>
-<span class="normal">1496</span>
-<span class="normal">1497</span>
-<span class="normal">1498</span>
-<span class="normal">1499</span>
-<span class="normal">1500</span>
-<span class="normal">1501</span>
-<span class="normal">1502</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">batch_rename</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rename_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Rename all headers by calling `rename_func` on each header</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        rename_func (Callable): [description]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">for</span> <span class="n">header</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">headers</span><span class="p">:</span>
-        <span class="n">s</span><span class="p">:</span> <span class="n">Sequence</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">header</span><span class="p">)</span>
-        <span class="n">s</span><span class="o">.</span><span class="n">header</span> <span class="o">=</span> <span class="n">rename_func</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">header</span><span class="p">)</span>
-        <span class="bp">self</span><span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">header</span><span class="p">]</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">sequence</span>
-</code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
 
 <div class="doc doc-object doc-function">
 
@@ -4233,6 +4181,38 @@ Overridden in subclasses</p>
 <div class="doc doc-object doc-function">
 
 
+<h2 id="picea.AbstractSequenceCollection.modify_inplace" class="doc doc-heading">
+            <code class=" language-python"><span class="n">modify_inplace</span><span class="p">(</span><span class="n">mod_func</span><span class="p">)</span></code>
+
+<a href="#picea.AbstractSequenceCollection.modify_inplace" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Change headers and/or sequences in place by calling mod_func and storing the result</p>
+
+            <details class="quote">
+              <summary>Source code in <code>picea/sequence.py</code></summary>
+              <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1493</span>
+<span class="normal">1494</span>
+<span class="normal">1495</span>
+<span class="normal">1496</span>
+<span class="normal">1497</span>
+<span class="normal">1498</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">modify_inplace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mod_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Change headers and/or sequences in place by calling mod_func and storing the result&quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">header</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">headers</span><span class="p">:</span>
+        <span class="n">s</span><span class="p">:</span> <span class="n">Sequence</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">header</span><span class="p">)</span>
+        <span class="n">new_header</span><span class="p">,</span> <span class="n">new_sequence</span> <span class="o">=</span> <span class="n">mod_func</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">header</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">sequence</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">[</span><span class="n">new_header</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_sequence</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
 <h2 id="picea.AbstractSequenceCollection.pop" class="doc doc-heading">
             <code class=" language-python"><span class="n">pop</span><span class="p">(</span><span class="n">header</span><span class="p">)</span></code>
 
@@ -4321,7 +4301,70 @@ Overridden in subclasses</p>
 <span class="sd">    Returns:</span>
 <span class="sd">        Sequence: [description]</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">((</span><span class="s2">&quot;Classes extending from AbstractSequenceCollection should &quot;</span> <span class="s2">&quot;implement pop method&quot;</span><span class="p">))</span>
+    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Classes extending from AbstractSequenceCollection should implement pop method&quot;</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="picea.AbstractSequenceCollection.rename_inplace" class="doc doc-heading">
+            <code class=" language-python"><span class="n">rename_inplace</span><span class="p">(</span><span class="n">rename_func</span><span class="p">)</span></code>
+
+<a href="#picea.AbstractSequenceCollection.rename_inplace" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Rename all headers by calling <code>rename_func</code> on each header</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>rename_func</code></td>
+            <td>
+                  <code><span title="typing.Callable">Callable</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>[description]</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+            <details class="quote">
+              <summary>Source code in <code>picea/sequence.py</code></summary>
+              <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1500</span>
+<span class="normal">1501</span>
+<span class="normal">1502</span>
+<span class="normal">1503</span>
+<span class="normal">1504</span>
+<span class="normal">1505</span>
+<span class="normal">1506</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">rename_inplace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rename_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Rename all headers by calling `rename_func` on each header</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        rename_func (Callable): [description]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">modify_inplace</span><span class="p">(</span><span class="k">lambda</span> <span class="n">header</span><span class="p">,</span> <span class="n">sequence</span><span class="p">:</span> <span class="p">(</span><span class="n">rename_func</span><span class="p">(</span><span class="n">header</span><span class="p">),</span> <span class="n">sequence</span><span class="p">))</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -4466,11 +4509,7 @@ Overridden in subclasses</p>
 
               <details class="quote">
                 <summary>Source code in <code>picea/sequence.py</code></summary>
-                <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1505</span>
-<span class="normal">1506</span>
-<span class="normal">1507</span>
-<span class="normal">1508</span>
-<span class="normal">1509</span>
+                <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1509</span>
 <span class="normal">1510</span>
 <span class="normal">1511</span>
 <span class="normal">1512</span>
@@ -4532,7 +4571,11 @@ Overridden in subclasses</p>
 <span class="normal">1568</span>
 <span class="normal">1569</span>
 <span class="normal">1570</span>
-<span class="normal">1571</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">SequenceCollection</span><span class="p">(</span><span class="n">AbstractSequenceCollection</span><span class="p">):</span>
+<span class="normal">1571</span>
+<span class="normal">1572</span>
+<span class="normal">1573</span>
+<span class="normal">1574</span>
+<span class="normal">1575</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">SequenceCollection</span><span class="p">(</span><span class="n">AbstractSequenceCollection</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A container for multiple (unaligned) DNA or amino acid sequences</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -4695,11 +4738,7 @@ Overridden in subclasses</p>
 
             <details class="quote">
               <summary>Source code in <code>picea/sequence.py</code></summary>
-              <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1547</span>
-<span class="normal">1548</span>
-<span class="normal">1549</span>
-<span class="normal">1550</span>
-<span class="normal">1551</span>
+              <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1551</span>
 <span class="normal">1552</span>
 <span class="normal">1553</span>
 <span class="normal">1554</span>
@@ -4715,7 +4754,11 @@ Overridden in subclasses</p>
 <span class="normal">1564</span>
 <span class="normal">1565</span>
 <span class="normal">1566</span>
-<span class="normal">1567</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">align</span><span class="p">(</span>
+<span class="normal">1567</span>
+<span class="normal">1568</span>
+<span class="normal">1569</span>
+<span class="normal">1570</span>
+<span class="normal">1571</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">align</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;mafft&quot;</span><span class="p">,</span> <span class="n">method_kwargs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;MultipleSequenceAlignment&quot;</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;[summary]</span>
@@ -4764,11 +4807,7 @@ Overridden in subclasses</p>
 
               <details class="quote">
                 <summary>Source code in <code>picea/sequence.py</code></summary>
-                <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1574</span>
-<span class="normal">1575</span>
-<span class="normal">1576</span>
-<span class="normal">1577</span>
-<span class="normal">1578</span>
+                <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1578</span>
 <span class="normal">1579</span>
 <span class="normal">1580</span>
 <span class="normal">1581</span>
@@ -4855,7 +4894,11 @@ Overridden in subclasses</p>
 <span class="normal">1662</span>
 <span class="normal">1663</span>
 <span class="normal">1664</span>
-<span class="normal">1665</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">MultipleSequenceAlignment</span><span class="p">(</span><span class="n">SequenceCollection</span><span class="p">):</span>
+<span class="normal">1665</span>
+<span class="normal">1666</span>
+<span class="normal">1667</span>
+<span class="normal">1668</span>
+<span class="normal">1669</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">MultipleSequenceAlignment</span><span class="p">(</span><span class="n">SequenceCollection</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A container for multiple aligned DNA or amino acid sequences</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -4977,18 +5020,18 @@ Overridden in subclasses</p>
 
             <details class="quote">
               <summary>Source code in <code>picea/sequence.py</code></summary>
-              <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1642</span>
-<span class="normal">1643</span>
-<span class="normal">1644</span>
-<span class="normal">1645</span>
-<span class="normal">1646</span>
+              <div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1646</span>
 <span class="normal">1647</span>
 <span class="normal">1648</span>
 <span class="normal">1649</span>
 <span class="normal">1650</span>
 <span class="normal">1651</span>
 <span class="normal">1652</span>
-<span class="normal">1653</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">to_nexus</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="normal">1653</span>
+<span class="normal">1654</span>
+<span class="normal">1655</span>
+<span class="normal">1656</span>
+<span class="normal">1657</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">to_nexus</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; &quot;&quot;&quot;</span>
     <span class="n">sequences</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">s</span><span class="o">.</span><span class="n">header</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">s</span><span class="o">.</span><span class="n">sequence</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">])</span>
     <span class="k">return</span> <span class="p">(</span>
