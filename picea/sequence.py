@@ -1488,18 +1488,22 @@ class AbstractSequenceCollection(metaclass=ABCMeta):
         Returns:
             Sequence: [description]
         """
-        raise NotImplementedError(("Classes extending from AbstractSequenceCollection should " "implement pop method"))
+        raise NotImplementedError("Classes extending from AbstractSequenceCollection should implement pop method")
 
-    def batch_rename(self, rename_func: Callable[[str], str]) -> None:
+    def modify_inplace(self, mod_func: Callable[[str, str], tuple[str, str]]) -> None:
+        """Change headers and/or sequences in place by calling mod_func and storing the result"""
+        for header in self.headers:
+            s: Sequence = self.pop(header)
+            new_header, new_sequence = mod_func(s.header, s.sequence)
+            self[new_header] = new_sequence
+
+    def rename_inplace(self, rename_func: Callable[[str], str]) -> None:
         """Rename all headers by calling `rename_func` on each header
 
         Args:
             rename_func (Callable): [description]
         """
-        for header in self.headers:
-            s: Sequence = self.pop(header)
-            s.header = rename_func(s.header)
-            self[s.header] = s.sequence
+        self.modify_inplace(lambda header, sequence: (rename_func(header), sequence))
 
 
 class SequenceCollection(AbstractSequenceCollection):

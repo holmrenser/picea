@@ -106,14 +106,14 @@ class SequenceTests(TestCase):
         self.assertNotIn("A", msa.headers)
         self.assertNotIn("ABC", msa.sequences)
 
-    def test_seqcol_batch_rename(self):
+    def test_seqcol_rename_inplace(self):
         seq_col = SequenceCollection.from_fasta(string=self.fasta)
-        seq_col.batch_rename(self.rename_func)
+        seq_col.rename_inplace(self.rename_func)
         self.assertEqual(seq_col.headers, ["A.test", "B.test"])
 
-    def test_msa_batch_rename(self):
+    def test_msa_rename_inplace(self):
         msa = MultipleSequenceAlignment.from_fasta(string=self.fasta)
-        msa.batch_rename(self.rename_func)
+        msa.rename_inplace(self.rename_func)
         self.assertEqual(msa.headers, ["A.test", "B.test"])
 
     def test_iloc(self):
