@@ -139,3 +139,11 @@ class SequenceTests(TestCase):
         seq_col = SequenceCollection.from_fasta(string=self.fasta)
         seq_col2 = SequenceCollection.from_sequence_iter(seq_col)
         self.assertEqual(seq_col.headers, seq_col2.headers)
+
+    def test_add_sequence_inplace(self):
+        seq_col = SequenceCollection.from_fasta(string=self.fasta)
+        seq = Sequence("C", "GTAGT")
+        seq_col.add(seq)
+        self.assertEqual(3, len(seq_col))
+        self.assertIn("C", seq_col.headers)
+        self.assertEqual(seq_col["C"].sequence, "GTAGT")

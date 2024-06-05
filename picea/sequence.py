@@ -1490,6 +1490,14 @@ class AbstractSequenceCollection(metaclass=ABCMeta):
         """
         raise NotImplementedError("Classes extending from AbstractSequenceCollection should implement pop method")
 
+    def add(self, seq: Sequence) -> None:
+        """Insert a sequence inplace
+
+        Args:
+            seq (Sequence): sequence to be added
+        """
+        self[seq.header] = seq.sequence
+
     def modify_inplace(self, mod_func: Callable[[str, str], tuple[str, str]]) -> None:
         """Change headers and/or sequences in place by calling mod_func and storing the result"""
         for header in self.headers:
