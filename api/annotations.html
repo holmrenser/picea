@@ -301,8 +301,23 @@ ID, and linked into a directed acyclic graph by their <code class="docutils lite
 <dt class="sig sig-object py" id="picea.SequenceAnnotation.from_gtf">
 <span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">from_gtf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">string</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sequence</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">link_parents</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/picea/sequence.html#SequenceAnnotation.from_gtf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#picea.SequenceAnnotation.from_gtf" title="Link to this definition">¶</a></dt>
 <dd><p>Read a GTF formatted file or string. Exactly one of <code class="docutils literal notranslate"><span class="pre">filename</span></code> or <code class="docutils literal notranslate"><span class="pre">string</span></code> must be given.</p>
-<p>GTF lines are linked by their <code class="docutils literal notranslate"><span class="pre">gene_id</span></code> and <code class="docutils literal notranslate"><span class="pre">transcript_id</span></code> attributes. Gene and transcript (mRNA)
-intervals are created from these, spanning all their child intervals.</p>
+<p>GTF lines are linked by their <code class="docutils literal notranslate"><span class="pre">gene_id</span></code> and <code class="docutils literal notranslate"><span class="pre">transcript_id</span></code> attributes, and <code class="docutils literal notranslate"><span class="pre">transcript</span></code> lines become
+<code class="docutils literal notranslate"><span class="pre">mRNA</span></code> intervals. Genes and transcripts that have no line of their own are created, spanning all their
+child intervals. Other intervals get IDs based on their transcript and type, e.g. <code class="docutils literal notranslate"><span class="pre">&lt;transcript_id&gt;.exon_0</span></code>.
+Lines without a <code class="docutils literal notranslate"><span class="pre">gene_id</span></code> become intervals without parents, with IDs like <code class="docutils literal notranslate"><span class="pre">repeat_region_0</span></code>.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">gtf</span> <span class="o">=</span> <span class="p">(</span>
+<span class="gp">... </span>    <span class="s1">'ctg1</span><span class="se">\t</span><span class="s1">.</span><span class="se">\t</span><span class="s1">exon</span><span class="se">\t</span><span class="s1">100</span><span class="se">\t</span><span class="s1">200</span><span class="se">\t</span><span class="s1">.</span><span class="se">\t</span><span class="s1">+</span><span class="se">\t</span><span class="s1">.</span><span class="se">\t</span><span class="s1">gene_id "g1"; transcript_id "t1";</span><span class="se">\n</span><span class="s1">'</span>
+<span class="gp">... </span>    <span class="s1">'ctg1</span><span class="se">\t</span><span class="s1">.</span><span class="se">\t</span><span class="s1">exon</span><span class="se">\t</span><span class="s1">300</span><span class="se">\t</span><span class="s1">400</span><span class="se">\t</span><span class="s1">.</span><span class="se">\t</span><span class="s1">+</span><span class="se">\t</span><span class="s1">.</span><span class="se">\t</span><span class="s1">gene_id "g1"; transcript_id "t1";</span><span class="se">\n</span><span class="s1">'</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">annotation</span> <span class="o">=</span> <span class="n">SequenceAnnotation</span><span class="o">.</span><span class="n">from_gtf</span><span class="p">(</span><span class="n">string</span><span class="o">=</span><span class="n">gtf</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gene</span> <span class="o">=</span> <span class="n">annotation</span><span class="p">[</span><span class="s2">"g1"</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gene</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">gene</span><span class="o">.</span><span class="n">end</span>
+<span class="go">(100, 400)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">interval</span><span class="o">.</span><span class="n">ID</span> <span class="k">for</span> <span class="n">interval</span> <span class="ow">in</span> <span class="n">gene</span><span class="o">.</span><span class="n">children</span><span class="p">]</span>
+<span class="go">['t1', 't1.exon_0', 't1.exon_1']</span>
+</pre></div>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -540,8 +555,9 @@ out.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="picea.SequenceInterval.gtf_attributes">
 <span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">gtf_attributes</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#picea.SequenceInterval.gtf_attributes" title="Link to this definition">¶</a></dt>
-<dd><p><a class="reference internal" href="#picea.SequenceInterval.gff_attributes" title="picea.SequenceInterval.gff_attributes"><code class="xref py py-attr docutils literal notranslate"><span class="pre">gff_attributes</span></code></a>, plus a <code class="docutils literal notranslate"><span class="pre">&lt;type&gt;_id</span></code> attribute for every ancestor (e.g.
-<code class="docutils literal notranslate"><span class="pre">transcript_id</span></code> and <code class="docutils literal notranslate"><span class="pre">gene_id</span></code> for an exon)</p>
+<dd><p><a class="reference internal" href="#picea.SequenceInterval.gff_attributes" title="picea.SequenceInterval.gff_attributes"><code class="xref py py-attr docutils literal notranslate"><span class="pre">gff_attributes</span></code></a> without <code class="docutils literal notranslate"><span class="pre">ID</span></code> and <code class="docutils literal notranslate"><span class="pre">Parent</span></code>, plus a <code class="docutils literal notranslate"><span class="pre">&lt;type&gt;_id</span></code>
+attribute for the interval itself if it is a gene or mRNA, and for every ancestor (e.g. <code class="docutils literal notranslate"><span class="pre">transcript_id</span></code> and
+<code class="docutils literal notranslate"><span class="pre">gene_id</span></code> for an exon). Intervals with multiple parents of the same type get a single <code class="docutils literal notranslate"><span class="pre">&lt;type&gt;_id</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Attributes for GTF output</p>
@@ -605,7 +621,8 @@ out.</p>
 <dd class="field-odd"><p><a class="reference internal" href="#picea.SequenceInterval" title="picea.SequenceInterval">SequenceInterval</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If the start, end, score, strand, or phase column has an invalid value</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If the line does not have 9 columns, or if the start, end, score, strand, or phase column has
+    an invalid value</p>
 </dd>
 </dl>
 </dd></dl>
@@ -685,8 +702,8 @@ attributes</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="picea.SequenceInterval.ID">
 <span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">ID</span></span><a class="headerlink" href="#picea.SequenceInterval.ID" title="Link to this definition">¶</a></dt>
-<dd><p>Unique identifier of the element. Setting a new ID also updates the parent references of child elements,
-and the key of the element in its container.</p>
+<dd><p>Unique identifier of the element. Setting a new ID also updates the references of parent and child
+elements, and the key of the element in its container.</p>
 </dd></dl>
 
 <dl class="py property">

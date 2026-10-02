@@ -391,7 +391,7 @@
 <span class="w">        </span><span class="sd">"""Parse a Newick formatted file or string. Exactly one of ``string`` or ``filename`` must be given.</span>
 
 <span class="sd">        Node names (including internal node names such as support values) and branch lengths are read when present.</span>
-<span class="sd">        If some nodes have a branch length, nodes without one get length 0.0 with a warning.</span>
+<span class="sd">        If some nodes have a branch length, other nodes (except the root) without one get length 0.0 with a warning.</span>
 
 <span class="sd">        Examples:</span>
 <span class="sd">            &gt;&gt;&gt; tree = Tree.from_newick('((a:1,b:2)ab:1,c:3)root:0;')</span>
@@ -438,22 +438,22 @@
                     <span class="n">tree</span><span class="o">.</span><span class="n">length</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
                     <span class="n">tree</span><span class="o">.</span><span class="n">cumulative_length</span> <span class="o">=</span> <span class="mf">0.0</span>
         <span class="n">tree</span><span class="o">.</span><span class="n">depth</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="n">found_branchlengths</span><span class="p">:</span>
+            <span class="n">tree</span><span class="o">.</span><span class="n">cumulative_length</span> <span class="o">=</span> <span class="mf">0.0</span>
         <span class="n">queue</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Tree</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">tree</span><span class="p">]</span>
         <span class="k">while</span> <span class="n">queue</span><span class="p">:</span>
             <span class="n">node</span> <span class="o">=</span> <span class="n">queue</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">found_branchlengths</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">length</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">warn</span><span class="p">(</span>
-                        <span class="s2">"Found branchlengths on some parts of the tree, but node "</span>
-                        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">node</span><span class="o">.</span><span class="n">ID</span><span class="si">}</span><span class="s2"> has no branchlength specified, setting to "</span>
-                        <span class="s2">"branchlength 0.0"</span>
-                    <span class="p">)</span>
-                    <span class="n">node</span><span class="o">.</span><span class="n">length</span> <span class="o">=</span> <span class="mf">0.0</span>
-                    <span class="n">node</span><span class="o">.</span><span class="n">cumulative_length</span> <span class="o">=</span> <span class="mf">0.0</span>
             <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
                 <span class="n">child</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="n">node</span>
                 <span class="n">child</span><span class="o">.</span><span class="n">depth</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">depth</span> <span class="o">+</span> <span class="mi">1</span>
-                <span class="k">if</span> <span class="n">child</span><span class="o">.</span><span class="n">length</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">found_branchlengths</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">child</span><span class="o">.</span><span class="n">length</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">warn</span><span class="p">(</span>
+                            <span class="s2">"Found branchlengths on some parts of the tree, but node "</span>
+                            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">child</span><span class="o">.</span><span class="n">ID</span><span class="si">}</span><span class="s2"> has no branchlength specified, setting to "</span>
+                            <span class="s2">"branchlength 0.0"</span>
+                        <span class="p">)</span>
+                        <span class="n">child</span><span class="o">.</span><span class="n">length</span> <span class="o">=</span> <span class="mf">0.0</span>
                     <span class="n">child</span><span class="o">.</span><span class="n">cumulative_length</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">cumulative_length</span> <span class="o">+</span> <span class="nb">abs</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">length</span><span class="p">)</span>
             <span class="n">queue</span> <span class="o">+=</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span>
 
@@ -463,7 +463,8 @@
 <div class="viewcode-block" id="Tree.to_newick">
 <a class="viewcode-back" href="../../api/trees.html#picea.Tree.to_newick">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">to_newick</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">branch_lengths</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Newick formatted string of the (sub)tree</span>
+<span class="w">        </span><span class="sd">"""Newick formatted string of the (sub)tree. The node this is called on is the root of the Newick tree, so its</span>
+<span class="sd">        branch length is not written.</span>
 
 <span class="sd">        Examples:</span>
 <span class="sd">            &gt;&gt;&gt; tree = Tree.from_newick('((a:1,b:2)ab:1,c:3)root:0;')</span>
@@ -477,18 +478,20 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            str: Newick formatted string</span>
 <span class="sd">        """</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
-            <span class="n">name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">name</span> <span class="o">=</span> <span class="s2">""</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_to_newick</span><span class="p">(</span><span class="n">branch_lengths</span><span class="o">=</span><span class="n">branch_lengths</span><span class="p">,</span><span class="w"> </span><span class="n">include_length</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="si">}</span><span class="s2">;"</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_to_newick</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">branch_lengths</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">include_length</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Newick string of the (sub)tree without the closing semicolon"""</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="k">else</span> <span class="s2">""</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
-            <span class="n">subtree_string</span> <span class="o">=</span> <span class="s2">","</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">c</span><span class="o">.</span><span class="n">to_newick</span><span class="p">(</span><span class="n">branch_lengths</span><span class="o">=</span><span class="n">branch_lengths</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">])</span>
+            <span class="n">subtree_string</span> <span class="o">=</span> <span class="s2">","</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">_to_newick</span><span class="p">(</span><span class="n">branch_lengths</span><span class="o">=</span><span class="n">branch_lengths</span><span class="p">)</span> <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">)</span>
             <span class="n">newick</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"(</span><span class="si">{</span><span class="n">subtree_string</span><span class="si">}</span><span class="s2">)</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">newick</span> <span class="o">=</span> <span class="n">name</span>
 
-        <span class="k">if</span> <span class="n">branch_lengths</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">ID</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">branch_lengths</span> <span class="ow">and</span> <span class="n">include_length</span><span class="p">:</span>
             <span class="n">length</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">length</span>
             <span class="k">if</span> <span class="n">length</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">warn</span><span class="p">(</span>
@@ -500,11 +503,7 @@
                 <span class="n">length</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
             <span class="n">newick</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">":</span><span class="si">{</span><span class="n">length</span><span class="si">}</span><span class="s2">"</span>
 
-        <span class="k">if</span> <span class="bp">self</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">:</span>
-            <span class="n">newick</span> <span class="o">+=</span> <span class="s2">";"</span>
-
-        <span class="k">return</span> <span class="n">newick</span></div>
-
+        <span class="k">return</span> <span class="n">newick</span>
 
 <div class="viewcode-block" id="Tree.from_sklearn">
 <a class="viewcode-back" href="../../api/trees.html#picea.Tree.from_sklearn">[docs]</a>
@@ -627,11 +626,15 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">            rename_func (Callable[[str], str]): Function that takes a leaf name and returns a new name</span>
-<span class="sd">            inplace (bool): Rename the leaves of this tree. If False, rename the leaves of a copy.</span>
+<span class="sd">            inplace (bool): Rename the leaves of this tree. If False, rename and return a copy.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Optional[Tree]: The renamed copy if ``inplace`` is False, otherwise None</span>
 <span class="sd">        """</span>
         <span class="n">tree</span> <span class="o">=</span> <span class="bp">self</span> <span class="k">if</span> <span class="n">inplace</span> <span class="k">else</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">leaf</span> <span class="ow">in</span> <span class="n">tree</span><span class="o">.</span><span class="n">leaves</span><span class="p">:</span>
-            <span class="n">leaf</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">rename_func</span><span class="p">(</span><span class="n">leaf</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div>
+            <span class="n">leaf</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">rename_func</span><span class="p">(</span><span class="n">leaf</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">inplace</span> <span class="k">else</span> <span class="n">tree</span></div>
 </div>
 
 
@@ -667,7 +670,7 @@
 <span class="sd">    Returns:</span>
 <span class="sd">        float: Separation</span>
 <span class="sd">    """</span>
-    <span class="k">if</span> <span class="n">node_a</span><span class="o">.</span><span class="n">parent</span> <span class="o">==</span> <span class="n">node_b</span><span class="o">.</span><span class="n">parent</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">node_a</span><span class="o">.</span><span class="n">parent</span> <span class="ow">is</span> <span class="n">node_b</span><span class="o">.</span><span class="n">parent</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">sep_1</span>
     <span class="k">return</span> <span class="n">sep_2</span>
 
@@ -694,81 +697,119 @@
     <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">yield from</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">to_polar</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">TwoDCoordinate</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">),</span> <span class="n">y</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">))</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">to_cartesian</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">TwoDCoordinate</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="o">**</span><span class="mi">2</span><span class="p">),</span> <span class="n">y</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">))</span>
-
 
 <span class="n">Ax</span> <span class="o">=</span> <span class="n">Type</span><span class="p">[</span><span class="n">SubplotBase</span><span class="p">]</span>
 <span class="n">TreeStyle</span> <span class="o">=</span> <span class="n">Enum</span><span class="p">(</span><span class="s2">"TreeStyle"</span><span class="p">,</span> <span class="p">(</span><span class="s2">"square"</span><span class="p">,</span> <span class="s2">"radial"</span><span class="p">,</span> <span class="s2">"triangular"</span><span class="p">))</span>
 <span class="n">LayoutDict</span> <span class="o">=</span> <span class="n">DefaultDict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">TwoDCoordinate</span><span class="p">]</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_tree_style</span><span class="p">(</span><span class="n">style</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TreeStyle</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">TreeStyle</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Convert a style name to a TreeStyle"""</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">style</span><span class="p">,</span> <span class="n">TreeStyle</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">style</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">TreeStyle</span><span class="p">[</span><span class="n">style</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown tree style </span><span class="si">{</span><span class="n">style</span><span class="si">!r}</span><span class="s2">, must be one of </span><span class="si">{</span><span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">name</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">TreeStyle</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_rectangular_layout</span><span class="p">(</span><span class="n">tree</span><span class="p">:</span> <span class="n">Tree</span><span class="p">,</span> <span class="n">ltr</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">branchlengths</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">LayoutDict</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Rectangular layout (see :func:`calculate_tree_layout`) and the number of leaves"""</span>
+    <span class="n">layout</span><span class="p">:</span> <span class="n">LayoutDict</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="n">TwoDCoordinate</span><span class="p">)</span>
+
+    <span class="n">n_leaves</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">tree</span><span class="o">.</span><span class="n">depth_first</span><span class="p">(</span><span class="n">post_order</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
+            <span class="n">layout</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">ID</span><span class="p">]</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">layout</span><span class="p">[</span><span class="n">child</span><span class="o">.</span><span class="n">ID</span><span class="p">]</span><span class="o">.</span><span class="n">y</span> <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">layout</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">ID</span><span class="p">]</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">n_leaves</span><span class="p">)</span>
+            <span class="n">n_leaves</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="k">if</span> <span class="n">branchlengths</span> <span class="ow">and</span> <span class="nb">any</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">length</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">tree</span><span class="o">.</span><span class="n">nodes</span> <span class="k">if</span> <span class="n">node</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">tree</span><span class="p">):</span>
+        <span class="c1"># distance to the root</span>
+        <span class="n">stack</span> <span class="o">=</span> <span class="p">[(</span><span class="n">tree</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)]</span>
+        <span class="k">while</span> <span class="n">stack</span><span class="p">:</span>
+            <span class="n">node</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+            <span class="n">layout</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">ID</span><span class="p">]</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span>
+            <span class="n">stack</span><span class="o">.</span><span class="n">extend</span><span class="p">((</span><span class="n">child</span><span class="p">,</span> <span class="n">x</span> <span class="o">+</span> <span class="nb">abs</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">length</span> <span class="ow">or</span> <span class="mf">0.0</span><span class="p">))</span> <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># cladogram: levels below the root, with all leaves aligned</span>
+        <span class="n">heights</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">tree</span><span class="o">.</span><span class="n">depth_first</span><span class="p">(</span><span class="n">post_order</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+            <span class="n">heights</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">ID</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="nb">max</span><span class="p">(</span><span class="n">heights</span><span class="p">[</span><span class="n">child</span><span class="o">.</span><span class="n">ID</span><span class="p">]</span> <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">)</span> <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">tree</span><span class="o">.</span><span class="n">nodes</span><span class="p">:</span>
+            <span class="n">layout</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">ID</span><span class="p">]</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">heights</span><span class="p">[</span><span class="n">tree</span><span class="o">.</span><span class="n">ID</span><span class="p">]</span> <span class="o">-</span> <span class="n">heights</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">ID</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">ltr</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">coordinate</span> <span class="ow">in</span> <span class="n">layout</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">coordinate</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="o">-</span><span class="n">coordinate</span><span class="o">.</span><span class="n">x</span>
+    <span class="k">return</span> <span class="n">layout</span><span class="p">,</span> <span class="n">n_leaves</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_polar</span><span class="p">(</span><span class="n">coordinate</span><span class="p">:</span> <span class="n">TwoDCoordinate</span><span class="p">,</span> <span class="n">n_leaves</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Radius and angle of a rectangular layout coordinate in the radial layout"""</span>
+    <span class="k">return</span> <span class="nb">abs</span><span class="p">(</span><span class="n">coordinate</span><span class="o">.</span><span class="n">x</span><span class="p">),</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">coordinate</span><span class="o">.</span><span class="n">y</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">n_leaves</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+
 <div class="viewcode-block" id="calculate_tree_layout">
 <a class="viewcode-back" href="../../api/trees.html#picea.calculate_tree_layout">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">calculate_tree_layout</span><span class="p">(</span>
     <span class="n">tree</span><span class="p">:</span> <span class="n">Tree</span><span class="p">,</span>
-    <span class="n">style</span><span class="p">:</span> <span class="n">TreeStyle</span> <span class="o">=</span> <span class="n">TreeStyle</span><span class="o">.</span><span class="n">square</span><span class="p">,</span>
+    <span class="n">style</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TreeStyle</span><span class="p">]</span> <span class="o">=</span> <span class="n">TreeStyle</span><span class="o">.</span><span class="n">square</span><span class="p">,</span>
     <span class="n">ltr</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">branchlengths</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LayoutDict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Calculate 2D coordinates of all nodes, as used by :func:`treeplot`</span>
 
-<span class="sd">    Leaves get consecutive y coordinates in depth first order, and internal nodes are centered on their children.</span>
-<span class="sd">    The x coordinate is based on branch lengths, or on the number of levels below a node if ``branchlengths`` is</span>
-<span class="sd">    False.</span>
+<span class="sd">    Leaves get consecutive y coordinates (0, 1, 2, ...) in depth first order, and internal nodes are centered on</span>
+<span class="sd">    their children. With branch lengths, x is the distance to the root. Without branch lengths, or for trees that</span>
+<span class="sd">    have none, x is the number of levels below the root, with all leaves aligned (a cladogram). In the radial layout</span>
+<span class="sd">    the root is in the center, the radius is the distance to the root, and leaves are spread evenly over the circle.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; tree = Tree.from_newick('((a:1,b:2)ab:1,c:3)root;')</span>
+<span class="sd">        &gt;&gt;&gt; layout = calculate_tree_layout(tree)</span>
+<span class="sd">        &gt;&gt;&gt; [(node.name, layout[node.ID].x, layout[node.ID].y) for node in tree.leaves]</span>
+<span class="sd">        [('c', 3.0, 2.0), ('a', 2.0, 0.0), ('b', 3.0, 1.0)]</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        tree (Tree): Tree</span>
-<span class="sd">        style (TreeStyle, optional): ``"square"``, ``"triangular"`` or ``"radial"``. Only ``"radial"`` changes</span>
-<span class="sd">            the layout (to polar coordinates). Defaults to ``TreeStyle.square``.</span>
-<span class="sd">        ltr (bool, optional): Left to right layout (root on the left). Defaults to True.</span>
+<span class="sd">        style (Union[str, TreeStyle], optional): ``"square"``, ``"triangular"`` or ``"radial"``. Only ``"radial"``</span>
+<span class="sd">            changes the node coordinates. Defaults to ``TreeStyle.square``.</span>
+<span class="sd">        ltr (bool, optional): Left to right layout (root on the left). If False, x coordinates are negative.</span>
+<span class="sd">            Ignored for the radial layout. Defaults to True.</span>
 <span class="sd">        branchlengths (bool, optional): Use branch lengths. Defaults to True.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        LayoutDict: Coordinates of every node, by node ID</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If ``style`` is not a valid style</span>
 <span class="sd">    """</span>
-    <span class="n">layout</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="n">TwoDCoordinate</span><span class="p">)</span>
-    <span class="n">previous_node</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">y</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="c1"># separation = equal_separation</span>
-    <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">tree</span><span class="o">.</span><span class="n">depth_first</span><span class="p">(</span><span class="n">post_order</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="n">node_coords</span> <span class="o">=</span> <span class="n">layout</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">ID</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
-            <span class="n">child_x_coords</span><span class="p">,</span> <span class="n">child_y_coords</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">layout</span><span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">ID</span><span class="p">]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">),</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="n">node_coords</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">child_y_coords</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">)</span>
-            <span class="n">increment</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">length</span> <span class="k">if</span> <span class="n">branchlengths</span> <span class="k">else</span> <span class="mf">1.0</span>
-            <span class="k">if</span> <span class="n">ltr</span><span class="p">:</span>
-                <span class="n">node_coords</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">increment</span> <span class="o">+</span> <span class="nb">max</span><span class="p">(</span><span class="n">child_x_coords</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">node_coords</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">child_x_coords</span><span class="p">)</span> <span class="o">-</span> <span class="n">increment</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">previous_node</span><span class="p">:</span>
-                <span class="n">y</span> <span class="o">+=</span> <span class="mf">1.0</span>
-                <span class="n">layout</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">ID</span><span class="p">]</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">y</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">layout</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">ID</span><span class="p">]</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="n">layout</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">ID</span><span class="p">]</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">length</span> <span class="k">if</span> <span class="n">branchlengths</span> <span class="k">else</span> <span class="mf">0.0</span>
-            <span class="n">previous_node</span> <span class="o">=</span> <span class="n">node</span>
-
-    <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">tree</span><span class="o">.</span><span class="n">depth_first</span><span class="p">(</span><span class="n">post_order</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="n">layout</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">ID</span><span class="p">]</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="n">layout</span><span class="p">[</span><span class="n">tree</span><span class="o">.</span><span class="n">ID</span><span class="p">]</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="n">layout</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">ID</span><span class="p">]</span><span class="o">.</span><span class="n">x</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1.0</span>
-        <span class="n">layout</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">ID</span><span class="p">]</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="p">(</span><span class="n">layout</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">ID</span><span class="p">]</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="n">layout</span><span class="p">[</span><span class="n">tree</span><span class="o">.</span><span class="n">ID</span><span class="p">]</span><span class="o">.</span><span class="n">y</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1.0</span>
-
-    <span class="k">if</span> <span class="n">style</span> <span class="o">==</span> <span class="s2">"radial"</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">node_id</span> <span class="ow">in</span> <span class="n">layout</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-            <span class="n">layout</span><span class="p">[</span><span class="n">node_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">layout</span><span class="p">[</span><span class="n">node_id</span><span class="p">]</span><span class="o">.</span><span class="n">to_polar</span><span class="p">()</span>
+    <span class="n">style</span> <span class="o">=</span> <span class="n">_tree_style</span><span class="p">(</span><span class="n">style</span><span class="p">)</span>
+    <span class="n">layout</span><span class="p">,</span> <span class="n">n_leaves</span> <span class="o">=</span> <span class="n">_rectangular_layout</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">ltr</span><span class="o">=</span><span class="n">ltr</span><span class="p">,</span> <span class="n">branchlengths</span><span class="o">=</span><span class="n">branchlengths</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">style</span> <span class="o">==</span> <span class="n">TreeStyle</span><span class="o">.</span><span class="n">radial</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">coordinate</span> <span class="ow">in</span> <span class="n">layout</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">radius</span><span class="p">,</span> <span class="n">angle</span> <span class="o">=</span> <span class="n">_polar</span><span class="p">(</span><span class="n">coordinate</span><span class="p">,</span> <span class="n">n_leaves</span><span class="p">)</span>
+            <span class="n">coordinate</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">coordinate</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">radius</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angle</span><span class="p">),</span> <span class="n">radius</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">layout</span></div>
 
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_as_function</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Wrap a constant plotting option in a function, so that constant and per-node options can be used the same way"""</span>
+    <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">value</span>
+    <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n">value</span>
+    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="si">}</span><span class="s2"> is not a valid </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> type"</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="treeplot">
 <a class="viewcode-back" href="../../api/trees.html#picea.treeplot">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">treeplot</span><span class="p">(</span>
     <span class="n">tree</span><span class="p">:</span> <span class="n">Tree</span><span class="p">,</span>
-    <span class="n">style</span><span class="p">:</span> <span class="n">TreeStyle</span> <span class="o">=</span> <span class="n">TreeStyle</span><span class="o">.</span><span class="n">square</span><span class="p">,</span>
+    <span class="n">style</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TreeStyle</span><span class="p">]</span> <span class="o">=</span> <span class="n">TreeStyle</span><span class="o">.</span><span class="n">square</span><span class="p">,</span>
     <span class="n">branchlengths</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">ltr</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">node_labels</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -776,7 +817,7 @@
     <span class="n">leaf_marker</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"o"</span><span class="p">,</span>
     <span class="n">leaf_marker_fill</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Tree</span><span class="p">],</span> <span class="s2">"str"</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"white"</span><span class="p">,</span>
     <span class="n">leaf_marker_edge</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Tree</span><span class="p">],</span> <span class="s2">"str"</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"black"</span><span class="p">,</span>
-    <span class="n">branch_linestyle</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Tree</span><span class="p">],</span> <span class="nb">dict</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">branch_linestyle</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Tree</span><span class="p">,</span> <span class="n">Tree</span><span class="p">]],</span> <span class="nb">dict</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">ax</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Ax</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">return_layout</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Ax</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Ax</span><span class="p">,</span> <span class="n">LayoutDict</span><span class="p">]]:</span>
@@ -784,20 +825,21 @@
 
 <span class="sd">    Args:</span>
 <span class="sd">        tree (Tree): Tree to plot</span>
-<span class="sd">        style (TreeStyle, optional): Branch style: ``"square"`` (right angles), ``"triangular"`` (straight lines</span>
-<span class="sd">            from parent to child), or ``"radial"``. Defaults to ``TreeStyle.square``.</span>
-<span class="sd">        branchlengths (bool, optional): Scale branches by their length. Use False to plot a cladogram, or to</span>
-<span class="sd">            plot a tree without branch lengths. Defaults to True.</span>
-<span class="sd">        ltr (bool, optional): Plot left to right (root on the left). Defaults to True.</span>
+<span class="sd">        style (Union[str, TreeStyle], optional): Branch style: ``"square"`` (right angles), ``"triangular"``</span>
+<span class="sd">            (straight lines from parent to child), or ``"radial"`` (root in the center). Defaults to</span>
+<span class="sd">            ``TreeStyle.square``.</span>
+<span class="sd">        branchlengths (bool, optional): Scale branches by their length. Use False to plot a cladogram. Trees without</span>
+<span class="sd">            branch lengths are always plotted as a cladogram. Defaults to True.</span>
+<span class="sd">        ltr (bool, optional): Plot left to right (root on the left). Ignored for the radial style. Defaults to True.</span>
 <span class="sd">        node_labels (bool, optional): Show the names of internal nodes, e.g. support values. Defaults to True.</span>
-<span class="sd">        leaf_labels (bool, optional): Currently unused: leaf names are always shown. Defaults to True.</span>
+<span class="sd">        leaf_labels (bool, optional): Show leaf names. Defaults to True.</span>
 <span class="sd">        leaf_marker (Union[str, Callable, None], optional): Matplotlib marker for leaves, a function that takes a</span>
 <span class="sd">            leaf and returns a marker, or None for no markers. Defaults to ``"o"``.</span>
 <span class="sd">        leaf_marker_fill (Union[str, Callable[[Tree], str], None], optional): Marker fill color, or a function</span>
 <span class="sd">            that takes a leaf and returns a color. Defaults to ``"white"``.</span>
 <span class="sd">        leaf_marker_edge (Union[str, Callable[[Tree], str], None], optional): Marker edge color, or a function</span>
 <span class="sd">            that takes a leaf and returns a color. Defaults to ``"black"``.</span>
-<span class="sd">        branch_linestyle (Union[dict, Callable[[Tree], dict], None], optional): Keyword arguments for</span>
+<span class="sd">        branch_linestyle (Union[dict, Callable[[Tuple[Tree, Tree]], dict], None], optional): Keyword arguments for</span>
 <span class="sd">            :meth:`matplotlib.axes.Axes.plot` used to draw branches, or a function that takes a</span>
 <span class="sd">            ``(parent, child)`` tuple and returns them. Defaults to None (thin black lines).</span>
 <span class="sd">        ax (Optional[Ax], optional): Axes to plot on. A new figure is created when not given.</span>
@@ -806,106 +848,59 @@
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Union[Ax, Tuple[Ax, LayoutDict]]: The axes, or an ``(axes, layout)`` tuple if ``return_layout`` is True</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If ``style`` is not a valid style</span>
+<span class="sd">        TypeError: If a styling option has an invalid type</span>
 <span class="sd">    """</span>
+    <span class="n">style</span> <span class="o">=</span> <span class="n">_tree_style</span><span class="p">(</span><span class="n">style</span><span class="p">)</span>
+    <span class="n">radial</span> <span class="o">=</span> <span class="n">style</span> <span class="o">==</span> <span class="n">TreeStyle</span><span class="o">.</span><span class="n">radial</span>
+    <span class="n">rectangular_layout</span><span class="p">,</span> <span class="n">n_leaves</span> <span class="o">=</span> <span class="n">_rectangular_layout</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">ltr</span><span class="o">=</span><span class="n">ltr</span><span class="p">,</span> <span class="n">branchlengths</span><span class="o">=</span><span class="n">branchlengths</span><span class="p">)</span>
     <span class="n">layout</span> <span class="o">=</span> <span class="n">calculate_tree_layout</span><span class="p">(</span><span class="n">tree</span><span class="o">=</span><span class="n">tree</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="n">style</span><span class="p">,</span> <span class="n">ltr</span><span class="o">=</span><span class="n">ltr</span><span class="p">,</span> <span class="n">branchlengths</span><span class="o">=</span><span class="n">branchlengths</span><span class="p">)</span>
+
+    <span class="n">default_linestyle</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"black"</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">branch_linestyle_fun</span> <span class="o">=</span> <span class="n">_as_function</span><span class="p">(</span><span class="n">branch_linestyle</span><span class="p">,</span> <span class="s2">"branch_linestyle"</span><span class="p">)</span>
+    <span class="n">leaf_marker_fun</span> <span class="o">=</span> <span class="n">_as_function</span><span class="p">(</span><span class="n">leaf_marker</span><span class="p">,</span> <span class="s2">"leaf_marker"</span><span class="p">)</span>
+    <span class="n">leaf_marker_fill_fun</span> <span class="o">=</span> <span class="n">_as_function</span><span class="p">(</span><span class="n">leaf_marker_fill</span><span class="p">,</span> <span class="s2">"leaf_marker_fill"</span><span class="p">)</span>
+    <span class="n">leaf_marker_edge_fun</span> <span class="o">=</span> <span class="n">_as_function</span><span class="p">(</span><span class="n">leaf_marker_edge</span><span class="p">,</span> <span class="s2">"leaf_marker_edge"</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">ax</span><span class="p">:</span>
         <span class="n">_</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
 
-    <span class="n">default_linestyle</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"black"</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">branch_linestyle</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-
-        <span class="k">def</span><span class="w"> </span><span class="nf">linestyle_fun</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">default_linestyle</span>
-
-    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">branch_linestyle</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-
-        <span class="k">def</span><span class="w"> </span><span class="nf">linestyle_fun</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">{</span><span class="o">**</span><span class="n">default_linestyle</span><span class="p">,</span> <span class="o">**</span><span class="n">branch_linestyle</span><span class="p">}</span>
-
-    <span class="k">elif</span> <span class="nb">callable</span><span class="p">(</span><span class="n">branch_linestyle</span><span class="p">):</span>
-
-        <span class="k">def</span><span class="w"> </span><span class="nf">linestyle_fun</span><span class="p">(</span><span class="n">branch</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tree</span><span class="p">,</span> <span class="n">Tree</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">{</span><span class="o">**</span><span class="n">default_linestyle</span><span class="p">,</span> <span class="o">**</span><span class="n">branch_linestyle</span><span class="p">(</span><span class="n">leaf</span><span class="p">)}</span>
-
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">branch_linestyle</span><span class="p">)</span><span class="si">}</span><span class="s2"> is not valid branch_linestyle type"</span><span class="p">)</span>
-
-    <span class="k">for</span> <span class="n">node1</span><span class="p">,</span> <span class="n">node2</span> <span class="ow">in</span> <span class="n">tree</span><span class="o">.</span><span class="n">links</span><span class="p">:</span>
-        <span class="n">node1_x</span><span class="p">,</span> <span class="n">node1_y</span> <span class="o">=</span> <span class="n">node1_coords</span> <span class="o">=</span> <span class="n">layout</span><span class="p">[</span><span class="n">node1</span><span class="o">.</span><span class="n">ID</span><span class="p">]</span>
-        <span class="n">node2_x</span><span class="p">,</span> <span class="n">node2_y</span> <span class="o">=</span> <span class="n">node2_coords</span> <span class="o">=</span> <span class="n">layout</span><span class="p">[</span><span class="n">node2</span><span class="o">.</span><span class="n">ID</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">node_labels</span><span class="p">:</span>
-            <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span>
-                <span class="n">node1_x</span><span class="p">,</span>
-                <span class="n">node1_y</span><span class="p">,</span>
-                <span class="n">node1</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                <span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
-                <span class="n">verticalalignment</span><span class="o">=</span><span class="s2">"center_baseline"</span><span class="p">,</span>
-            <span class="p">)</span>
-        <span class="k">if</span> <span class="n">style</span> <span class="o">==</span> <span class="s2">"square"</span><span class="p">:</span>
-            <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="n">node1_x</span><span class="p">,</span> <span class="n">node1_x</span><span class="p">),</span> <span class="p">(</span><span class="n">node1_y</span><span class="p">,</span> <span class="n">node2_y</span><span class="p">),</span> <span class="o">**</span><span class="n">linestyle_fun</span><span class="p">((</span><span class="n">node1</span><span class="p">,</span> <span class="n">node2</span><span class="p">)))</span>
-            <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="n">node1_x</span><span class="p">,</span> <span class="n">node2_x</span><span class="p">),</span> <span class="p">(</span><span class="n">node2_y</span><span class="p">,</span> <span class="n">node2_y</span><span class="p">),</span> <span class="o">**</span><span class="n">linestyle_fun</span><span class="p">((</span><span class="n">node1</span><span class="p">,</span> <span class="n">node2</span><span class="p">)))</span>
-        <span class="k">elif</span> <span class="n">style</span> <span class="o">==</span> <span class="s2">"radial"</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">node2</span><span class="o">.</span><span class="n">root</span> <span class="o">==</span> <span class="n">node1</span><span class="p">:</span>
-                <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
-                    <span class="p">(</span><span class="n">node1_x</span><span class="p">,</span> <span class="n">node2_x</span><span class="p">),</span>
-                    <span class="p">(</span><span class="n">node1_y</span><span class="p">,</span> <span class="n">node2_y</span><span class="p">),</span>
-                    <span class="o">**</span><span class="n">linestyle_fun</span><span class="p">((</span><span class="n">node1</span><span class="p">,</span> <span class="n">node2</span><span class="p">)),</span>
-                <span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">corner</span> <span class="o">=</span> <span class="n">TwoDCoordinate</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">node1_coords</span><span class="o">.</span><span class="n">to_cartesian</span><span class="p">()</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">node2_coords</span><span class="o">.</span><span class="n">to_cartesian</span><span class="p">()</span><span class="o">.</span><span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">to_polar</span><span class="p">()</span>
-
-                <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
-                    <span class="p">(</span><span class="n">node1_x</span><span class="p">,</span> <span class="n">corner</span><span class="o">.</span><span class="n">x</span><span class="p">),</span>
-                    <span class="p">(</span><span class="n">node1_y</span><span class="p">,</span> <span class="n">corner</span><span class="o">.</span><span class="n">y</span><span class="p">),</span>
-                    <span class="o">**</span><span class="n">linestyle_fun</span><span class="p">((</span><span class="n">node1</span><span class="p">,</span> <span class="n">node2</span><span class="p">)),</span>
-                <span class="p">)</span>
-                <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
-                    <span class="p">(</span><span class="n">corner</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">node2_x</span><span class="p">),</span>
-                    <span class="p">(</span><span class="n">corner</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">node2_y</span><span class="p">),</span>
-                    <span class="o">**</span><span class="n">linestyle_fun</span><span class="p">((</span><span class="n">node1</span><span class="p">,</span> <span class="n">node2</span><span class="p">)),</span>
-                <span class="p">)</span>
+    <span class="k">for</span> <span class="n">parent</span><span class="p">,</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">tree</span><span class="o">.</span><span class="n">links</span><span class="p">:</span>
+        <span class="n">linestyle</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">default_linestyle</span><span class="p">,</span> <span class="o">**</span><span class="p">(</span><span class="n">branch_linestyle_fun</span><span class="p">((</span><span class="n">parent</span><span class="p">,</span> <span class="n">child</span><span class="p">))</span> <span class="ow">or</span> <span class="nb">dict</span><span class="p">())}</span>
+        <span class="n">parent_x</span><span class="p">,</span> <span class="n">parent_y</span> <span class="o">=</span> <span class="n">layout</span><span class="p">[</span><span class="n">parent</span><span class="o">.</span><span class="n">ID</span><span class="p">]</span>
+        <span class="n">child_x</span><span class="p">,</span> <span class="n">child_y</span> <span class="o">=</span> <span class="n">layout</span><span class="p">[</span><span class="n">child</span><span class="o">.</span><span class="n">ID</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">style</span> <span class="o">==</span> <span class="n">TreeStyle</span><span class="o">.</span><span class="n">square</span><span class="p">:</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="n">parent_x</span><span class="p">,</span> <span class="n">parent_x</span><span class="p">,</span> <span class="n">child_x</span><span class="p">),</span> <span class="p">(</span><span class="n">parent_y</span><span class="p">,</span> <span class="n">child_y</span><span class="p">,</span> <span class="n">child_y</span><span class="p">),</span> <span class="o">**</span><span class="n">linestyle</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">style</span> <span class="o">==</span> <span class="n">TreeStyle</span><span class="o">.</span><span class="n">triangular</span><span class="p">:</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="n">parent_x</span><span class="p">,</span> <span class="n">child_x</span><span class="p">),</span> <span class="p">(</span><span class="n">parent_y</span><span class="p">,</span> <span class="n">child_y</span><span class="p">),</span> <span class="o">**</span><span class="n">linestyle</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="n">node1_x</span><span class="p">,</span> <span class="n">node2_x</span><span class="p">),</span> <span class="p">(</span><span class="n">node1_y</span><span class="p">,</span> <span class="n">node2_y</span><span class="p">),</span> <span class="o">**</span><span class="n">linestyle_fun</span><span class="p">((</span><span class="n">node1</span><span class="p">,</span> <span class="n">node2</span><span class="p">)))</span>
+            <span class="c1"># arc at the radius of the parent, followed by a radial line to the child</span>
+            <span class="n">parent_radius</span><span class="p">,</span> <span class="n">parent_angle</span> <span class="o">=</span> <span class="n">_polar</span><span class="p">(</span><span class="n">rectangular_layout</span><span class="p">[</span><span class="n">parent</span><span class="o">.</span><span class="n">ID</span><span class="p">],</span> <span class="n">n_leaves</span><span class="p">)</span>
+            <span class="n">child_radius</span><span class="p">,</span> <span class="n">child_angle</span> <span class="o">=</span> <span class="n">_polar</span><span class="p">(</span><span class="n">rectangular_layout</span><span class="p">[</span><span class="n">child</span><span class="o">.</span><span class="n">ID</span><span class="p">],</span> <span class="n">n_leaves</span><span class="p">)</span>
+            <span class="n">angles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">parent_angle</span><span class="p">,</span> <span class="n">child_angle</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">child_angle</span> <span class="o">-</span> <span class="n">parent_angle</span><span class="p">)</span> <span class="o">/</span> <span class="mf">0.02</span><span class="p">)))</span>
+            <span class="n">radii</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">angles</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">parent_radius</span><span class="p">),</span> <span class="n">child_radius</span><span class="p">)</span>
+            <span class="n">angles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">angles</span><span class="p">,</span> <span class="n">child_angle</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">radii</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angles</span><span class="p">),</span> <span class="n">radii</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angles</span><span class="p">),</span> <span class="o">**</span><span class="n">linestyle</span><span class="p">)</span>
 
-    <span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">get_xlim</span><span class="p">()</span>
-    <span class="n">xspacer</span> <span class="o">=</span> <span class="mf">0.0</span>  <span class="c1"># 25  # 0.01 * (xmax - xmin)</span>
-
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">leaf_marker</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-
-        <span class="k">def</span><span class="w"> </span><span class="nf">leaf_marker_fun</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">leaf_marker</span>
-
-    <span class="k">elif</span> <span class="nb">callable</span><span class="p">(</span><span class="n">leaf_marker</span><span class="p">):</span>
-        <span class="n">leaf_marker_fun</span> <span class="o">=</span> <span class="n">leaf_marker</span>
-    <span class="k">elif</span> <span class="n">leaf_marker</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">pass</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">leaf_marker</span><span class="p">)</span><span class="si">}</span><span class="s2"> is not a valid leaf_marker type"</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">leaf_marker_fill</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">or</span> <span class="n">leaf_marker_fill</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-
-        <span class="k">def</span><span class="w"> </span><span class="nf">leaf_marker_fill_fun</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">leaf_marker_fill</span>
-
-    <span class="k">elif</span> <span class="nb">callable</span><span class="p">(</span><span class="n">leaf_marker_fill</span><span class="p">):</span>
-        <span class="n">leaf_marker_fill_fun</span> <span class="o">=</span> <span class="n">leaf_marker_fill</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">leaf_marker</span><span class="p">)</span><span class="si">}</span><span class="s2"> is not a valid leaf_marker type"</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">leaf_marker_edge</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">or</span> <span class="n">leaf_marker_edge</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-
-        <span class="k">def</span><span class="w"> </span><span class="nf">leaf_marker_edge_fun</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">leaf_marker_edge</span>
-
-    <span class="k">elif</span> <span class="nb">callable</span><span class="p">(</span><span class="n">leaf_marker_edge</span><span class="p">):</span>
-        <span class="n">leaf_marker_edge_fun</span> <span class="o">=</span> <span class="n">leaf_marker_edge</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">leaf_marker</span><span class="p">)</span><span class="si">}</span><span class="s2"> is not a valid leaf_marker type"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">node_labels</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">tree</span><span class="o">.</span><span class="n">nodes</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span> <span class="ow">and</span> <span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+                <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">layout</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">ID</span><span class="p">]</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span>
+                    <span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                    <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span>
+                    <span class="n">xytext</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="k">if</span> <span class="n">ltr</span> <span class="ow">or</span> <span class="n">radial</span> <span class="k">else</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+                    <span class="n">textcoords</span><span class="o">=</span><span class="s2">"offset points"</span><span class="p">,</span>
+                    <span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+                    <span class="n">horizontalalignment</span><span class="o">=</span><span class="s2">"right"</span> <span class="k">if</span> <span class="n">ltr</span> <span class="ow">or</span> <span class="n">radial</span> <span class="k">else</span> <span class="s2">"left"</span><span class="p">,</span>
+                    <span class="n">verticalalignment</span><span class="o">=</span><span class="s2">"bottom"</span><span class="p">,</span>
+                <span class="p">)</span>
 
     <span class="k">for</span> <span class="n">leaf</span> <span class="ow">in</span> <span class="n">tree</span><span class="o">.</span><span class="n">leaves</span><span class="p">:</span>
-        <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">leaf_coords</span> <span class="o">=</span> <span class="n">layout</span><span class="p">[</span><span class="n">leaf</span><span class="o">.</span><span class="n">ID</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">leaf_marker</span><span class="p">:</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">layout</span><span class="p">[</span><span class="n">leaf</span><span class="o">.</span><span class="n">ID</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">leaf_marker</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
                 <span class="n">x</span><span class="p">,</span>
                 <span class="n">y</span><span class="p">,</span>
@@ -915,39 +910,47 @@
                 <span class="n">marker</span><span class="o">=</span><span class="n">leaf_marker_fun</span><span class="p">(</span><span class="n">leaf</span><span class="p">),</span>
                 <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
             <span class="p">)</span>
-
-        <span class="c1"># x, y = leaf_coords = layout[leaf.ID]</span>
-        <span class="k">if</span> <span class="n">style</span> <span class="o">==</span> <span class="s2">"radial"</span><span class="p">:</span>
-            <span class="c1"># pass</span>
-            <span class="n">polar_coords</span> <span class="o">=</span> <span class="n">leaf_coords</span><span class="o">.</span><span class="n">to_polar</span><span class="p">()</span>
-            <span class="n">polar_coords</span><span class="o">.</span><span class="n">x</span> <span class="o">*=</span> <span class="mf">1.1</span>
-            <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">leaf_coords</span> <span class="o">=</span> <span class="n">polar_coords</span><span class="o">.</span><span class="n">to_cartesian</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">leaf_labels</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">radial</span><span class="p">:</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">angle</span> <span class="o">=</span> <span class="n">_polar</span><span class="p">(</span><span class="n">rectangular_layout</span><span class="p">[</span><span class="n">leaf</span><span class="o">.</span><span class="n">ID</span><span class="p">],</span> <span class="n">n_leaves</span><span class="p">)</span>
+            <span class="n">degrees</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span> <span class="o">%</span> <span class="mi">360</span>
+            <span class="n">flip</span> <span class="o">=</span> <span class="mi">90</span> <span class="o">&lt;</span> <span class="n">degrees</span> <span class="o">&lt;</span> <span class="mi">270</span>
+            <span class="n">text_options</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+                <span class="n">xytext</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">angle</span><span class="p">),</span> <span class="mi">6</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">angle</span><span class="p">)),</span>
+                <span class="n">rotation</span><span class="o">=</span><span class="n">degrees</span> <span class="o">-</span> <span class="mi">180</span> <span class="k">if</span> <span class="n">flip</span> <span class="k">else</span> <span class="n">degrees</span><span class="p">,</span>
+                <span class="n">rotation_mode</span><span class="o">=</span><span class="s2">"anchor"</span><span class="p">,</span>
+                <span class="n">horizontalalignment</span><span class="o">=</span><span class="s2">"right"</span> <span class="k">if</span> <span class="n">flip</span> <span class="k">else</span> <span class="s2">"left"</span><span class="p">,</span>
+            <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">xspacer</span> <span class="k">if</span> <span class="n">ltr</span> <span class="k">else</span> <span class="n">x</span> <span class="o">-</span> <span class="n">xspacer</span>
-            <span class="n">y</span> <span class="o">+=</span> <span class="mf">0.05</span>
-        <span class="n">horizontalalignment</span> <span class="o">=</span> <span class="s2">"left"</span> <span class="k">if</span> <span class="n">ltr</span> <span class="k">else</span> <span class="s2">"right"</span>
-        <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span>
-            <span class="n">x</span><span class="p">,</span>
-            <span class="n">y</span><span class="p">,</span>
+            <span class="n">text_options</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">xytext</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="n">ltr</span> <span class="k">else</span> <span class="p">(</span><span class="o">-</span><span class="mi">6</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">horizontalalignment</span><span class="o">=</span><span class="s2">"left"</span> <span class="k">if</span> <span class="n">ltr</span> <span class="k">else</span> <span class="s2">"right"</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span>
             <span class="n">leaf</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span>
+            <span class="n">textcoords</span><span class="o">=</span><span class="s2">"offset points"</span><span class="p">,</span>
             <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span>
-            <span class="n">in_layout</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-            <span class="n">clip_on</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-            <span class="n">verticalalignment</span><span class="o">=</span><span class="s2">"center_baseline"</span><span class="p">,</span>
-            <span class="n">horizontalalignment</span><span class="o">=</span><span class="n">horizontalalignment</span><span class="p">,</span>
+            <span class="n">verticalalignment</span><span class="o">=</span><span class="s2">"center"</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">text_options</span><span class="p">,</span>
         <span class="p">)</span>
 
     <span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(())</span>
-    <span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">get_xlim</span><span class="p">()</span>
-    <span class="k">if</span> <span class="n">style</span> <span class="o">!=</span> <span class="s2">"radial"</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">ltr</span><span class="p">:</span>
-            <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">((</span><span class="mf">0.8</span> <span class="o">*</span> <span class="n">xmin</span><span class="p">,</span> <span class="mf">1.8</span> <span class="o">*</span> <span class="n">xmax</span><span class="p">))</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">((</span><span class="mf">1.8</span> <span class="o">*</span> <span class="n">xmin</span><span class="p">,</span> <span class="mf">1.2</span> <span class="o">*</span> <span class="n">xmax</span><span class="p">))</span>
-
     <span class="n">ax</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">(())</span>
+    <span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">get_xlim</span><span class="p">()</span>
+    <span class="n">width</span> <span class="o">=</span> <span class="n">xmax</span> <span class="o">-</span> <span class="n">xmin</span>
+    <span class="k">if</span> <span class="n">radial</span><span class="p">:</span>
+        <span class="c1"># leave room for the leaf labels on all sides, and no rectangular frame around a circular tree</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="s2">"equal"</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">spine</span> <span class="ow">in</span> <span class="n">ax</span><span class="o">.</span><span class="n">spines</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">spine</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">ymin</span><span class="p">,</span> <span class="n">ymax</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">get_ylim</span><span class="p">()</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">((</span><span class="n">xmin</span> <span class="o">-</span> <span class="mf">0.4</span> <span class="o">*</span> <span class="n">width</span><span class="p">,</span> <span class="n">xmax</span> <span class="o">+</span> <span class="mf">0.4</span> <span class="o">*</span> <span class="n">width</span><span class="p">))</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">((</span><span class="n">ymin</span> <span class="o">-</span> <span class="mf">0.4</span> <span class="o">*</span> <span class="p">(</span><span class="n">ymax</span> <span class="o">-</span> <span class="n">ymin</span><span class="p">),</span> <span class="n">ymax</span> <span class="o">+</span> <span class="mf">0.4</span> <span class="o">*</span> <span class="p">(</span><span class="n">ymax</span> <span class="o">-</span> <span class="n">ymin</span><span class="p">)))</span>
+    <span class="k">elif</span> <span class="n">ltr</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">((</span><span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span> <span class="o">+</span> <span class="mf">0.8</span> <span class="o">*</span> <span class="n">width</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">((</span><span class="n">xmin</span> <span class="o">-</span> <span class="mf">0.8</span> <span class="o">*</span> <span class="n">width</span><span class="p">,</span> <span class="n">xmax</span><span class="p">))</span>
 
-    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
 
     <span class="k">if</span> <span class="n">return_layout</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">layout</span><span class="p">)</span>

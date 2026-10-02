@@ -247,12 +247,11 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">uuid</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">Counter</span><span class="p">,</span> <span class="n">defaultdict</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">copy</span><span class="w"> </span><span class="kn">import</span> <span class="n">deepcopy</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">reduce</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">chain</span><span class="p">,</span> <span class="n">groupby</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">subprocess</span><span class="w"> </span><span class="kn">import</span> <span class="n">PIPE</span><span class="p">,</span> <span class="n">Popen</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">urllib.parse</span><span class="w"> </span><span class="kn">import</span> <span class="n">unquote</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">warnings</span><span class="w"> </span><span class="kn">import</span> <span class="n">warn</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
@@ -263,29 +262,13 @@
 <span class="n">SequenceType</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">"SequenceType"</span><span class="p">)</span>  <span class="c1"># Used for multiple dispatch</span>
 
 
-<span class="c1"># (character, code) tuples for encoding special characters in gff3</span>
-<span class="c1"># percent (%) MUST GO FIRST</span>
-<span class="n">ENCODE_SPECIAL_CHARACTERS</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="p">(</span><span class="s2">"%"</span><span class="p">,</span> <span class="s2">"%25"</span><span class="p">),</span>
-    <span class="p">(</span><span class="s2">"[   |</span><span class="se">\t</span><span class="s2">]"</span><span class="p">,</span> <span class="s2">"%09"</span><span class="p">),</span>
-    <span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="s2">"%0A"</span><span class="p">),</span>
-    <span class="p">(</span><span class="s2">";"</span><span class="p">,</span> <span class="s2">"%3B"</span><span class="p">),</span>
-    <span class="p">(</span><span class="s2">"="</span><span class="p">,</span> <span class="s2">"%3D"</span><span class="p">),</span>
-    <span class="p">(</span><span class="s2">"&amp;"</span><span class="p">,</span> <span class="s2">"%26"</span><span class="p">),</span>
-    <span class="p">(</span><span class="s2">","</span><span class="p">,</span> <span class="s2">"%2C"</span><span class="p">),</span>
-<span class="p">)</span>
+<span class="c1"># Characters that must be percent-encoded in gff3 attribute values: percent, control characters (including tab,</span>
+<span class="c1"># newline and carriage return), and the column 9 separators. No other characters may be encoded.</span>
+<span class="c1"># https://github.com/The-Sequence-Ontology/Specifications/blob/master/gff3.md</span>
+<span class="n">GFF3_ENCODE_PATTERN</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">"[%;=&amp;,\x00-\x1f\x7f]"</span><span class="p">)</span>
 
-<span class="c1"># (code, character) tuples for decoding special characters in gff3</span>
-<span class="c1"># percent (%) MUST GO LAST</span>
-<span class="n">DECODE_SPECIAL_CHARACTERS</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="p">(</span><span class="s2">"%2C"</span><span class="p">,</span> <span class="s2">","</span><span class="p">),</span>
-    <span class="p">(</span><span class="s2">"%26"</span><span class="p">,</span> <span class="s2">"&amp;"</span><span class="p">),</span>
-    <span class="p">(</span><span class="s2">"%3D"</span><span class="p">,</span> <span class="s2">"="</span><span class="p">),</span>
-    <span class="p">(</span><span class="s2">"%3B"</span><span class="p">,</span> <span class="s2">";"</span><span class="p">),</span>
-    <span class="p">(</span><span class="s2">"%0A"</span><span class="p">,</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">),</span>
-    <span class="p">(</span><span class="s2">"%09"</span><span class="p">,</span> <span class="s2">"</span><span class="se">\t</span><span class="s2">"</span><span class="p">),</span>
-    <span class="p">(</span><span class="s2">"%25"</span><span class="p">,</span> <span class="s2">"%"</span><span class="p">),</span>
-<span class="p">)</span>
+<span class="c1"># A single GTF attribute: key, followed by a quoted value (that can contain ';') or an unquoted value</span>
+<span class="n">GTF_ATTRIBUTE_PATTERN</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">'\s*([^\s;"]+)\s+("[^"]*"|[^;"]*?)\s*(?:;|$)'</span><span class="p">)</span>
 
 <span class="c1"># Translate dna codons to amino acids</span>
 <span class="n">TRANSLATION</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
@@ -384,7 +367,7 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">__deepcopy__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">memo</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Alphabet"</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">Alphabet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Alphabet</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Alphabet.score">
 <a class="viewcode-back" href="../../api/sequences.html#picea.Alphabet.score">[docs]</a>
@@ -484,7 +467,7 @@
 <span class="sd">    """</span>
     <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span>
         <span class="n">DNA</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">Alphabet</span><span class="p">(</span><span class="s2">"DNA"</span><span class="p">,</span> <span class="s2">"-?acgtnACGNT"</span><span class="p">),</span>
-        <span class="n">RNA</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">Alphabet</span><span class="p">(</span><span class="s2">"RNA"</span><span class="p">,</span> <span class="s2">"-?acgtnACGNU"</span><span class="p">),</span>
+        <span class="n">RNA</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">Alphabet</span><span class="p">(</span><span class="s2">"RNA"</span><span class="p">,</span> <span class="s2">"-?acgunACGNU"</span><span class="p">),</span>
         <span class="n">AminoAcid</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">Alphabet</span><span class="p">(</span><span class="s2">"AminoAcid"</span><span class="p">,</span> <span class="s2">"*-?acdefghiklmnpqrstvwxyACDEFGHIKLMNPQRSTVWXY"</span><span class="p">),</span>
     <span class="p">)[</span><span class="n">alphabet</span><span class="p">]</span>
 
@@ -506,6 +489,30 @@
 <span class="n">alphabets</span> <span class="o">=</span> <span class="n">Alphabets</span><span class="p">()</span>
 
 
+<div class="viewcode-block" id="guess_alphabet">
+<a class="viewcode-back" href="../../api/sequences.html#picea.guess_alphabet">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">guess_alphabet</span><span class="p">(</span><span class="n">sequence</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">n_chars</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Alphabet</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Guess the alphabet of a sequence string: the alphabet that contains the most sequence characters. Ties go to</span>
+<span class="sd">    the smallest alphabet, so a sequence of only nucleotide characters is DNA.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; guess_alphabet('ACGTTGCA').name</span>
+<span class="sd">        'DNA'</span>
+<span class="sd">        &gt;&gt;&gt; guess_alphabet('MKVLAAGIVGLL').name</span>
+<span class="sd">        'AminoAcid'</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        sequence (str): Sequence string</span>
+<span class="sd">        n_chars (int, optional): Number of sequence characters to use. Defaults to 100.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Alphabet: Best matching alphabet</span>
+<span class="sd">    """</span>
+    <span class="n">chars</span> <span class="o">=</span> <span class="n">sequence</span><span class="p">[:</span><span class="n">n_chars</span><span class="p">]</span>
+    <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">alphabets</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="nb">len</span><span class="p">),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">alphabet</span><span class="p">:</span> <span class="nb">sum</span><span class="p">(</span><span class="n">char</span> <span class="ow">in</span> <span class="n">alphabet</span> <span class="k">for</span> <span class="n">char</span> <span class="ow">in</span> <span class="n">chars</span><span class="p">))</span></div>
+
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">quote_gff3</span><span class="p">(</span><span class="n">attribute_value</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Percent-encode characters that have a special meaning in GFF3 attribute values</span>
 
@@ -515,11 +522,7 @@
 <span class="sd">    Returns:</span>
 <span class="sd">        str: Encoded attribute value</span>
 <span class="sd">    """</span>
-    <span class="k">return</span> <span class="n">reduce</span><span class="p">(</span>
-        <span class="k">lambda</span> <span class="n">acc</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">code</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">code</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">acc</span><span class="p">),</span>  <span class="c1"># func</span>
-        <span class="n">ENCODE_SPECIAL_CHARACTERS</span><span class="p">,</span>  <span class="c1"># iterable</span>
-        <span class="nb">str</span><span class="p">(</span><span class="n">attribute_value</span><span class="p">),</span>  <span class="c1"># initial accumulator</span>
-    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">GFF3_ENCODE_PATTERN</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="k">lambda</span> <span class="n">match</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"%</span><span class="si">{</span><span class="nb">ord</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">())</span><span class="si">:</span><span class="s2">02X</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">attribute_value</span><span class="p">))</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">encode_attribute_value</span><span class="p">(</span><span class="n">attribute_value</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -537,7 +540,8 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">format_gtf_attribute_string</span><span class="p">(</span><span class="n">attributes</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Format attributes as a GTF column 9 string (``key "value";``)</span>
+<span class="w">    </span><span class="sd">"""Format attributes as a GTF column 9 string (``key "value";``). Attributes with multiple values are written</span>
+<span class="sd">    as repeated keys.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        attributes (Dict[str, Iterable[Union[int, str, float]]]): Attribute names and values</span>
@@ -545,7 +549,11 @@
 <span class="sd">    Returns:</span>
 <span class="sd">        str: GTF attribute string</span>
 <span class="sd">    """</span>
-    <span class="k">return</span> <span class="s2">""</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s1">' </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s1"> "</span><span class="si">{</span><span class="n">encode_attribute_value</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="si">}</span><span class="s1">";'</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">attributes</span><span class="o">.</span><span class="n">items</span><span class="p">())</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="n">parts</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">attributes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="n">value</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span> <span class="k">else</span> <span class="p">[</span><span class="n">value</span><span class="p">]</span>
+        <span class="n">parts</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s1"> "</span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s1">";'</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span><span class="p">)</span>
+    <span class="k">return</span> <span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="k">if</span> <span class="n">parts</span> <span class="k">else</span> <span class="s2">"."</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">format_gff_attribute_string</span><span class="p">(</span><span class="n">attributes</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -586,11 +594,7 @@
 <span class="sd">    Returns:</span>
 <span class="sd">        str: Decoded attribute value</span>
 <span class="sd">    """</span>
-    <span class="k">return</span> <span class="n">reduce</span><span class="p">(</span>
-        <span class="k">lambda</span> <span class="n">acc</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">code</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">code</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">acc</span><span class="p">),</span>  <span class="c1"># func</span>
-        <span class="n">DECODE_SPECIAL_CHARACTERS</span><span class="p">,</span>  <span class="c1"># iterable</span>
-        <span class="n">attribute_value</span><span class="p">,</span>  <span class="c1"># initial</span>
-    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">unquote</span><span class="p">(</span><span class="n">attribute_value</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">decode_attribute_value</span><span class="p">(</span><span class="n">attribute_value</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
@@ -609,23 +613,31 @@
 <span class="w">    </span><span class="sd">"""Parse a GTF column 9 string (``key "value";``) into a dictionary. Values are lists: repeated keys are</span>
 <span class="sd">    collected in the same list.</span>
 
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; dict(parse_gtf_attribute_string('gene_id "g1"; tag "basic"; tag "a;b"; exon_number 2;'))</span>
+<span class="sd">        {'gene_id': ['g1'], 'tag': ['basic', 'a;b'], 'exon_number': ['2']}</span>
+
 <span class="sd">    Args:</span>
 <span class="sd">        gtf_attribute_string (str): GTF attribute string</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Dict[str, List[str]]: Attribute names and values</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If the attribute string can not be parsed</span>
 <span class="sd">    """</span>
     <span class="n">attributes</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">string_part</span> <span class="ow">in</span> <span class="n">gtf_attribute_string</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">";"</span><span class="p">):</span>
-        <span class="n">string_part</span> <span class="o">=</span> <span class="n">string_part</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">string_part</span><span class="p">:</span>
-            <span class="k">continue</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="n">string_part</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">" "</span><span class="p">,</span> <span class="n">maxsplit</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">gtf_attribute_string</span><span class="p">,</span> <span class="n">string_part</span><span class="p">)</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">"Error parsing gtf string"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
-        <span class="n">attributes</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">'"'</span><span class="p">))</span>
+    <span class="n">string</span> <span class="o">=</span> <span class="n">gtf_attribute_string</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">string</span> <span class="o">==</span> <span class="s2">"."</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">attributes</span>
+    <span class="n">position</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="n">position</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">string</span><span class="p">):</span>
+        <span class="n">match</span> <span class="o">=</span> <span class="n">GTF_ATTRIBUTE_PATTERN</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">position</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">match</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Error parsing GTF attribute string at position </span><span class="si">{</span><span class="n">position</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">gtf_attribute_string</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">groups</span><span class="p">()</span>
+        <span class="n">attributes</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">'"'</span><span class="p">)</span> <span class="k">else</span> <span class="n">value</span><span class="p">)</span>
+        <span class="n">position</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">end</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">attributes</span>
 
 
@@ -646,6 +658,8 @@
 <span class="sd">        Dict[str, List[str]]: Attribute names and values</span>
 <span class="sd">    """</span>
     <span class="n">attributes</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">gff_attribute_string</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">==</span> <span class="s2">"."</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">attributes</span>
     <span class="k">for</span> <span class="n">string_part</span> <span class="ow">in</span> <span class="n">gff_attribute_string</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">";"</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">string_part</span><span class="p">:</span>
             <span class="k">continue</span>
@@ -741,8 +755,22 @@
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"SequenceAnnotation"</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""Read a GTF formatted file or string. Exactly one of ``filename`` or ``string`` must be given.</span>
 
-<span class="sd">        GTF lines are linked by their ``gene_id`` and ``transcript_id`` attributes. Gene and transcript (mRNA)</span>
-<span class="sd">        intervals are created from these, spanning all their child intervals.</span>
+<span class="sd">        GTF lines are linked by their ``gene_id`` and ``transcript_id`` attributes, and ``transcript`` lines become</span>
+<span class="sd">        ``mRNA`` intervals. Genes and transcripts that have no line of their own are created, spanning all their</span>
+<span class="sd">        child intervals. Other intervals get IDs based on their transcript and type, e.g. ``&lt;transcript_id&gt;.exon_0``.</span>
+<span class="sd">        Lines without a ``gene_id`` become intervals without parents, with IDs like ``repeat_region_0``.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; gtf = (</span>
+<span class="sd">            ...     'ctg1\\t.\\texon\\t100\\t200\\t.\\t+\\t.\\tgene_id "g1"; transcript_id "t1";\\n'</span>
+<span class="sd">            ...     'ctg1\\t.\\texon\\t300\\t400\\t.\\t+\\t.\\tgene_id "g1"; transcript_id "t1";\\n'</span>
+<span class="sd">            ... )</span>
+<span class="sd">            &gt;&gt;&gt; annotation = SequenceAnnotation.from_gtf(string=gtf)</span>
+<span class="sd">            &gt;&gt;&gt; gene = annotation["g1"]</span>
+<span class="sd">            &gt;&gt;&gt; gene.start, gene.end</span>
+<span class="sd">            (100, 400)</span>
+<span class="sd">            &gt;&gt;&gt; [interval.ID for interval in gene.children]</span>
+<span class="sd">            ['t1', 't1.exon_0', 't1.exon_1']</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            filename (Optional[str]): GTF filename</span>
@@ -756,13 +784,13 @@
 <span class="sd">        """</span>
         <span class="k">assert</span> <span class="n">filename</span> <span class="ow">or</span> <span class="n">string</span>
         <span class="k">assert</span> <span class="ow">not</span> <span class="p">(</span><span class="n">filename</span> <span class="ow">and</span> <span class="n">string</span><span class="p">)</span>
-        <span class="n">sequence_annotation</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">sequence</span><span class="o">=</span><span class="n">sequence</span><span class="p">)</span>
-        <span class="n">header</span> <span class="o">=</span> <span class="kc">True</span>
-
-        <span class="c1"># start with just reading all intervals</span>
         <span class="k">if</span> <span class="n">filename</span><span class="p">:</span>
             <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="k">as</span> <span class="n">filehandle</span><span class="p">:</span>
                 <span class="n">string</span> <span class="o">=</span> <span class="n">filehandle</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="n">sequence_annotation</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">sequence</span><span class="o">=</span><span class="n">sequence</span><span class="p">)</span>
+
+        <span class="n">header</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">intervals</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">line_number</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">)):</span>
             <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span><span class="p">:</span>
@@ -771,69 +799,79 @@
                 <span class="k">if</span> <span class="n">header</span><span class="p">:</span>
                     <span class="n">sequence_annotation</span><span class="o">.</span><span class="n">_gff_headers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
                 <span class="k">continue</span>
+            <span class="n">header</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">intervals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">SequenceInterval</span><span class="o">.</span><span class="n">from_gtf_line</span><span class="p">(</span><span class="n">gtf_line</span><span class="o">=</span><span class="n">line</span><span class="p">,</span> <span class="n">line_number</span><span class="o">=</span><span class="n">line_number</span><span class="p">))</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">first_value</span><span class="p">(</span><span class="n">interval</span><span class="p">:</span> <span class="s2">"SequenceInterval"</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="n">interval</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">values</span> <span class="k">else</span> <span class="kc">None</span>
+
+        <span class="c1"># GTF lines have no IDs: genes and transcripts are identified by their gene_id and transcript_id attributes,</span>
+        <span class="c1"># other intervals get an ID based on their transcript (or gene) and type. Genes and transcripts that are not</span>
+        <span class="c1"># in the file are created from their first child, and span all their children.</span>
+        <span class="n">gene_ids</span> <span class="o">=</span> <span class="p">{</span><span class="n">first_value</span><span class="p">(</span><span class="n">interval</span><span class="p">,</span> <span class="s2">"gene_id"</span><span class="p">)</span> <span class="k">for</span> <span class="n">interval</span> <span class="ow">in</span> <span class="n">intervals</span> <span class="k">if</span> <span class="n">interval</span><span class="o">.</span><span class="n">interval_type</span> <span class="o">==</span> <span class="s2">"gene"</span><span class="p">}</span>
+        <span class="n">transcript_ids</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">first_value</span><span class="p">(</span><span class="n">interval</span><span class="p">,</span> <span class="s2">"transcript_id"</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">interval</span> <span class="ow">in</span> <span class="n">intervals</span>
+            <span class="k">if</span> <span class="n">interval</span><span class="o">.</span><span class="n">interval_type</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"transcript"</span><span class="p">,</span> <span class="s2">"mRNA"</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="n">new_genes</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">SequenceInterval</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">new_transcripts</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">SequenceInterval</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">child_counter</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">()</span>
+        <span class="n">ordered_intervals</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">interval</span> <span class="ow">in</span> <span class="n">intervals</span><span class="p">:</span>
+            <span class="n">gene_id</span> <span class="o">=</span> <span class="n">first_value</span><span class="p">(</span><span class="n">interval</span><span class="p">,</span> <span class="s2">"gene_id"</span><span class="p">)</span>
+            <span class="n">transcript_id</span> <span class="o">=</span> <span class="n">first_value</span><span class="p">(</span><span class="n">interval</span><span class="p">,</span> <span class="s2">"transcript_id"</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">interval</span><span class="o">.</span><span class="n">interval_type</span> <span class="o">==</span> <span class="s2">"gene"</span> <span class="ow">and</span> <span class="n">gene_id</span><span class="p">:</span>
+                <span class="n">interval</span><span class="o">.</span><span class="n">_ID</span> <span class="o">=</span> <span class="n">gene_id</span>
+            <span class="k">elif</span> <span class="n">interval</span><span class="o">.</span><span class="n">interval_type</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"transcript"</span><span class="p">,</span> <span class="s2">"mRNA"</span><span class="p">)</span> <span class="ow">and</span> <span class="n">transcript_id</span><span class="p">:</span>
+                <span class="n">interval</span><span class="o">.</span><span class="n">_ID</span> <span class="o">=</span> <span class="n">transcript_id</span>
+                <span class="n">interval</span><span class="o">.</span><span class="n">interval_type</span> <span class="o">=</span> <span class="s2">"mRNA"</span>
+                <span class="n">interval</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="p">[</span><span class="n">gene_id</span><span class="p">]</span> <span class="k">if</span> <span class="n">gene_id</span> <span class="k">else</span> <span class="p">[]</span>
+            <span class="k">elif</span> <span class="ow">not</span> <span class="n">gene_id</span><span class="p">:</span>
+                <span class="c1"># not part of a gene (GTF requires a gene_id, but GFF3 converted to GTF can lack it)</span>
+                <span class="n">child_count</span> <span class="o">=</span> <span class="n">child_counter</span><span class="p">[(</span><span class="kc">None</span><span class="p">,</span> <span class="n">interval</span><span class="o">.</span><span class="n">interval_type</span><span class="p">)]</span>
+                <span class="n">child_counter</span><span class="p">[(</span><span class="kc">None</span><span class="p">,</span> <span class="n">interval</span><span class="o">.</span><span class="n">interval_type</span><span class="p">)]</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">interval</span><span class="o">.</span><span class="n">_ID</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">interval</span><span class="o">.</span><span class="n">interval_type</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">child_count</span><span class="si">}</span><span class="s2">"</span>
+                <span class="n">interval</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">header</span> <span class="o">=</span> <span class="kc">False</span>
-            <span class="n">interval</span> <span class="o">=</span> <span class="n">SequenceInterval</span><span class="o">.</span><span class="n">from_gtf_line</span><span class="p">(</span><span class="n">gtf_line</span><span class="o">=</span><span class="n">line</span><span class="p">,</span> <span class="n">line_number</span><span class="o">=</span><span class="n">line_number</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">gene_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">gene_ids</span> <span class="ow">and</span> <span class="n">gene_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">new_genes</span><span class="p">:</span>
+                    <span class="n">new_genes</span><span class="p">[</span><span class="n">gene_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">SequenceInterval</span><span class="o">.</span><span class="n">_spanning_interval</span><span class="p">(</span>
+                        <span class="n">interval</span><span class="p">,</span> <span class="n">ID</span><span class="o">=</span><span class="n">gene_id</span><span class="p">,</span> <span class="n">interval_type</span><span class="o">=</span><span class="s2">"gene"</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gene_id</span><span class="o">=</span><span class="p">[</span><span class="n">gene_id</span><span class="p">]</span>
+                    <span class="p">)</span>
+                    <span class="n">ordered_intervals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_genes</span><span class="p">[</span><span class="n">gene_id</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">transcript_id</span> <span class="ow">and</span> <span class="n">transcript_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">transcript_ids</span> <span class="ow">and</span> <span class="n">transcript_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">new_transcripts</span><span class="p">:</span>
+                    <span class="n">new_transcripts</span><span class="p">[</span><span class="n">transcript_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">SequenceInterval</span><span class="o">.</span><span class="n">_spanning_interval</span><span class="p">(</span>
+                        <span class="n">interval</span><span class="p">,</span>
+                        <span class="n">ID</span><span class="o">=</span><span class="n">transcript_id</span><span class="p">,</span>
+                        <span class="n">interval_type</span><span class="o">=</span><span class="s2">"mRNA"</span><span class="p">,</span>
+                        <span class="n">parent</span><span class="o">=</span><span class="p">[</span><span class="n">gene_id</span><span class="p">],</span>
+                        <span class="n">gene_id</span><span class="o">=</span><span class="p">[</span><span class="n">gene_id</span><span class="p">],</span>
+                        <span class="n">transcript_id</span><span class="o">=</span><span class="p">[</span><span class="n">transcript_id</span><span class="p">],</span>
+                    <span class="p">)</span>
+                    <span class="n">ordered_intervals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_transcripts</span><span class="p">[</span><span class="n">transcript_id</span><span class="p">])</span>
+                <span class="n">parent_id</span> <span class="o">=</span> <span class="n">transcript_id</span> <span class="ow">or</span> <span class="n">gene_id</span>
+                <span class="n">child_count</span> <span class="o">=</span> <span class="n">child_counter</span><span class="p">[(</span><span class="n">parent_id</span><span class="p">,</span> <span class="n">interval</span><span class="o">.</span><span class="n">interval_type</span><span class="p">)]</span>
+                <span class="n">child_counter</span><span class="p">[(</span><span class="n">parent_id</span><span class="p">,</span> <span class="n">interval</span><span class="o">.</span><span class="n">interval_type</span><span class="p">)]</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">interval</span><span class="o">.</span><span class="n">_ID</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">parent_id</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">interval</span><span class="o">.</span><span class="n">interval_type</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">child_count</span><span class="si">}</span><span class="s2">"</span>
+                <span class="n">interval</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="p">[</span><span class="n">parent_id</span><span class="p">]</span>
+            <span class="n">ordered_intervals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">interval</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">interval</span> <span class="ow">in</span> <span class="n">intervals</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">spanning_interval</span> <span class="ow">in</span> <span class="p">(</span>
+                <span class="n">new_genes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">first_value</span><span class="p">(</span><span class="n">interval</span><span class="p">,</span> <span class="s2">"gene_id"</span><span class="p">)),</span>
+                <span class="n">new_transcripts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">first_value</span><span class="p">(</span><span class="n">interval</span><span class="p">,</span> <span class="s2">"transcript_id"</span><span class="p">)),</span>
+            <span class="p">):</span>
+                <span class="k">if</span> <span class="n">spanning_interval</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">spanning_interval</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">spanning_interval</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">interval</span><span class="o">.</span><span class="n">start</span><span class="p">)</span>
+                    <span class="n">spanning_interval</span><span class="o">.</span><span class="n">end</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">spanning_interval</span><span class="o">.</span><span class="n">end</span><span class="p">,</span> <span class="n">interval</span><span class="o">.</span><span class="n">end</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">interval</span> <span class="ow">in</span> <span class="n">ordered_intervals</span><span class="p">:</span>
             <span class="n">interval</span><span class="o">.</span><span class="n">_container</span> <span class="o">=</span> <span class="n">sequence_annotation</span>
             <span class="n">sequence_annotation</span><span class="p">[</span><span class="n">interval</span><span class="o">.</span><span class="n">ID</span><span class="p">]</span> <span class="o">=</span> <span class="n">interval</span>
-        <span class="c1"># fix missing gene and transcript intervals</span>
-        <span class="n">transcript_child_counter</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">()</span>
-        <span class="n">new_intervals</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">interval</span> <span class="ow">in</span> <span class="n">sequence_annotation</span><span class="p">:</span>
-            <span class="n">gene_id</span> <span class="o">=</span> <span class="n">interval</span><span class="o">.</span><span class="n">gff_attributes</span><span class="p">[</span><span class="s2">"gene_id"</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">transcript_id</span> <span class="o">=</span> <span class="n">interval</span><span class="o">.</span><span class="n">gff_attributes</span><span class="p">[</span><span class="s2">"transcript_id"</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">interval_type</span> <span class="o">=</span> <span class="n">interval</span><span class="o">.</span><span class="n">interval_type</span>
-            <span class="n">id_tuple</span> <span class="o">=</span> <span class="p">(</span><span class="n">gene_id</span><span class="p">,</span> <span class="n">transcript_id</span><span class="p">,</span> <span class="n">interval_type</span><span class="p">)</span>
-            <span class="n">child_count</span> <span class="o">=</span> <span class="n">transcript_child_counter</span><span class="p">[</span><span class="n">id_tuple</span><span class="p">]</span>
-            <span class="n">transcript_child_counter</span><span class="o">.</span><span class="n">update</span><span class="p">([</span><span class="n">id_tuple</span><span class="p">])</span>
-            <span class="n">interval</span><span class="o">.</span><span class="n">_ID</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">transcript_id</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">interval_type</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">child_count</span><span class="si">}</span><span class="s2">"</span>
-            <span class="k">if</span> <span class="n">transcript_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">new_intervals</span><span class="p">:</span>
-                <span class="c1"># new transcript interval</span>
-                <span class="n">transcript_interval</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">interval</span><span class="p">)</span>
-                <span class="n">transcript_interval</span><span class="o">.</span><span class="n">_container</span> <span class="o">=</span> <span class="n">interval</span><span class="o">.</span><span class="n">_container</span>
-                <span class="n">transcript_interval</span><span class="o">.</span><span class="n">_ID</span> <span class="o">=</span> <span class="n">transcript_id</span>
-                <span class="n">transcript_interval</span><span class="o">.</span><span class="n">interval_type</span> <span class="o">=</span> <span class="s2">"mRNA"</span>
-                <span class="n">transcript_interval</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="p">[</span><span class="n">gene_id</span><span class="p">]</span>
-                <span class="c1"># new gene interval</span>
-                <span class="n">gene_interval</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">interval</span><span class="p">)</span>
-                <span class="n">gene_interval</span><span class="o">.</span><span class="n">_container</span> <span class="o">=</span> <span class="n">interval</span><span class="o">.</span><span class="n">_container</span>
-                <span class="n">gene_interval</span><span class="o">.</span><span class="n">_ID</span> <span class="o">=</span> <span class="n">gene_id</span>
-                <span class="n">gene_interval</span><span class="o">.</span><span class="n">interval_type</span> <span class="o">=</span> <span class="s2">"gene"</span>
-                <span class="n">gene_interval</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="kc">None</span>
 
-                <span class="n">new_intervals</span><span class="p">[</span><span class="n">transcript_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">transcript_interval</span>
-                <span class="n">new_intervals</span><span class="p">[</span><span class="n">gene_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">gene_interval</span>
-
-            <span class="n">interval</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="p">[</span><span class="n">transcript_id</span><span class="p">]</span>
-            <span class="n">new_intervals</span><span class="p">[</span><span class="n">interval</span><span class="o">.</span><span class="n">ID</span><span class="p">]</span> <span class="o">=</span> <span class="n">interval</span>
-        <span class="n">sequence_annotation</span><span class="o">.</span><span class="n">_intervals</span> <span class="o">=</span> <span class="n">new_intervals</span>
-
-        <span class="c1"># set children</span>
         <span class="k">if</span> <span class="n">link_parents</span><span class="p">:</span>
             <span class="n">sequence_annotation</span><span class="o">.</span><span class="n">_link_parents</span><span class="p">()</span>
-
-        <span class="c1"># fix gene and transcript start and stop coordinates</span>
-        <span class="n">genes</span> <span class="o">=</span> <span class="n">sequence_annotation</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">"interval_type"</span><span class="p">)[</span><span class="s2">"gene"</span><span class="p">]</span>
-        <span class="k">for</span> <span class="n">gene</span> <span class="ow">in</span> <span class="n">genes</span><span class="p">:</span>
-            <span class="c1"># fix gene first</span>
-            <span class="n">start</span> <span class="o">=</span> <span class="mf">10e9</span>
-            <span class="n">end</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">gene</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
-                <span class="n">start</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">child</span><span class="o">.</span><span class="n">start</span><span class="p">)</span>
-                <span class="n">end</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">end</span><span class="p">,</span> <span class="n">child</span><span class="o">.</span><span class="n">end</span><span class="p">)</span>
-            <span class="n">gene</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="n">start</span>
-            <span class="n">gene</span><span class="o">.</span><span class="n">end</span> <span class="o">=</span> <span class="n">end</span>
-
-            <span class="c1"># fix transcripts</span>
-            <span class="n">transcripts</span> <span class="o">=</span> <span class="n">gene</span><span class="o">.</span><span class="n">children</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">"interval_type"</span><span class="p">)[</span><span class="s2">"mRNA"</span><span class="p">]</span>
-            <span class="k">for</span> <span class="n">transcript</span> <span class="ow">in</span> <span class="n">transcripts</span><span class="p">:</span>
-                <span class="n">start</span> <span class="o">=</span> <span class="mf">10e9</span>
-                <span class="n">end</span> <span class="o">=</span> <span class="mi">0</span>
-                <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">transcript</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
-                    <span class="n">start</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">child</span><span class="o">.</span><span class="n">start</span><span class="p">)</span>
-                    <span class="n">end</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">end</span><span class="p">,</span> <span class="n">child</span><span class="o">.</span><span class="n">end</span><span class="p">)</span>
-                <span class="n">transcript</span><span class="o">.</span><span class="n">end</span> <span class="o">=</span> <span class="n">end</span>
-                <span class="n">transcript</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="n">start</span>
 
         <span class="k">return</span> <span class="n">sequence_annotation</span></div>
 
@@ -956,16 +994,7 @@
                 <span class="n">child_interval</span> <span class="o">=</span> <span class="n">SequenceInterval</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">interval_dict</span><span class="o">=</span><span class="n">child_dict</span><span class="p">)</span>
                 <span class="n">child_interval</span><span class="o">.</span><span class="n">_container</span> <span class="o">=</span> <span class="n">sequence_annotation</span>
                 <span class="n">sequence_annotation</span><span class="p">[</span><span class="n">child_interval</span><span class="o">.</span><span class="n">ID</span><span class="p">]</span> <span class="o">=</span> <span class="n">child_interval</span>
-        <span class="k">for</span> <span class="n">interval</span> <span class="ow">in</span> <span class="n">sequence_annotation</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">interval</span><span class="o">.</span><span class="n">parent</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">parent_ID</span> <span class="ow">in</span> <span class="n">interval</span><span class="o">.</span><span class="n">parent</span><span class="p">:</span>
-                    <span class="k">try</span><span class="p">:</span>
-                        <span class="n">parent</span> <span class="o">=</span> <span class="n">sequence_annotation</span><span class="p">[</span><span class="n">parent_ID</span><span class="p">]</span>
-                    <span class="k">except</span> <span class="ne">IndexError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
-                        <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span>
-                            <span class="s2">"Interval </span><span class="si">{interval.ID}</span><span class="s2"> is listing </span><span class="si">{parent_ID}</span><span class="s2"> "</span> <span class="s2">"as Parent, but parent could not be found."</span>
-                        <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">err</span>
-                    <span class="n">parent</span><span class="o">.</span><span class="n">_children</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">interval</span><span class="o">.</span><span class="n">ID</span><span class="p">)</span>
+        <span class="n">sequence_annotation</span><span class="o">.</span><span class="n">_link_parents</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">sequence_annotation</span></div>
 
 
@@ -1133,8 +1162,9 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">gtf_attributes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">"""Attributes for GTF output: :attr:`gff_attributes`, plus a ``&lt;type&gt;_id`` attribute for every ancestor (e.g.</span>
-<span class="sd">        ``transcript_id`` and ``gene_id`` for an exon)</span>
+<span class="w">        </span><span class="sd">"""Attributes for GTF output: :attr:`gff_attributes` without ``ID`` and ``Parent``, plus a ``&lt;type&gt;_id``</span>
+<span class="sd">        attribute for the interval itself if it is a gene or mRNA, and for every ancestor (e.g. ``transcript_id`` and</span>
+<span class="sd">        ``gene_id`` for an exon). Intervals with multiple parents of the same type get a single ``&lt;type&gt;_id``.</span>
 <span class="sd">        """</span>
         <span class="k">def</span><span class="w"> </span><span class="nf">get_gtf_type</span><span class="p">(</span><span class="n">gff_interval_type</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gtf_interval_types</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">gff_interval_type</span><span class="p">,</span> <span class="n">gff_interval_type</span><span class="p">)</span>
@@ -1144,10 +1174,32 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">parent_ids</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
-        <span class="n">attributes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gff_attributes</span>
+        <span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">value</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">gff_attributes</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"ID"</span><span class="p">,</span> <span class="s2">"Parent"</span><span class="p">)}</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">interval_type</span> <span class="o">==</span> <span class="s2">"gene"</span><span class="p">:</span>
             <span class="n">attributes</span><span class="p">[</span><span class="s2">"gene_id"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ID</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">interval_type</span> <span class="o">==</span> <span class="s2">"mRNA"</span><span class="p">:</span>
+            <span class="n">attributes</span><span class="p">[</span><span class="s2">"transcript_id"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ID</span>
         <span class="k">return</span> <span class="p">{</span><span class="o">**</span><span class="n">attributes</span><span class="p">,</span> <span class="o">**</span><span class="n">parent_ids</span><span class="p">}</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_spanning_interval</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span> <span class="n">child</span><span class="p">:</span> <span class="s2">"SequenceInterval"</span><span class="p">,</span> <span class="n">ID</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">interval_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">parent</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span> <span class="o">**</span><span class="n">attributes</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"SequenceInterval"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Create an interval (e.g. a gene) on the same sequence and strand as ``child``, starting with the span of</span>
+<span class="sd">        ``child``"""</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">ID</span><span class="o">=</span><span class="n">ID</span><span class="p">,</span>
+            <span class="n">seqid</span><span class="o">=</span><span class="n">child</span><span class="o">.</span><span class="n">seqid</span><span class="p">,</span>
+            <span class="n">source</span><span class="o">=</span><span class="n">child</span><span class="o">.</span><span class="n">source</span><span class="p">,</span>
+            <span class="n">interval_type</span><span class="o">=</span><span class="n">interval_type</span><span class="p">,</span>
+            <span class="n">start</span><span class="o">=</span><span class="n">child</span><span class="o">.</span><span class="n">start</span><span class="p">,</span>
+            <span class="n">end</span><span class="o">=</span><span class="n">child</span><span class="o">.</span><span class="n">end</span><span class="p">,</span>
+            <span class="n">score</span><span class="o">=</span><span class="s2">"."</span><span class="p">,</span>
+            <span class="n">strand</span><span class="o">=</span><span class="n">child</span><span class="o">.</span><span class="n">strand</span><span class="p">,</span>
+            <span class="n">phase</span><span class="o">=</span><span class="s2">"."</span><span class="p">,</span>
+            <span class="n">parent</span><span class="o">=</span><span class="n">parent</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">attributes</span><span class="p">,</span>
+        <span class="p">)</span>
 
 <div class="viewcode-block" id="SequenceInterval.from_gtf_line">
 <a class="viewcode-back" href="../../api/annotations.html#picea.SequenceInterval.from_gtf_line">[docs]</a>
@@ -1212,10 +1264,15 @@
 <span class="sd">            SequenceInterval: Interval</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            ValueError: If the start, end, score, strand, or phase column has an invalid value</span>
+<span class="sd">            ValueError: If the line does not have 9 columns, or if the start, end, score, strand, or phase column has</span>
+<span class="sd">                an invalid value</span>
 <span class="sd">        """</span>
         <span class="n">gff_parts</span> <span class="o">=</span> <span class="n">gff_line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"</span><span class="se">\t</span><span class="s2">"</span><span class="p">)</span>
-        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">gff_parts</span><span class="p">)</span> <span class="o">==</span> <span class="mi">9</span><span class="p">,</span> <span class="n">gff_parts</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">gff_parts</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">9</span><span class="p">:</span>
+            <span class="n">error</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"GFF and GTF lines must have 9 tab-separated columns, found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">gff_parts</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
+            <span class="k">if</span> <span class="n">line_number</span><span class="p">:</span>
+                <span class="n">error</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">error</span><span class="si">}</span><span class="s2">, line </span><span class="si">{</span><span class="n">line_number</span><span class="si">}</span><span class="s2">"</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
         <span class="n">seqid</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">interval_type</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">score</span><span class="p">,</span> <span class="n">strand</span><span class="p">,</span> <span class="n">phase</span> <span class="o">=</span> <span class="n">gff_parts</span><span class="p">[:</span><span class="mi">8</span><span class="p">]</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">start</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>
@@ -1318,8 +1375,12 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            SequenceInterval: Interval</span>
 <span class="sd">        """</span>
-        <span class="n">attributes</span> <span class="o">=</span> <span class="n">interval_dict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"attributes"</span><span class="p">,</span> <span class="nb">dict</span><span class="p">())</span>
-        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">interval_dict</span><span class="p">,</span> <span class="o">**</span><span class="n">attributes</span><span class="p">)</span></div>
+        <span class="n">interval_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">interval_dict</span><span class="p">)</span>
+        <span class="n">attributes</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">interval_dict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"attributes"</span><span class="p">,</span> <span class="nb">dict</span><span class="p">()))</span>
+        <span class="n">parent</span> <span class="o">=</span> <span class="n">attributes</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"Parent"</span><span class="p">,</span> <span class="n">attributes</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"parent"</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">parent</span> <span class="o">=</span> <span class="p">[</span><span class="n">parent</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">interval_dict</span><span class="p">,</span> <span class="o">**</span><span class="n">attributes</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="n">parent</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="SequenceInterval.to_dict">
@@ -1349,7 +1410,7 @@
             <span class="n">attributes</span><span class="o">=</span><span class="n">attributes</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="k">if</span> <span class="n">include_children</span><span class="p">:</span>
-            <span class="n">children</span> <span class="o">=</span> <span class="p">[</span><span class="n">child</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">[</span><span class="mi">1</span><span class="p">:]]</span>
+            <span class="n">children</span> <span class="o">=</span> <span class="p">[</span><span class="n">child</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">]</span>
             <span class="n">interval_dict</span><span class="p">[</span><span class="s2">"children"</span><span class="p">]</span> <span class="o">=</span> <span class="n">children</span>
         <span class="k">return</span> <span class="n">interval_dict</span></div>
 
@@ -1391,7 +1452,7 @@
 <span class="sd">        header (str): Sequence name</span>
 <span class="sd">        sequence (str): Sequence string</span>
 <span class="sd">        alphabet (Alphabet): Sequence alphabet. Detected from the sequence when not given (see</span>
-<span class="sd">            :meth:`Alphabet.score`).</span>
+<span class="sd">            :func:`guess_alphabet`). Sequences derived from this one (slices, complements, etc.) keep the alphabet.</span>
 <span class="sd">        annotation (Optional[SequenceAnnotation]): Annotation of the sequence. Defaults to an empty annotation.</span>
 <span class="sd">    """</span>
 
@@ -1406,7 +1467,7 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sequence</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span> <span class="o">=</span> <span class="n">alphabets</span><span class="o">.</span><span class="n">DNA</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">alphabets</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">alphabet</span><span class="p">:</span> <span class="n">alphabet</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sequence</span><span class="p">))</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span> <span class="o">=</span> <span class="n">guess_alphabet</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sequence</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Sequence"</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""Subset a sequence based on a key (can be int or slice)</span>
@@ -1419,7 +1480,7 @@
 <span class="sd">            &gt;&gt;&gt; len(s[2:])</span>
 <span class="sd">            3</span>
 <span class="sd">        """</span>
-        <span class="k">return</span> <span class="n">Sequence</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sequence</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">Sequence</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sequence</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">alphabet</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""Length of the sequence</span>
@@ -1440,7 +1501,7 @@
 <span class="sd">            &gt;&gt;&gt; s.uppercase.sequence</span>
 <span class="sd">            'ACGTA'</span>
 <span class="sd">        """</span>
-        <span class="k">return</span> <span class="n">Sequence</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sequence</span><span class="o">.</span><span class="n">upper</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">Sequence</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sequence</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span> <span class="n">alphabet</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">lowercase</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Sequence"</span><span class="p">:</span>
@@ -1451,7 +1512,7 @@
 <span class="sd">            &gt;&gt;&gt; s.lowercase.sequence</span>
 <span class="sd">            'acgta'</span>
 <span class="sd">        """</span>
-        <span class="k">return</span> <span class="n">Sequence</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sequence</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">Sequence</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sequence</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="n">alphabet</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">reverse</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Sequence"</span><span class="p">:</span>
@@ -1462,7 +1523,7 @@
 <span class="sd">            &gt;&gt;&gt; s.reverse.sequence</span>
 <span class="sd">            'ATGCA'</span>
 <span class="sd">        """</span>
-        <span class="k">return</span> <span class="n">Sequence</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sequence</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">Sequence</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sequence</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">alphabet</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">complement</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Sequence"</span><span class="p">:</span>
@@ -1473,7 +1534,7 @@
 <span class="sd">            &gt;&gt;&gt; s.complement.sequence</span>
 <span class="sd">            'TGCAT'</span>
 <span class="sd">        """</span>
-        <span class="k">return</span> <span class="n">Sequence</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span><span class="o">.</span><span class="n">complement</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sequence</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">Sequence</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span><span class="o">.</span><span class="n">complement</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sequence</span><span class="p">),</span> <span class="n">alphabet</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">reverse_complement</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Sequence"</span><span class="p">:</span>
@@ -1487,7 +1548,7 @@
 <span class="sd">            &gt;&gt;&gt; s.reverse_complement.sequence == s.reverse.complement.sequence == s.complement.reverse.sequence</span>
 <span class="sd">            True</span>
 <span class="sd">        """</span>
-        <span class="k">return</span> <span class="n">Sequence</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span><span class="o">.</span><span class="n">complement</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sequence</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="k">return</span> <span class="n">Sequence</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span><span class="o">.</span><span class="n">complement</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sequence</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span> <span class="n">alphabet</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">amino_acids</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Sequence"</span><span class="p">:</span>
@@ -1501,7 +1562,7 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">"AminoAcid"</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">Sequence</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sequence</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">Sequence</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sequence</span><span class="p">),</span> <span class="n">alphabet</span><span class="o">=</span><span class="n">alphabets</span><span class="o">.</span><span class="n">AminoAcid</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Sequence.to_dict">
 <a class="viewcode-back" href="../../api/sequences.html#picea.Sequence.to_dict">[docs]</a>
@@ -1597,6 +1658,7 @@
                 <span class="n">string</span> <span class="o">=</span> <span class="n">filehandle</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">string</span> <span class="o">=</span> <span class="n">string</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_iterator</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="k">if</span> <span class="n">filetype</span> <span class="o">==</span> <span class="s2">"fasta"</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_iter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fasta_iter</span>
@@ -1611,10 +1673,7 @@
 <span class="sd">        Yields:</span>
 <span class="sd">            Sequence: Next sequence</span>
 <span class="sd">        """</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iter</span><span class="p">()</span>
-        <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
-            <span class="k">return</span>
+        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iter</span><span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""Next sequence</span>
@@ -1622,7 +1681,9 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            Sequence: Next sequence</span>
 <span class="sd">        """</span>
-        <span class="k">return</span> <span class="nb">next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_iter</span><span class="p">())</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iterator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_iterator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iter</span><span class="p">()</span>
+        <span class="k">return</span> <span class="nb">next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_iterator</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_fasta_iter</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Sequence</span><span class="p">]:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">string</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">"&gt;"</span><span class="p">:</span>
@@ -1646,13 +1707,13 @@
 <a class="viewcode-back" href="../../api/sequences.html#picea.BatchSequenceReader">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">BatchSequenceReader</span><span class="p">(</span><span class="n">SequenceReader</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Iterator over batches of sequences in a fasta or json formatted file or string. Every batch is a</span>
-<span class="sd">    :class:`SequenceCollection` of ``batchsize`` sequences.</span>
+<span class="sd">    :class:`SequenceCollection` of ``batchsize`` sequences, except for the last batch, which can be smaller.</span>
 
 <span class="sd">    Examples:</span>
-<span class="sd">        &gt;&gt;&gt; fasta_string = '&gt;1\\nACGC\\n&gt;2\\nTGTGTA\\n&gt;3\\nAAGT\\n&gt;4\\nCCA\\n'</span>
+<span class="sd">        &gt;&gt;&gt; fasta_string = '&gt;1\\nACGC\\n&gt;2\\nTGTGTA\\n&gt;3\\nAAGT\\n&gt;4\\nCCA\\n&gt;5\\nGGA\\n'</span>
 <span class="sd">        &gt;&gt;&gt; reader = BatchSequenceReader(string=fasta_string, filetype='fasta', batchsize=2)</span>
 <span class="sd">        &gt;&gt;&gt; [batch.headers for batch in reader]</span>
-<span class="sd">        [['1', '2'], ['3', '4']]</span>
+<span class="sd">        [['1', '2'], ['3', '4'], ['5']]</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        string (str): fasta or json formatted string</span>
@@ -1670,24 +1731,31 @@
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">filetype</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">batchsize</span> <span class="o">=</span> <span class="n">batchsize</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_currentbatch</span> <span class="o">=</span> <span class="n">SequenceCollection</span><span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="s2">"SequenceCollection"</span><span class="p">]:</span>
-        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iter</span><span class="p">():</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_currentbatch</span><span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">header</span><span class="p">]</span> <span class="o">=</span> <span class="n">s</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_currentbatch</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">batchsize</span><span class="p">:</span>
-                <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">_currentbatch</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_currentbatch</span> <span class="o">=</span> <span class="n">SequenceCollection</span><span class="p">()</span>
+<span class="w">        </span><span class="sd">"""Iterate over all batches. The last batch can have fewer than ``batchsize`` sequences.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            SequenceCollection: Next batch</span>
+<span class="sd">        """</span>
+        <span class="n">batch</span> <span class="o">=</span> <span class="n">SequenceCollection</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">seq</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iter</span><span class="p">():</span>
+            <span class="n">batch</span><span class="p">[</span><span class="n">seq</span><span class="o">.</span><span class="n">header</span><span class="p">]</span> <span class="o">=</span> <span class="n">seq</span><span class="o">.</span><span class="n">sequence</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">batchsize</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">batch</span>
+                <span class="n">batch</span> <span class="o">=</span> <span class="n">SequenceCollection</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">batch</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">batch</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"SequenceCollection"</span><span class="p">:</span>
-        <span class="n">currentbatch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_currentbatch</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_currentbatch</span> <span class="o">=</span> <span class="n">SequenceCollection</span><span class="p">()</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">currentbatch</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">batchsize</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">currentbatch</span>
-        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iter</span><span class="p">():</span>
-            <span class="n">currentbatch</span><span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">header</span><span class="p">]</span> <span class="o">=</span> <span class="n">s</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">currentbatch</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">batchsize</span><span class="p">:</span>
-                <span class="k">yield</span> <span class="n">currentbatch</span></div>
+<span class="w">        </span><span class="sd">"""Next batch</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            SequenceCollection: Next batch</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iterator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_iterator</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_iterator</span><span class="p">)</span></div>
 
 
 
@@ -1707,10 +1775,7 @@
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
             <span class="n">key</span> <span class="o">=</span> <span class="p">[</span><span class="n">key</span><span class="p">]</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">slice</span><span class="p">):</span>
-            <span class="n">start</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">start</span> <span class="k">if</span> <span class="n">key</span><span class="o">.</span><span class="n">start</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">0</span>
-            <span class="n">stop</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">stop</span> <span class="k">if</span> <span class="n">key</span><span class="o">.</span><span class="n">stop</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sequence_collection</span><span class="p">)</span>
-            <span class="n">step</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">step</span> <span class="k">if</span> <span class="n">key</span><span class="o">.</span><span class="n">step</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">1</span>
-            <span class="n">key</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">step</span><span class="p">)</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="o">*</span><span class="n">key</span><span class="o">.</span><span class="n">indices</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sequence_collection</span><span class="p">)))</span>
         <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"SequenceIndex key must be of type f</span><span class="si">{</span><span class="n">SequenceIndexKey</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="n">new_seq_col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sequence_collection</span><span class="o">.</span><span class="vm">__class__</span><span class="p">()</span>
@@ -1771,6 +1836,8 @@
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">SequenceType</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">SequenceType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SequenceType</span><span class="p">:</span>
         <span class="n">new_collection</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">seq</span> <span class="ow">in</span> <span class="n">chain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+            <span class="n">new_collection</span><span class="p">[</span><span class="n">seq</span><span class="o">.</span><span class="n">header</span><span class="p">]</span> <span class="o">=</span> <span class="n">seq</span><span class="o">.</span><span class="n">sequence</span>
         <span class="k">return</span> <span class="n">new_collection</span>
 
     <span class="nd">@property</span>
@@ -2051,13 +2118,18 @@
 
 <span class="sd">        Returns:</span>
 <span class="sd">            MultipleSequenceAlignment: Aligned sequences</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            RuntimeError: If the aligner exits with an error</span>
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">method_kwargs</span><span class="p">:</span>
             <span class="n">method_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="n">fasta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_fasta</span><span class="p">()</span>
         <span class="n">command</span> <span class="o">=</span> <span class="p">[</span><span class="n">method</span><span class="p">,</span> <span class="o">*</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="n">method_kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">()),</span> <span class="s2">"-"</span><span class="p">]</span>
         <span class="n">process</span> <span class="o">=</span> <span class="n">Popen</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">stdin</span><span class="o">=</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">PIPE</span><span class="p">)</span>
-        <span class="n">stdout</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">process</span><span class="o">.</span><span class="n">communicate</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="n">fasta</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span>
+        <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="n">process</span><span class="o">.</span><span class="n">communicate</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="n">fasta</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span>
+        <span class="k">if</span> <span class="n">process</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2"> exited with code </span><span class="si">{</span><span class="n">process</span><span class="o">.</span><span class="n">returncode</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">stderr</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="n">aligned_fasta</span> <span class="o">=</span> <span class="n">stdout</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">MultipleSequenceAlignment</span><span class="o">.</span><span class="n">from_fasta</span><span class="p">(</span><span class="n">string</span><span class="o">=</span><span class="n">aligned_fasta</span><span class="p">)</span></div>
 
@@ -2092,7 +2164,6 @@
         <span class="n">sequences</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">[</span><span class="n">Sequence</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">sequence_annotation</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">"SequenceAnnotation"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">MultipleSequenceAlignment</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_collection</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">"uint8"</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_header_idx</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">sequences</span><span class="p">:</span>
@@ -2128,6 +2199,9 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_collection</span> <span class="o">=</span> <span class="n">arr</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_header_idx</span><span class="p">[</span><span class="n">header</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_seq</span>
 
+    <span class="k">def</span><span class="w"> </span><span class="fm">__delitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">header</span><span class="p">)</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">:</span>
         <span class="n">idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_header_idx</span><span class="p">[</span><span class="n">header</span><span class="p">]</span>
         <span class="n">n_chars</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_collection</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
@@ -2155,21 +2229,35 @@
 <div class="viewcode-block" id="MultipleSequenceAlignment.to_nexus">
 <a class="viewcode-back" href="../../api/sequences.html#picea.MultipleSequenceAlignment.to_nexus">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">to_nexus</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Nexus ``data`` block with the alignment (the datatype is always ``dna``)</span>
+<span class="w">        </span><span class="sd">"""Nexus ``data`` block with the alignment. The datatype is ``protein`` if any sequence is an amino acid</span>
+<span class="sd">        sequence, and ``dna`` otherwise.</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; msa = MultipleSequenceAlignment.from_fasta(string='&gt;a\\nAC-GT\\n&gt;b\\nACCGT')</span>
+<span class="sd">            &gt;&gt;&gt; print(msa.to_nexus())</span>
+<span class="sd">            begin data;</span>
+<span class="sd">                dimensions ntax=2 nchar=5;</span>
+<span class="sd">                format datatype=dna gap=-;</span>
+<span class="sd">                matrix</span>
+<span class="sd">                a AC-GT</span>
+<span class="sd">                b ACCGT</span>
+<span class="sd">                ;</span>
+<span class="sd">            end;</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            str: Nexus formatted string</span>
 <span class="sd">        """</span>
-        <span class="n">sequences</span> <span class="o">=</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">s</span><span class="o">.</span><span class="n">header</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">s</span><span class="o">.</span><span class="n">sequence</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">])</span>
-        <span class="k">return</span> <span class="p">(</span>
-            <span class="s2">"begin data;"</span>
-            <span class="sa">f</span><span class="s2">"</span><span class="se">\t</span><span class="s2">dimensions ntax=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_seqs</span><span class="si">}</span><span class="s2"> nchar=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_chars</span><span class="si">}</span><span class="s2">;"</span>
-            <span class="s2">"</span><span class="se">\t</span><span class="s2">format datatype=dna gap=-;"</span>
-            <span class="s2">"</span><span class="se">\t</span><span class="s2">matrix"</span>
-            <span class="sa">f</span><span class="s2">"</span><span class="se">\t</span><span class="si">{</span><span class="n">sequences</span><span class="si">}</span><span class="s2">"</span>
-            <span class="s2">"</span><span class="se">\t</span><span class="s2">;"</span>
-            <span class="s2">"end;"</span>
-        <span class="p">)</span></div>
+        <span class="n">datatype</span> <span class="o">=</span> <span class="s2">"protein"</span> <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">seq</span><span class="o">.</span><span class="n">alphabet</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">"AminoAcid"</span> <span class="k">for</span> <span class="n">seq</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">)</span> <span class="k">else</span> <span class="s2">"dna"</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">"begin data;"</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">"    dimensions ntax=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_seqs</span><span class="si">}</span><span class="s2"> nchar=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_chars</span><span class="si">}</span><span class="s2">;"</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">"    format datatype=</span><span class="si">{</span><span class="n">datatype</span><span class="si">}</span><span class="s2"> gap=-;"</span><span class="p">,</span>
+            <span class="s2">"    matrix"</span><span class="p">,</span>
+            <span class="o">*</span><span class="p">(</span><span class="sa">f</span><span class="s2">"    </span><span class="si">{</span><span class="n">seq</span><span class="o">.</span><span class="n">header</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">seq</span><span class="o">.</span><span class="n">sequence</span><span class="si">}</span><span class="s2">"</span> <span class="k">for</span> <span class="n">seq</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">),</span>
+            <span class="s2">"    ;"</span><span class="p">,</span>
+            <span class="s2">"end;"</span><span class="p">,</span>
+        <span class="p">]</span>
+        <span class="k">return</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="MultipleSequenceAlignment.pop">

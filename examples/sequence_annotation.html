@@ -275,7 +275,7 @@ the ninth column. Attribute keys are lowercased (except <code class="docutils li
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;SequenceInterval type=gene ID=gene00001 loc=ctg123..1000..9000..+ at 0x7ff4b0fec2f0&gt;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;SequenceInterval type=gene ID=gene00001 loc=ctg123..1000..9000..+ at 0x7f0a789fc050&gt;
 </pre></div>
 </div>
 </div>
@@ -408,14 +408,14 @@ three_prime_UTR   35045018  35045433  three_prime_UTR:MtrunA17Chr1g0184451.16
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[&lt;SequenceInterval type=exon ID=exon:MtrunA17Chr1g0184451.1 loc=MtrunA17Chr1..35039693..35039934..+ at 0x7ff4b0ff8b00&gt;,
- &lt;SequenceInterval type=exon ID=exon:MtrunA17Chr1g0184451.2 loc=MtrunA17Chr1..35040034..35040142..+ at 0x7ff4b0ff8d60&gt;,
- &lt;SequenceInterval type=exon ID=exon:MtrunA17Chr1g0184451.3 loc=MtrunA17Chr1..35041155..35041277..+ at 0x7ff4b0ff90f0&gt;,
- &lt;SequenceInterval type=exon ID=exon:MtrunA17Chr1g0184451.4 loc=MtrunA17Chr1..35042183..35042280..+ at 0x7ff4b0ff9350&gt;,
- &lt;SequenceInterval type=exon ID=exon:MtrunA17Chr1g0184451.5 loc=MtrunA17Chr1..35042442..35042568..+ at 0x7ff4b0ff95b0&gt;,
- &lt;SequenceInterval type=exon ID=exon:MtrunA17Chr1g0184451.6 loc=MtrunA17Chr1..35043200..35043285..+ at 0x7ff4b0ff9810&gt;,
- &lt;SequenceInterval type=exon ID=exon:MtrunA17Chr1g0184451.7 loc=MtrunA17Chr1..35044019..35044144..+ at 0x7ff4b0ff9a70&gt;,
- &lt;SequenceInterval type=exon ID=exon:MtrunA17Chr1g0184451.8 loc=MtrunA17Chr1..35044859..35045433..+ at 0x7ff4b0ff9e00&gt;]
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[&lt;SequenceInterval type=exon ID=exon:MtrunA17Chr1g0184451.1 loc=MtrunA17Chr1..35039693..35039934..+ at 0x7f0a78808c30&gt;,
+ &lt;SequenceInterval type=exon ID=exon:MtrunA17Chr1g0184451.2 loc=MtrunA17Chr1..35040034..35040142..+ at 0x7f0a78808e90&gt;,
+ &lt;SequenceInterval type=exon ID=exon:MtrunA17Chr1g0184451.3 loc=MtrunA17Chr1..35041155..35041277..+ at 0x7f0a78809220&gt;,
+ &lt;SequenceInterval type=exon ID=exon:MtrunA17Chr1g0184451.4 loc=MtrunA17Chr1..35042183..35042280..+ at 0x7f0a78809480&gt;,
+ &lt;SequenceInterval type=exon ID=exon:MtrunA17Chr1g0184451.5 loc=MtrunA17Chr1..35042442..35042568..+ at 0x7f0a788096e0&gt;,
+ &lt;SequenceInterval type=exon ID=exon:MtrunA17Chr1g0184451.6 loc=MtrunA17Chr1..35043200..35043285..+ at 0x7f0a78809940&gt;,
+ &lt;SequenceInterval type=exon ID=exon:MtrunA17Chr1g0184451.7 loc=MtrunA17Chr1..35044019..35044144..+ at 0x7f0a78809ba0&gt;,
+ &lt;SequenceInterval type=exon ID=exon:MtrunA17Chr1g0184451.8 loc=MtrunA17Chr1..35044859..35045433..+ at 0x7f0a78809f30&gt;]
 </pre></div>
 </div>
 </div>
@@ -462,6 +462,39 @@ three_prime_UTR   35045018  35045433  three_prime_UTR:MtrunA17Chr1g0184451.16
     ]
   }
 }
+</pre></div>
+</div>
+</div>
+</div>
+<p>GTF files have no interval IDs or <code class="docutils literal notranslate"><span class="pre">Parent</span></code> attributes: intervals are linked by their <code class="docutils literal notranslate"><span class="pre">gene_id</span></code> and <code class="docutils literal notranslate"><span class="pre">transcript_id</span></code>
+attributes instead. Reading GTF recreates the gene model.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">gtf</span> <span class="o">=</span> <span class="n">annotation</span><span class="o">.</span><span class="n">to_gtf</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">gtf</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">)[:</span><span class="mi">3</span><span class="p">]))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>MtrunA17Chr1	EuGene	gene	35039693	35045433	.	+	.	name "MtrunA17Chr1g0184451"; locus_tag "MtrunA17_Chr1g0184451"; gene_id "gene:MtrunA17Chr1g0184451";
+MtrunA17Chr1	EuGene	transcript	35039693	35045433	.	+	.	name "MtrunA17Chr1g0184451"; ontology_term "GO:0005739"; locus_tag "MtrunA17_Chr1g0184451"; product "Putative flagellum site-determining protein YlxH/ Fe-S cluster assembling factor NBP35"; transcript_id "mRNA:MtrunA17Chr1g0184451"; gene_id "gene:MtrunA17Chr1g0184451";
+MtrunA17Chr1	EuGene	five_prime_UTR	35039693	35039922	.	+	.	est_cons "100.0"; est_incons "0.0"; transcript_id "mRNA:MtrunA17Chr1g0184451"; gene_id "gene:MtrunA17Chr1g0184451";
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">from_gtf</span> <span class="o">=</span> <span class="n">SequenceAnnotation</span><span class="o">.</span><span class="n">from_gtf</span><span class="p">(</span><span class="n">string</span><span class="o">=</span><span class="n">gtf</span><span class="p">)</span>
+<span class="p">[(</span><span class="n">interval</span><span class="o">.</span><span class="n">interval_type</span><span class="p">,</span> <span class="n">interval</span><span class="o">.</span><span class="n">ID</span><span class="p">)</span> <span class="k">for</span> <span class="n">interval</span> <span class="ow">in</span> <span class="n">from_gtf</span><span class="p">[</span><span class="s2">"gene:MtrunA17Chr1g0184451"</span><span class="p">]</span><span class="o">.</span><span class="n">children</span><span class="p">][:</span><span class="mi">4</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[('mRNA', 'mRNA:MtrunA17Chr1g0184451'),
+ ('five_prime_UTR', 'mRNA:MtrunA17Chr1g0184451.five_prime_UTR_0'),
+ ('exon', 'mRNA:MtrunA17Chr1g0184451.exon_0'),
+ ('CDS', 'mRNA:MtrunA17Chr1g0184451.CDS_0')]
 </pre></div>
 </div>
 </div>

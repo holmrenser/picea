@@ -401,7 +401,7 @@ pre-order, starting with 0 for the root.</p>
 <span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">from_newick</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">string</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/picea/tree.html#Tree.from_newick"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#picea.Tree.from_newick" title="Link to this definition">¶</a></dt>
 <dd><p>Parse a Newick formatted file or string. Exactly one of <code class="docutils literal notranslate"><span class="pre">string</span></code> or <code class="docutils literal notranslate"><span class="pre">filename</span></code> must be given.</p>
 <p>Node names (including internal node names such as support values) and branch lengths are read when present.
-If some nodes have a branch length, nodes without one get length 0.0 with a warning.</p>
+If some nodes have a branch length, other nodes (except the root) without one get length 0.0 with a warning.</p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tree</span> <span class="o">=</span> <span class="n">Tree</span><span class="o">.</span><span class="n">from_newick</span><span class="p">(</span><span class="s1">'((a:1,b:2)ab:1,c:3)root:0;'</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">tree</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">'b'</span><span class="p">]</span><span class="o">.</span><span class="n">cumulative_length</span>
@@ -427,7 +427,8 @@ If some nodes have a branch length, nodes without one get length 0.0 with a warn
 <dl class="py method">
 <dt class="sig sig-object py" id="picea.Tree.to_newick">
 <span class="sig-name descname"><span class="pre">to_newick</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">branch_lengths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/picea/tree.html#Tree.to_newick"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#picea.Tree.to_newick" title="Link to this definition">¶</a></dt>
-<dd><p>Newick formatted string of the (sub)tree</p>
+<dd><p>Newick formatted string of the (sub)tree. The node this is called on is the root of the Newick tree, so its
+branch length is not written.</p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tree</span> <span class="o">=</span> <span class="n">Tree</span><span class="o">.</span><span class="n">from_newick</span><span class="p">(</span><span class="s1">'((a:1,b:2)ab:1,c:3)root:0;'</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">tree</span><span class="o">.</span><span class="n">to_newick</span><span class="p">(</span><span class="n">branch_lengths</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -546,8 +547,14 @@ pre-order traversel</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>rename_func</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>, </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – Function that takes a leaf name and returns a new name</p></li>
-<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Rename the leaves of this tree. If False, rename the leaves of a copy.</p></li>
+<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Rename the leaves of this tree. If False, rename and return a copy.</p></li>
 </ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The renamed copy if <code class="docutils literal notranslate"><span class="pre">inplace</span></code> is False, otherwise None</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Optional[<a class="reference internal" href="#picea.Tree" title="picea.Tree">Tree</a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -562,20 +569,21 @@ pre-order traversel</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>tree</strong> (<a class="reference internal" href="#picea.Tree" title="picea.Tree"><em>Tree</em></a>) – Tree to plot</p></li>
-<li><p><strong>style</strong> (<em>TreeStyle</em><em>, </em><em>optional</em>) – Branch style: <code class="docutils literal notranslate"><span class="pre">&quot;square&quot;</span></code> (right angles), <code class="docutils literal notranslate"><span class="pre">&quot;triangular&quot;</span></code> (straight lines
-from parent to child), or <code class="docutils literal notranslate"><span class="pre">&quot;radial&quot;</span></code>. Defaults to <code class="docutils literal notranslate"><span class="pre">TreeStyle.square</span></code>.</p></li>
-<li><p><strong>branchlengths</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Scale branches by their length. Use False to plot a cladogram, or to
-plot a tree without branch lengths. Defaults to True.</p></li>
-<li><p><strong>ltr</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Plot left to right (root on the left). Defaults to True.</p></li>
+<li><p><strong>style</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>TreeStyle</em><em>]</em><em>, </em><em>optional</em>) – Branch style: <code class="docutils literal notranslate"><span class="pre">&quot;square&quot;</span></code> (right angles), <code class="docutils literal notranslate"><span class="pre">&quot;triangular&quot;</span></code>
+(straight lines from parent to child), or <code class="docutils literal notranslate"><span class="pre">&quot;radial&quot;</span></code> (root in the center). Defaults to
+<code class="docutils literal notranslate"><span class="pre">TreeStyle.square</span></code>.</p></li>
+<li><p><strong>branchlengths</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Scale branches by their length. Use False to plot a cladogram. Trees without
+branch lengths are always plotted as a cladogram. Defaults to True.</p></li>
+<li><p><strong>ltr</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Plot left to right (root on the left). Ignored for the radial style. Defaults to True.</p></li>
 <li><p><strong>node_labels</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Show the names of internal nodes, e.g. support values. Defaults to True.</p></li>
-<li><p><strong>leaf_labels</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Currently unused: leaf names are always shown. Defaults to True.</p></li>
+<li><p><strong>leaf_labels</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Show leaf names. Defaults to True.</p></li>
 <li><p><strong>leaf_marker</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>Callable</em><em>, </em><em>None</em><em>]</em><em>, </em><em>optional</em>) – Matplotlib marker for leaves, a function that takes a
 leaf and returns a marker, or None for no markers. Defaults to <code class="docutils literal notranslate"><span class="pre">&quot;o&quot;</span></code>.</p></li>
 <li><p><strong>leaf_marker_fill</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="#picea.Tree" title="picea.Tree"><em>Tree</em></a><em>]</em><em>, </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>, </em><em>None</em><em>]</em><em>, </em><em>optional</em>) – Marker fill color, or a function
 that takes a leaf and returns a color. Defaults to <code class="docutils literal notranslate"><span class="pre">&quot;white&quot;</span></code>.</p></li>
 <li><p><strong>leaf_marker_edge</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="#picea.Tree" title="picea.Tree"><em>Tree</em></a><em>]</em><em>, </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>, </em><em>None</em><em>]</em><em>, </em><em>optional</em>) – Marker edge color, or a function
 that takes a leaf and returns a color. Defaults to <code class="docutils literal notranslate"><span class="pre">&quot;black&quot;</span></code>.</p></li>
-<li><p><strong>branch_linestyle</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>, </em><em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="#picea.Tree" title="picea.Tree"><em>Tree</em></a><em>]</em><em>, </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>]</em><em>, </em><em>None</em><em>]</em><em>, </em><em>optional</em>) – Keyword arguments for
+<li><p><strong>branch_linestyle</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>, </em><em>Callable</em><em>[</em><em>[</em><em>Tuple</em><em>[</em><a class="reference internal" href="#picea.Tree" title="picea.Tree"><em>Tree</em></a><em>, </em><a class="reference internal" href="#picea.Tree" title="picea.Tree"><em>Tree</em></a><em>]</em><em>]</em><em>, </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>]</em><em>, </em><em>None</em><em>]</em><em>, </em><em>optional</em>) – Keyword arguments for
 <a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.plot.html#matplotlib.axes.Axes.plot" title="(in Matplotlib v3.11.2)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">matplotlib.axes.Axes.plot()</span></code></a> used to draw branches, or a function that takes a
 <code class="docutils literal notranslate"><span class="pre">(parent,</span> <span class="pre">child)</span></code> tuple and returns them. Defaults to None (thin black lines).</p></li>
 <li><p><strong>ax</strong> (<em>Optional</em><em>[</em><em>Ax</em><em>]</em><em>, </em><em>optional</em>) – Axes to plot on. A new figure is created when not given.</p></li>
@@ -589,6 +597,12 @@ Defaults to False.</p></li>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Union[Ax, Tuple[Ax, LayoutDict]]</p>
 </dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">style</span></code> is not a valid style</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If a styling option has an invalid type</p></li>
+</ul>
+</dd>
 </dl>
 </dd></dl>
 
@@ -596,16 +610,25 @@ Defaults to False.</p></li>
 <dt class="sig sig-object py" id="picea.calculate_tree_layout">
 <span class="sig-prename descclassname"><span class="pre">picea.</span></span><span class="sig-name descname"><span class="pre">calculate_tree_layout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">TreeStyle.square</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ltr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">branchlengths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/picea/tree.html#calculate_tree_layout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#picea.calculate_tree_layout" title="Link to this definition">¶</a></dt>
 <dd><p>Calculate 2D coordinates of all nodes, as used by <a class="reference internal" href="#picea.treeplot" title="picea.treeplot"><code class="xref py py-func docutils literal notranslate"><span class="pre">treeplot()</span></code></a></p>
-<p>Leaves get consecutive y coordinates in depth first order, and internal nodes are centered on their children.
-The x coordinate is based on branch lengths, or on the number of levels below a node if <code class="docutils literal notranslate"><span class="pre">branchlengths</span></code> is
-False.</p>
+<p>Leaves get consecutive y coordinates (0, 1, 2, …) in depth first order, and internal nodes are centered on
+their children. With branch lengths, x is the distance to the root. Without branch lengths, or for trees that
+have none, x is the number of levels below the root, with all leaves aligned (a cladogram). In the radial layout
+the root is in the center, the radius is the distance to the root, and leaves are spread evenly over the circle.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tree</span> <span class="o">=</span> <span class="n">Tree</span><span class="o">.</span><span class="n">from_newick</span><span class="p">(</span><span class="s1">'((a:1,b:2)ab:1,c:3)root;'</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">layout</span> <span class="o">=</span> <span class="n">calculate_tree_layout</span><span class="p">(</span><span class="n">tree</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">[(</span><span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">layout</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">ID</span><span class="p">]</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">layout</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">ID</span><span class="p">]</span><span class="o">.</span><span class="n">y</span><span class="p">)</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">tree</span><span class="o">.</span><span class="n">leaves</span><span class="p">]</span>
+<span class="go">[('c', 3.0, 2.0), ('a', 2.0, 0.0), ('b', 3.0, 1.0)]</span>
+</pre></div>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>tree</strong> (<a class="reference internal" href="#picea.Tree" title="picea.Tree"><em>Tree</em></a>) – Tree</p></li>
-<li><p><strong>style</strong> (<em>TreeStyle</em><em>, </em><em>optional</em>) – <code class="docutils literal notranslate"><span class="pre">&quot;square&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;triangular&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;radial&quot;</span></code>. Only <code class="docutils literal notranslate"><span class="pre">&quot;radial&quot;</span></code> changes
-the layout (to polar coordinates). Defaults to <code class="docutils literal notranslate"><span class="pre">TreeStyle.square</span></code>.</p></li>
-<li><p><strong>ltr</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Left to right layout (root on the left). Defaults to True.</p></li>
+<li><p><strong>style</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>TreeStyle</em><em>]</em><em>, </em><em>optional</em>) – <code class="docutils literal notranslate"><span class="pre">&quot;square&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;triangular&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;radial&quot;</span></code>. Only <code class="docutils literal notranslate"><span class="pre">&quot;radial&quot;</span></code>
+changes the node coordinates. Defaults to <code class="docutils literal notranslate"><span class="pre">TreeStyle.square</span></code>.</p></li>
+<li><p><strong>ltr</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Left to right layout (root on the left). If False, x coordinates are negative.
+Ignored for the radial layout. Defaults to True.</p></li>
 <li><p><strong>branchlengths</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Use branch lengths. Defaults to True.</p></li>
 </ul>
 </dd>
@@ -614,6 +637,9 @@ the layout (to polar coordinates). Defaults to <code class="docutils literal not
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>LayoutDict</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">style</span></code> is not a valid style</p>
 </dd>
 </dl>
 </dd></dl>

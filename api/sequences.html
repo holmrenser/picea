@@ -266,19 +266,22 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#picea.alphabets" title="picea.alphabets"><code class="xref py py-obj docutils literal notranslate"><span class="pre">alphabets</span></code></a></p></td>
 <td><p>Immutable container with commonly used biological sequence alphabets</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#picea.SequenceCollection" title="picea.SequenceCollection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SequenceCollection</span></code></a>([sequences, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#picea.guess_alphabet" title="picea.guess_alphabet"><code class="xref py py-obj docutils literal notranslate"><span class="pre">guess_alphabet</span></code></a>(sequence[, n_chars])</p></td>
+<td><p>Guess the alphabet of a sequence string: the alphabet that contains the most sequence characters.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#picea.SequenceCollection" title="picea.SequenceCollection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SequenceCollection</span></code></a>([sequences, ...])</p></td>
 <td><p>Collection of (unaligned) DNA or amino acid sequences</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#picea.MultipleSequenceAlignment" title="picea.MultipleSequenceAlignment"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MultipleSequenceAlignment</span></code></a>([sequences, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#picea.MultipleSequenceAlignment" title="picea.MultipleSequenceAlignment"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MultipleSequenceAlignment</span></code></a>([sequences, ...])</p></td>
 <td><p>Collection of aligned DNA or amino acid sequences, stored as a numpy matrix with one row per sequence.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#picea.AbstractSequenceCollection" title="picea.AbstractSequenceCollection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AbstractSequenceCollection</span></code></a>([sequences, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#picea.AbstractSequenceCollection" title="picea.AbstractSequenceCollection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AbstractSequenceCollection</span></code></a>([sequences, ...])</p></td>
 <td><p>(Partially) abstract base class for sequence collections.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#picea.SequenceReader" title="picea.SequenceReader"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SequenceReader</span></code></a>([string, filename, filetype])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#picea.SequenceReader" title="picea.SequenceReader"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SequenceReader</span></code></a>([string, filename, filetype])</p></td>
 <td><p>Iterator over the sequences in a fasta or json formatted file or string.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#picea.BatchSequenceReader" title="picea.BatchSequenceReader"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BatchSequenceReader</span></code></a>([string, filename, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#picea.BatchSequenceReader" title="picea.BatchSequenceReader"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BatchSequenceReader</span></code></a>([string, filename, ...])</p></td>
 <td><p>Iterator over batches of sequences in a fasta or json formatted file or string.</p></td>
 </tr>
 </tbody>
@@ -305,7 +308,7 @@
 <li><p><strong>header</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Sequence name</p></li>
 <li><p><strong>sequence</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Sequence string</p></li>
 <li><p><strong>alphabet</strong> (<a class="reference internal" href="#picea.Alphabet" title="picea.Alphabet"><em>Alphabet</em></a>) – Sequence alphabet. Detected from the sequence when not given (see
-<a class="reference internal" href="#picea.Alphabet.score" title="picea.Alphabet.score"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Alphabet.score()</span></code></a>).</p></li>
+<a class="reference internal" href="#picea.guess_alphabet" title="picea.guess_alphabet"><code class="xref py py-func docutils literal notranslate"><span class="pre">guess_alphabet()</span></code></a>). Sequences derived from this one (slices, complements, etc.) keep the alphabet.</p></li>
 <li><p><strong>annotation</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="annotations.html#picea.SequenceAnnotation" title="picea.SequenceAnnotation"><em>SequenceAnnotation</em></a><em>]</em>) – Annotation of the sequence. Defaults to an empty annotation.</p></li>
 </ul>
 </dd>
@@ -569,6 +572,34 @@ This is the same as accessing the reversed and then complemented sequence (in ar
 <dd><p>Immutable container with commonly used biological sequence alphabets</p>
 </dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="picea.guess_alphabet">
+<span class="sig-prename descclassname"><span class="pre">picea.</span></span><span class="sig-name descname"><span class="pre">guess_alphabet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sequence</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_chars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/picea/sequence.html#guess_alphabet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#picea.guess_alphabet" title="Link to this definition">¶</a></dt>
+<dd><p>Guess the alphabet of a sequence string: the alphabet that contains the most sequence characters. Ties go to
+the smallest alphabet, so a sequence of only nucleotide characters is DNA.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">guess_alphabet</span><span class="p">(</span><span class="s1">'ACGTTGCA'</span><span class="p">)</span><span class="o">.</span><span class="n">name</span>
+<span class="go">'DNA'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">guess_alphabet</span><span class="p">(</span><span class="s1">'MKVLAAGIVGLL'</span><span class="p">)</span><span class="o">.</span><span class="n">name</span>
+<span class="go">'AminoAcid'</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sequence</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Sequence string</p></li>
+<li><p><strong>n_chars</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – Number of sequence characters to use. Defaults to 100.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Best matching alphabet</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#picea.Alphabet" title="picea.Alphabet">Alphabet</a></p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="picea.SequenceCollection">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">picea.</span></span><span class="sig-name descname"><span class="pre">SequenceCollection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sequences</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sequence_annotation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/picea/sequence.html#SequenceCollection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#picea.SequenceCollection" title="Link to this definition">¶</a></dt>
@@ -636,6 +667,9 @@ This is the same as accessing the reversed and then complemented sequence (in ar
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="#picea.MultipleSequenceAlignment" title="picea.MultipleSequenceAlignment">MultipleSequenceAlignment</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#RuntimeError" title="(in Python v3.14)"><strong>RuntimeError</strong></a> – If the aligner exits with an error</p>
 </dd>
 </dl>
 </dd></dl>
@@ -897,7 +931,21 @@ Sequences shorter than the alignment are padded with gaps (<code class="docutils
 <dl class="py method">
 <dt class="sig sig-object py" id="picea.MultipleSequenceAlignment.to_nexus">
 <span class="sig-name descname"><span class="pre">to_nexus</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/picea/sequence.html#MultipleSequenceAlignment.to_nexus"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#picea.MultipleSequenceAlignment.to_nexus" title="Link to this definition">¶</a></dt>
-<dd><p>Nexus <code class="docutils literal notranslate"><span class="pre">data</span></code> block with the alignment (the datatype is always <code class="docutils literal notranslate"><span class="pre">dna</span></code>)</p>
+<dd><p>Nexus <code class="docutils literal notranslate"><span class="pre">data</span></code> block with the alignment. The datatype is <code class="docutils literal notranslate"><span class="pre">protein</span></code> if any sequence is an amino acid
+sequence, and <code class="docutils literal notranslate"><span class="pre">dna</span></code> otherwise.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">msa</span> <span class="o">=</span> <span class="n">MultipleSequenceAlignment</span><span class="o">.</span><span class="n">from_fasta</span><span class="p">(</span><span class="n">string</span><span class="o">=</span><span class="s1">'&gt;a</span><span class="se">\n</span><span class="s1">AC-GT</span><span class="se">\n</span><span class="s1">&gt;b</span><span class="se">\n</span><span class="s1">ACCGT'</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">msa</span><span class="o">.</span><span class="n">to_nexus</span><span class="p">())</span>
+<span class="go">begin data;</span>
+<span class="go">    dimensions ntax=2 nchar=5;</span>
+<span class="go">    format datatype=dna gap=-;</span>
+<span class="go">    matrix</span>
+<span class="go">    a AC-GT</span>
+<span class="go">    b ACCGT</span>
+<span class="go">    ;</span>
+<span class="go">end;</span>
+</pre></div>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Nexus formatted string</p>
@@ -938,6 +986,9 @@ Sequences shorter than the alignment are padded with gaps (<code class="docutils
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="#picea.MultipleSequenceAlignment" title="picea.MultipleSequenceAlignment">MultipleSequenceAlignment</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#RuntimeError" title="(in Python v3.14)"><strong>RuntimeError</strong></a> – If the aligner exits with an error</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1398,12 +1449,12 @@ returns a new header and sequence string</p>
 <dt class="sig sig-object py" id="picea.BatchSequenceReader">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">picea.</span></span><span class="sig-name descname"><span class="pre">BatchSequenceReader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">string</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filetype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batchsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/picea/sequence.html#BatchSequenceReader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#picea.BatchSequenceReader" title="Link to this definition">¶</a></dt>
 <dd><p>Iterator over batches of sequences in a fasta or json formatted file or string. Every batch is a
-<a class="reference internal" href="#picea.SequenceCollection" title="picea.SequenceCollection"><code class="xref py py-class docutils literal notranslate"><span class="pre">SequenceCollection</span></code></a> of <code class="docutils literal notranslate"><span class="pre">batchsize</span></code> sequences.</p>
+<a class="reference internal" href="#picea.SequenceCollection" title="picea.SequenceCollection"><code class="xref py py-class docutils literal notranslate"><span class="pre">SequenceCollection</span></code></a> of <code class="docutils literal notranslate"><span class="pre">batchsize</span></code> sequences, except for the last batch, which can be smaller.</p>
 <p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fasta_string</span> <span class="o">=</span> <span class="s1">'&gt;1</span><span class="se">\n</span><span class="s1">ACGC</span><span class="se">\n</span><span class="s1">&gt;2</span><span class="se">\n</span><span class="s1">TGTGTA</span><span class="se">\n</span><span class="s1">&gt;3</span><span class="se">\n</span><span class="s1">AAGT</span><span class="se">\n</span><span class="s1">&gt;4</span><span class="se">\n</span><span class="s1">CCA</span><span class="se">\n</span><span class="s1">'</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fasta_string</span> <span class="o">=</span> <span class="s1">'&gt;1</span><span class="se">\n</span><span class="s1">ACGC</span><span class="se">\n</span><span class="s1">&gt;2</span><span class="se">\n</span><span class="s1">TGTGTA</span><span class="se">\n</span><span class="s1">&gt;3</span><span class="se">\n</span><span class="s1">AAGT</span><span class="se">\n</span><span class="s1">&gt;4</span><span class="se">\n</span><span class="s1">CCA</span><span class="se">\n</span><span class="s1">&gt;5</span><span class="se">\n</span><span class="s1">GGA</span><span class="se">\n</span><span class="s1">'</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">reader</span> <span class="o">=</span> <span class="n">BatchSequenceReader</span><span class="p">(</span><span class="n">string</span><span class="o">=</span><span class="n">fasta_string</span><span class="p">,</span> <span class="n">filetype</span><span class="o">=</span><span class="s1">'fasta'</span><span class="p">,</span> <span class="n">batchsize</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">batch</span><span class="o">.</span><span class="n">headers</span> <span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">reader</span><span class="p">]</span>
-<span class="go">[['1', '2'], ['3', '4']]</span>
+<span class="go">[['1', '2'], ['3', '4'], ['5']]</span>
 </pre></div>
 </div>
 <dl class="field-list simple">
@@ -1496,6 +1547,7 @@ returns a new header and sequence string</p>
 </ul>
 </li>
 <li><a class="reference internal" href="#picea.alphabets"><code class="docutils literal notranslate"><span class="pre">alphabets</span></code></a></li>
+<li><a class="reference internal" href="#picea.guess_alphabet"><code class="docutils literal notranslate"><span class="pre">guess_alphabet()</span></code></a></li>
 <li><a class="reference internal" href="#picea.SequenceCollection"><code class="docutils literal notranslate"><span class="pre">SequenceCollection</span></code></a><ul>
 <li><a class="reference internal" href="#picea.SequenceCollection.headers"><code class="docutils literal notranslate"><span class="pre">SequenceCollection.headers</span></code></a></li>
 <li><a class="reference internal" href="#picea.SequenceCollection.n_seqs"><code class="docutils literal notranslate"><span class="pre">SequenceCollection.n_seqs</span></code></a></li>

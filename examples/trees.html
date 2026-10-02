@@ -336,7 +336,7 @@ are read from and written to Newick, and can be plotted with <a class="reference
 <h2>Plotting<a class="headerlink" href="#plotting" title="Link to this heading">¶</a></h2>
 <p>This gene tree of hydroxycinnamoyl transferase (HCT) homologs has branch lengths and support values as internal
 node names.</p>
-<div class="cell tag_remove-stderr docutils container">
+<div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">hct</span> <span class="o">=</span> <span class="n">Tree</span><span class="o">.</span><span class="n">from_newick</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s2">"data/tree.newick"</span><span class="p">)</span>
 <span class="nb">len</span><span class="p">(</span><span class="n">hct</span><span class="o">.</span><span class="n">leaves</span><span class="p">)</span>
@@ -359,7 +359,19 @@ node names.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/eced75f80ffe5954673fd3f1d03634a6d4f29954c31bc7cb1acb233a29676592.png" src="../_images/eced75f80ffe5954673fd3f1d03634a6d4f29954c31bc7cb1acb233a29676592.png" />
+<img alt="../_images/a776e0da83b6af85cf4d575de1d6b995db8cf965d415d39d6d77536ddc168c6f.png" src="../_images/a776e0da83b6af85cf4d575de1d6b995db8cf965d415d39d6d77536ddc168c6f.png" />
+</div>
+</div>
+<p>The radial style puts the root in the center.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">9</span><span class="p">))</span>
+<span class="n">treeplot</span><span class="p">(</span><span class="n">hct</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">"radial"</span><span class="p">,</span> <span class="n">node_labels</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/b8ad52da378348df194d5cbdcc5d742bf5814d7fb90eb6af87a44450507b9ee7.png" src="../_images/b8ad52da378348df194d5cbdcc5d742bf5814d7fb90eb6af87a44450507b9ee7.png" />
 </div>
 </div>
 <p>Leaf markers can be styled per leaf with a function, for example to color leaves by species. Without
@@ -395,7 +407,7 @@ branch lengths the tree is drawn as a cladogram.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/8d5f3cf8f17dd00d2a1a4d06dbdd9107f5f5bd743f04f823ab7333e35815933d.png" src="../_images/8d5f3cf8f17dd00d2a1a4d06dbdd9107f5f5bd743f04f823ab7333e35815933d.png" />
+<img alt="../_images/d8c8161b1fc74369ecc58f35e5e34a37d66ff8ffdc833c01411a831b77fd1a84.png" src="../_images/d8c8161b1fc74369ecc58f35e5e34a37d66ff8ffdc833c01411a831b77fd1a84.png" />
 </div>
 </div>
 </section>
@@ -430,7 +442,7 @@ model.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../_images/934d0ebd888c12ea4fd600e4c0345f7d4fd90025efeadcfc613a9078b8b61f19.png" src="../_images/934d0ebd888c12ea4fd600e4c0345f7d4fd90025efeadcfc613a9078b8b61f19.png" />
+<img alt="../_images/8d835300e488c73e995f2edef71f7816709a8c1cbc047399493d0f6c3f476a7b.png" src="../_images/8d835300e488c73e995f2edef71f7816709a8c1cbc047399493d0f6c3f476a7b.png" />
 </div>
 </div>
 </section>

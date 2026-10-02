@@ -81,3 +81,15 @@ gene.to_gff_line()
 
 # %%
 print(gene.to_json(indent=2))
+
+# %% [markdown]
+# GTF files have no interval IDs or `Parent` attributes: intervals are linked by their `gene_id` and `transcript_id`
+# attributes instead. Reading GTF recreates the gene model.
+
+# %%
+gtf = annotation.to_gtf()
+print("\n".join(gtf.split("\n")[:3]))
+
+# %%
+from_gtf = SequenceAnnotation.from_gtf(string=gtf)
+[(interval.interval_type, interval.ID) for interval in from_gtf["gene:MtrunA17Chr1g0184451"].children][:4]
