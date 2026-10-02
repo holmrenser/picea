@@ -58,8 +58,8 @@ class DAGElement:
 
     @property
     def ID(self):
-        """Unique identifier of the element. Setting a new ID also updates the parent references of child elements,
-        and the key of the element in its container.
+        """Unique identifier of the element. Setting a new ID also updates the references of parent and child
+        elements, and the key of the element in its container.
         """
         return self._ID
 
@@ -69,11 +69,15 @@ class DAGElement:
         if not self._original_ID:
             self._original_ID = old_ID
         self._ID = value
-        for child in self.children:
-            if child._parents:
-                child._parents = [value if p == old_ID else p for p in child._parents]
-        if self._container:
-            self._container[value] = self._container.pop(old_ID)
+        if self._container is None:
+            return
+        for child_ID in self._children:
+            child = self._container[child_ID]
+            child._parents = [value if parent_ID == old_ID else parent_ID for parent_ID in child._parents]
+        for parent_ID in self._parents:
+            parent = self._container[parent_ID]
+            parent._children = [value if child_ID == old_ID else child_ID for child_ID in parent._children]
+        self._container[value] = self._container.pop(old_ID)
 
     @property
     def parents(self) -> "DirectedAcyclicGraph":

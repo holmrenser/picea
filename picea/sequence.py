@@ -3,12 +3,11 @@ import re
 import uuid
 from abc import ABCMeta, abstractmethod
 from collections import Counter, defaultdict
-from copy import deepcopy
 from dataclasses import dataclass, field
-from functools import reduce
 from itertools import chain, groupby
 from subprocess import PIPE, Popen
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Tuple, TypeVar, Union
+from urllib.parse import unquote
 from warnings import warn
 
 import numpy as np
@@ -19,29 +18,13 @@ from .dag import DAGElement, DirectedAcyclicGraph
 SequenceType = TypeVar("SequenceType")  # Used for multiple dispatch
 
 
-# (character, code) tuples for encoding special characters in gff3
-# percent (%) MUST GO FIRST
-ENCODE_SPECIAL_CHARACTERS = (
-    ("%", "%25"),
-    ("[   |\t]", "%09"),
-    ("\n", "%0A"),
-    (";", "%3B"),
-    ("=", "%3D"),
-    ("&", "%26"),
-    (",", "%2C"),
-)
+# Characters that must be percent-encoded in gff3 attribute values: percent, control characters (including tab,
+# newline and carriage return), and the column 9 separators. No other characters may be encoded.
+# https://github.com/The-Sequence-Ontology/Specifications/blob/master/gff3.md
+GFF3_ENCODE_PATTERN = re.compile(r"[%;=&,\x00-\x1f\x7f]")
 
-# (code, character) tuples for decoding special characters in gff3
-# percent (%) MUST GO LAST
-DECODE_SPECIAL_CHARACTERS = (
-    ("%2C", ","),
-    ("%26", "&"),
-    ("%3D", "="),
-    ("%3B", ";"),
-    ("%0A", "\n"),
-    ("%09", "\t"),
-    ("%25", "%"),
-)
+# A single GTF attribute: key, followed by a quoted value (that can contain ';') or an unquoted value
+GTF_ATTRIBUTE_PATTERN = re.compile(r'\s*([^\s;"]+)\s+("[^"]*"|[^;"]*?)\s*(?:;|$)')
 
 # Translate dna codons to amino acids
 TRANSLATION = dict(
@@ -277,11 +260,7 @@ def quote_gff3(attribute_value: Union[int, str, float]) -> str:
     Returns:
         str: Encoded attribute value
     """
-    return reduce(
-        lambda acc, code: re.sub(code[0], code[1], acc),  # func
-        ENCODE_SPECIAL_CHARACTERS,  # iterable
-        str(attribute_value),  # initial accumulator
-    )
+    return GFF3_ENCODE_PATTERN.sub(lambda match: f"%{ord(match.group()):02X}", str(attribute_value))
 
 
 def encode_attribute_value(attribute_value: Iterable[Union[int, str, float]]) -> str:
@@ -299,7 +278,8 @@ def encode_attribute_value(attribute_value: Iterable[Union[int, str, float]]) ->
 
 
 def format_gtf_attribute_string(attributes: Dict[str, Iterable[Union[int, str, float]]]) -> str:
-    """Format attributes as a GTF column 9 string (``key "value";``)
+    """Format attributes as a GTF column 9 string (``key "value";``). Attributes with multiple values are written
+    as repeated keys.
 
     Args:
         attributes (Dict[str, Iterable[Union[int, str, float]]]): Attribute names and values
@@ -307,7 +287,11 @@ def format_gtf_attribute_string(attributes: Dict[str, Iterable[Union[int, str, f
     Returns:
         str: GTF attribute string
     """
-    return "".join(f' {key} "{encode_attribute_value(value)}";' for key, value in attributes.items()).strip()
+    parts = []
+    for key, value in attributes.items():
+        values = value if isinstance(value, (list, tuple)) else [value]
+        parts.extend(f'{key} "{v}";' for v in values)
+    return " ".join(parts)
 
 
 def format_gff_attribute_string(attributes: Dict[str, Iterable[Union[int, str, float]]]) -> str:
@@ -348,11 +332,7 @@ def unquote_gff3(attribute_value: str) -> str:
     Returns:
         str: Decoded attribute value
     """
-    return reduce(
-        lambda acc, code: re.sub(code[0], code[1], acc),  # func
-        DECODE_SPECIAL_CHARACTERS,  # iterable
-        attribute_value,  # initial
-    )
+    return unquote(attribute_value)
 
 
 def decode_attribute_value(attribute_value: str) -> List[str]:
@@ -371,23 +351,29 @@ def parse_gtf_attribute_string(gtf_attribute_string: str) -> Dict[str, List[str]
     """Parse a GTF column 9 string (``key "value";``) into a dictionary. Values are lists: repeated keys are
     collected in the same list.
 
+    Examples:
+        >>> dict(parse_gtf_attribute_string('gene_id "g1"; tag "basic"; tag "a;b"; exon_number 2;'))
+        {'gene_id': ['g1'], 'tag': ['basic', 'a;b'], 'exon_number': ['2']}
+
     Args:
         gtf_attribute_string (str): GTF attribute string
 
     Returns:
         Dict[str, List[str]]: Attribute names and values
+
+    Raises:
+        ValueError: If the attribute string can not be parsed
     """
     attributes = defaultdict(list)
-    for string_part in gtf_attribute_string.split(";"):
-        string_part = string_part.strip()
-        if not string_part:
-            continue
-        try:
-            key, value = string_part.split(" ", maxsplit=1)
-        except Exception as e:
-            print(gtf_attribute_string, string_part)
-            raise Exception("Error parsing gtf string") from e
-        attributes[key].append(value.strip('"'))
+    string = gtf_attribute_string.strip()
+    position = 0
+    while position < len(string):
+        match = GTF_ATTRIBUTE_PATTERN.match(string, position)
+        if not match:
+            raise ValueError(f"Error parsing GTF attribute string at position {position}: {gtf_attribute_string}")
+        key, value = match.groups()
+        attributes[key].append(value[1:-1] if value.startswith('"') else value)
+        position = match.end()
     return attributes
 
 
@@ -499,8 +485,21 @@ class SequenceAnnotation(DirectedAcyclicGraph):
     ) -> "SequenceAnnotation":
         """Read a GTF formatted file or string. Exactly one of ``filename`` or ``string`` must be given.
 
-        GTF lines are linked by their ``gene_id`` and ``transcript_id`` attributes. Gene and transcript (mRNA)
-        intervals are created from these, spanning all their child intervals.
+        GTF lines are linked by their ``gene_id`` and ``transcript_id`` attributes, and ``transcript`` lines become
+        ``mRNA`` intervals. Genes and transcripts that have no line of their own are created, spanning all their
+        child intervals. Other intervals get IDs based on their transcript and type, e.g. ``<transcript_id>.exon_0``.
+
+        Examples:
+            >>> gtf = (
+            ...     'ctg1\\t.\\texon\\t100\\t200\\t.\\t+\\t.\\tgene_id "g1"; transcript_id "t1";\\n'
+            ...     'ctg1\\t.\\texon\\t300\\t400\\t.\\t+\\t.\\tgene_id "g1"; transcript_id "t1";\\n'
+            ... )
+            >>> annotation = SequenceAnnotation.from_gtf(string=gtf)
+            >>> gene = annotation["g1"]
+            >>> gene.start, gene.end
+            (100, 400)
+            >>> [interval.ID for interval in gene.children]
+            ['t1', 't1.exon_0', 't1.exon_1']
 
         Args:
             filename (Optional[str]): GTF filename
@@ -511,16 +510,19 @@ class SequenceAnnotation(DirectedAcyclicGraph):
 
         Returns:
             SequenceAnnotation: Sequence annotation
+
+        Raises:
+            ValueError: If a line has no ``gene_id`` attribute
         """
         assert filename or string
         assert not (filename and string)
-        sequence_annotation = cls(sequence=sequence)
-        header = True
-
-        # start with just reading all intervals
         if filename:
             with open(filename) as filehandle:
                 string = filehandle.read()
+        sequence_annotation = cls(sequence=sequence)
+
+        header = True
+        intervals = []
         for line_number, line in enumerate(string.split("\n")):
             line = line.strip()
             if not line:
@@ -529,69 +531,76 @@ class SequenceAnnotation(DirectedAcyclicGraph):
                 if header:
                     sequence_annotation._gff_headers.append(line)
                 continue
-            else:
-                header = False
+            header = False
             interval = SequenceInterval.from_gtf_line(gtf_line=line, line_number=line_number)
+            if not interval.__dict__.get("gene_id"):
+                raise ValueError(f"GTF line {line_number} has no gene_id attribute")
+            intervals.append(interval)
+
+        def first_value(interval: "SequenceInterval", key: str) -> Optional[str]:
+            values = interval.__dict__.get(key)
+            return values[0] if values else None
+
+        # GTF lines have no IDs: genes and transcripts are identified by their gene_id and transcript_id attributes,
+        # other intervals get an ID based on their transcript (or gene) and type. Genes and transcripts that are not
+        # in the file are created from their first child, and span all their children.
+        gene_ids = {first_value(interval, "gene_id") for interval in intervals if interval.interval_type == "gene"}
+        transcript_ids = {
+            first_value(interval, "transcript_id")
+            for interval in intervals
+            if interval.interval_type in ("transcript", "mRNA")
+        }
+        new_genes: Dict[str, SequenceInterval] = dict()
+        new_transcripts: Dict[str, SequenceInterval] = dict()
+        child_counter = Counter()
+        ordered_intervals = []
+        for interval in intervals:
+            gene_id = first_value(interval, "gene_id")
+            transcript_id = first_value(interval, "transcript_id")
+            if interval.interval_type == "gene":
+                interval._ID = gene_id
+            elif interval.interval_type in ("transcript", "mRNA"):
+                interval._ID = transcript_id
+                interval.interval_type = "mRNA"
+                interval.parent = [gene_id]
+            else:
+                if gene_id not in gene_ids and gene_id not in new_genes:
+                    new_genes[gene_id] = SequenceInterval._spanning_interval(
+                        interval, ID=gene_id, interval_type="gene", parent=None, gene_id=[gene_id]
+                    )
+                    ordered_intervals.append(new_genes[gene_id])
+                if transcript_id and transcript_id not in transcript_ids and transcript_id not in new_transcripts:
+                    new_transcripts[transcript_id] = SequenceInterval._spanning_interval(
+                        interval,
+                        ID=transcript_id,
+                        interval_type="mRNA",
+                        parent=[gene_id],
+                        gene_id=[gene_id],
+                        transcript_id=[transcript_id],
+                    )
+                    ordered_intervals.append(new_transcripts[transcript_id])
+                parent_id = transcript_id or gene_id
+                child_count = child_counter[(parent_id, interval.interval_type)]
+                child_counter[(parent_id, interval.interval_type)] += 1
+                interval._ID = f"{parent_id}.{interval.interval_type}_{child_count}"
+                interval.parent = [parent_id]
+            ordered_intervals.append(interval)
+
+        for interval in intervals:
+            for spanning_interval in (
+                new_genes.get(first_value(interval, "gene_id")),
+                new_transcripts.get(first_value(interval, "transcript_id")),
+            ):
+                if spanning_interval is not None:
+                    spanning_interval.start = min(spanning_interval.start, interval.start)
+                    spanning_interval.end = max(spanning_interval.end, interval.end)
+
+        for interval in ordered_intervals:
             interval._container = sequence_annotation
             sequence_annotation[interval.ID] = interval
-        # fix missing gene and transcript intervals
-        transcript_child_counter = Counter()
-        new_intervals = dict()
-        for interval in sequence_annotation:
-            gene_id = interval.gff_attributes["gene_id"][0]
-            transcript_id = interval.gff_attributes["transcript_id"][0]
-            interval_type = interval.interval_type
-            id_tuple = (gene_id, transcript_id, interval_type)
-            child_count = transcript_child_counter[id_tuple]
-            transcript_child_counter.update([id_tuple])
-            interval._ID = f"{transcript_id}.{interval_type}_{child_count}"
-            if transcript_id not in new_intervals:
-                # new transcript interval
-                transcript_interval = deepcopy(interval)
-                transcript_interval._container = interval._container
-                transcript_interval._ID = transcript_id
-                transcript_interval.interval_type = "mRNA"
-                transcript_interval.parent = [gene_id]
-                # new gene interval
-                gene_interval = deepcopy(interval)
-                gene_interval._container = interval._container
-                gene_interval._ID = gene_id
-                gene_interval.interval_type = "gene"
-                gene_interval.parent = None
 
-                new_intervals[transcript_id] = transcript_interval
-                new_intervals[gene_id] = gene_interval
-
-            interval.parent = [transcript_id]
-            new_intervals[interval.ID] = interval
-        sequence_annotation._intervals = new_intervals
-
-        # set children
         if link_parents:
             sequence_annotation._link_parents()
-
-        # fix gene and transcript start and stop coordinates
-        genes = sequence_annotation.groupby("interval_type")["gene"]
-        for gene in genes:
-            # fix gene first
-            start = 10e9
-            end = 0
-            for child in gene.children:
-                start = min(start, child.start)
-                end = max(end, child.end)
-            gene.start = start
-            gene.end = end
-
-            # fix transcripts
-            transcripts = gene.children.groupby("interval_type")["mRNA"]
-            for transcript in transcripts:
-                start = 10e9
-                end = 0
-                for child in transcript.children:
-                    start = min(start, child.start)
-                    end = max(end, child.end)
-                transcript.end = end
-                transcript.start = start
 
         return sequence_annotation
 
@@ -702,16 +711,7 @@ class SequenceAnnotation(DirectedAcyclicGraph):
                 child_interval = SequenceInterval.from_dict(interval_dict=child_dict)
                 child_interval._container = sequence_annotation
                 sequence_annotation[child_interval.ID] = child_interval
-        for interval in sequence_annotation:
-            if interval.parent:
-                for parent_ID in interval.parent:
-                    try:
-                        parent = sequence_annotation[parent_ID]
-                    except IndexError as err:
-                        raise IndexError(
-                            "Interval {interval.ID} is listing {parent_ID} " "as Parent, but parent could not be found."
-                        ) from err
-                    parent._children.append(interval.ID)
+        sequence_annotation._link_parents()
         return sequence_annotation
 
     def to_json(self, indent: Optional[int] = None) -> str:
@@ -872,8 +872,9 @@ class SequenceInterval(DAGElement):
 
     @property
     def gtf_attributes(self) -> Dict[str, str]:
-        """Attributes for GTF output: :attr:`gff_attributes`, plus a ``<type>_id`` attribute for every ancestor (e.g.
-        ``transcript_id`` and ``gene_id`` for an exon)
+        """Attributes for GTF output: :attr:`gff_attributes` without ``ID`` and ``Parent``, plus a ``<type>_id``
+        attribute for the interval itself if it is a gene or mRNA, and for every ancestor (e.g. ``transcript_id`` and
+        ``gene_id`` for an exon). Intervals with multiple parents of the same type get a single ``<type>_id``.
         """
         def get_gtf_type(gff_interval_type):
             return self._gtf_interval_types.get(gff_interval_type, gff_interval_type)
@@ -883,10 +884,32 @@ class SequenceInterval(DAGElement):
         else:
             parent_ids = dict()
 
-        attributes = self.gff_attributes
+        attributes = {key: value for key, value in self.gff_attributes.items() if key not in ("ID", "Parent")}
         if self.interval_type == "gene":
             attributes["gene_id"] = self.ID
+        elif self.interval_type == "mRNA":
+            attributes["transcript_id"] = self.ID
         return {**attributes, **parent_ids}
+
+    @classmethod
+    def _spanning_interval(
+        cls, child: "SequenceInterval", ID: str, interval_type: str, parent: Optional[List[str]], **attributes
+    ) -> "SequenceInterval":
+        """Create an interval (e.g. a gene) on the same sequence and strand as ``child``, starting with the span of
+        ``child``"""
+        return cls(
+            ID=ID,
+            seqid=child.seqid,
+            source=child.source,
+            interval_type=interval_type,
+            start=child.start,
+            end=child.end,
+            score=".",
+            strand=child.strand,
+            phase=".",
+            parent=parent,
+            **attributes,
+        )
 
     @classmethod
     def from_gtf_line(cls, gtf_line: Optional[str] = None, line_number: Optional[int] = None) -> "SequenceInterval":
@@ -1043,8 +1066,12 @@ class SequenceInterval(DAGElement):
         Returns:
             SequenceInterval: Interval
         """
-        attributes = interval_dict.pop("attributes", dict())
-        return cls(**interval_dict, **attributes)
+        interval_dict = dict(interval_dict)
+        attributes = dict(interval_dict.pop("attributes", dict()))
+        parent = attributes.pop("Parent", attributes.pop("parent", None))
+        if isinstance(parent, str):
+            parent = [parent]
+        return cls(**interval_dict, **attributes, parent=parent)
 
     def to_dict(self, include_children: bool = False) -> Dict[str, Any]:
         """Dictionary with the eight fixed GFF3 fields, ``ID``, and an ``attributes`` dictionary with all other
@@ -1071,7 +1098,7 @@ class SequenceInterval(DAGElement):
             attributes=attributes,
         )
         if include_children:
-            children = [child.to_dict() for child in self.children[1:]]
+            children = [child.to_dict() for child in self.children]
             interval_dict["children"] = children
         return interval_dict
 
