@@ -30,7 +30,7 @@ tree = Tree.from_newick(newick)
 fig, (ax1, ax2) = plt.subplots(ncols = 2, figsize = (10, 4))
 
 #left-to-right layout with direct links
-treeplot(tree, style='rectangular', ltr=True, ax=ax1)
+treeplot(tree, style='triangular', ltr=True, ax=ax1)
 
 #right-to-left layout with square links
 treeplot(tree, style='square', ltr=False, ax=ax2)
