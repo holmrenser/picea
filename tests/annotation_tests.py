@@ -212,3 +212,11 @@ class AnnotationBugfixTests(TestCase):
         self.assertNotIn("t1", ann)
         self.assertEqual(ann["e1"].parent, ["transcript1"])
         self.assertEqual([child.ID for child in ann["g1"].children], ["transcript1", "e1", "e2"])
+
+    def test_gtf_line_without_gene_id(self):
+        gff3 = self.gff3 + "ctg1\t.\trepeat_region\t500\t600\t.\t+\t.\tID=r1\n"
+        ann = SequenceAnnotation.from_gff(string=gff3)
+        ann2 = SequenceAnnotation.from_gtf(string=ann.to_gtf())
+        self.assertEqual(len(ann2), 5)
+        self.assertEqual(ann2["repeat_region_0"].parent, [])
+        self.assertEqual(len(ann2["g1"].children), 3)

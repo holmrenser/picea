@@ -291,7 +291,7 @@ def format_gtf_attribute_string(attributes: Dict[str, Iterable[Union[int, str, f
     for key, value in attributes.items():
         values = value if isinstance(value, (list, tuple)) else [value]
         parts.extend(f'{key} "{v}";' for v in values)
-    return " ".join(parts)
+    return " ".join(parts) if parts else "."
 
 
 def format_gff_attribute_string(attributes: Dict[str, Iterable[Union[int, str, float]]]) -> str:
@@ -366,6 +366,8 @@ def parse_gtf_attribute_string(gtf_attribute_string: str) -> Dict[str, List[str]
     """
     attributes = defaultdict(list)
     string = gtf_attribute_string.strip()
+    if string == ".":
+        return attributes
     position = 0
     while position < len(string):
         match = GTF_ATTRIBUTE_PATTERN.match(string, position)
@@ -394,6 +396,8 @@ def parse_gff_attribute_string(
         Dict[str, List[str]]: Attribute names and values
     """
     attributes = defaultdict(list)
+    if gff_attribute_string.strip() == ".":
+        return attributes
     for string_part in gff_attribute_string.split(";"):
         if not string_part:
             continue
@@ -488,6 +492,7 @@ class SequenceAnnotation(DirectedAcyclicGraph):
         GTF lines are linked by their ``gene_id`` and ``transcript_id`` attributes, and ``transcript`` lines become
         ``mRNA`` intervals. Genes and transcripts that have no line of their own are created, spanning all their
         child intervals. Other intervals get IDs based on their transcript and type, e.g. ``<transcript_id>.exon_0``.
+        Lines without a ``gene_id`` become intervals without parents, with IDs like ``repeat_region_0``.
 
         Examples:
             >>> gtf = (
@@ -510,9 +515,6 @@ class SequenceAnnotation(DirectedAcyclicGraph):
 
         Returns:
             SequenceAnnotation: Sequence annotation
-
-        Raises:
-            ValueError: If a line has no ``gene_id`` attribute
         """
         assert filename or string
         assert not (filename and string)
@@ -532,10 +534,7 @@ class SequenceAnnotation(DirectedAcyclicGraph):
                     sequence_annotation._gff_headers.append(line)
                 continue
             header = False
-            interval = SequenceInterval.from_gtf_line(gtf_line=line, line_number=line_number)
-            if not interval.__dict__.get("gene_id"):
-                raise ValueError(f"GTF line {line_number} has no gene_id attribute")
-            intervals.append(interval)
+            intervals.append(SequenceInterval.from_gtf_line(gtf_line=line, line_number=line_number))
 
         def first_value(interval: "SequenceInterval", key: str) -> Optional[str]:
             values = interval.__dict__.get(key)
@@ -557,12 +556,18 @@ class SequenceAnnotation(DirectedAcyclicGraph):
         for interval in intervals:
             gene_id = first_value(interval, "gene_id")
             transcript_id = first_value(interval, "transcript_id")
-            if interval.interval_type == "gene":
+            if interval.interval_type == "gene" and gene_id:
                 interval._ID = gene_id
-            elif interval.interval_type in ("transcript", "mRNA"):
+            elif interval.interval_type in ("transcript", "mRNA") and transcript_id:
                 interval._ID = transcript_id
                 interval.interval_type = "mRNA"
-                interval.parent = [gene_id]
+                interval.parent = [gene_id] if gene_id else []
+            elif not gene_id:
+                # not part of a gene (GTF requires a gene_id, but GFF3 converted to GTF can lack it)
+                child_count = child_counter[(None, interval.interval_type)]
+                child_counter[(None, interval.interval_type)] += 1
+                interval._ID = f"{interval.interval_type}_{child_count}"
+                interval.parent = []
             else:
                 if gene_id not in gene_ids and gene_id not in new_genes:
                     new_genes[gene_id] = SequenceInterval._spanning_interval(
@@ -966,10 +971,15 @@ class SequenceInterval(DAGElement):
             SequenceInterval: Interval
 
         Raises:
-            ValueError: If the start, end, score, strand, or phase column has an invalid value
+            ValueError: If the line does not have 9 columns, or if the start, end, score, strand, or phase column has
+                an invalid value
         """
         gff_parts = gff_line.split("\t")
-        assert len(gff_parts) == 9, gff_parts
+        if len(gff_parts) != 9:
+            error = f"GFF and GTF lines must have 9 tab-separated columns, found {len(gff_parts)}"
+            if line_number:
+                error = f"{error}, line {line_number}"
+            raise ValueError(error)
         seqid, source, interval_type, start, end, score, strand, phase = gff_parts[:8]
         try:
             start = int(start)

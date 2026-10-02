@@ -653,8 +653,10 @@ def treeplot(
     xmin, xmax = ax.get_xlim()
     width = xmax - xmin
     if radial:
-        # leave room for the leaf labels on all sides
+        # leave room for the leaf labels on all sides, and no rectangular frame around a circular tree
         ax.set_aspect("equal")
+        for spine in ax.spines.values():
+            spine.set_visible(False)
         ymin, ymax = ax.get_ylim()
         ax.set_xlim((xmin - 0.4 * width, xmax + 0.4 * width))
         ax.set_ylim((ymin - 0.4 * (ymax - ymin), ymax + 0.4 * (ymax - ymin)))
