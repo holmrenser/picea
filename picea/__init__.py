@@ -10,6 +10,7 @@ from .tree import (  # noqa
 from .sequence import (  # noqa
     Alphabet,
     alphabets,
+    guess_alphabet,
     Sequence,
     SequenceReader,
     BatchSequenceReader,

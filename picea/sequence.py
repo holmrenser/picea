@@ -3,12 +3,11 @@ import re
 import uuid
 from abc import ABCMeta, abstractmethod
 from collections import Counter, defaultdict
-from copy import deepcopy
 from dataclasses import dataclass, field
-from functools import reduce
 from itertools import chain, groupby
 from subprocess import PIPE, Popen
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Tuple, TypeVar, Union
+from urllib.parse import unquote
 from warnings import warn
 
 import numpy as np
@@ -19,29 +18,13 @@ from .dag import DAGElement, DirectedAcyclicGraph
 SequenceType = TypeVar("SequenceType")  # Used for multiple dispatch
 
 
-# (character, code) tuples for encoding special characters in gff3
-# percent (%) MUST GO FIRST
-ENCODE_SPECIAL_CHARACTERS = (
-    ("%", "%25"),
-    ("[   |\t]", "%09"),
-    ("\n", "%0A"),
-    (";", "%3B"),
-    ("=", "%3D"),
-    ("&", "%26"),
-    (",", "%2C"),
-)
+# Characters that must be percent-encoded in gff3 attribute values: percent, control characters (including tab,
+# newline and carriage return), and the column 9 separators. No other characters may be encoded.
+# https://github.com/The-Sequence-Ontology/Specifications/blob/master/gff3.md
+GFF3_ENCODE_PATTERN = re.compile(r"[%;=&,\x00-\x1f\x7f]")
 
-# (code, character) tuples for decoding special characters in gff3
-# percent (%) MUST GO LAST
-DECODE_SPECIAL_CHARACTERS = (
-    ("%2C", ","),
-    ("%26", "&"),
-    ("%3D", "="),
-    ("%3B", ";"),
-    ("%0A", "\n"),
-    ("%09", "\t"),
-    ("%25", "%"),
-)
+# A single GTF attribute: key, followed by a quoted value (that can contain ';') or an unquoted value
+GTF_ATTRIBUTE_PATTERN = re.compile(r'\s*([^\s;"]+)\s+("[^"]*"|[^;"]*?)\s*(?:;|$)')
 
 # Translate dna codons to amino acids
 TRANSLATION = dict(
@@ -138,7 +121,7 @@ class Alphabet(set):
         super().__init__(self.members)
 
     def __deepcopy__(self, memo) -> "Alphabet":
-        return Alphabet(self, self.name)
+        return Alphabet(self.name, self.members)
 
     def score(
         self,
@@ -225,7 +208,7 @@ def alphabet_factory(alphabet):
     """
     return dict(
         DNA=lambda: Alphabet("DNA", "-?acgtnACGNT"),
-        RNA=lambda: Alphabet("RNA", "-?acgtnACGNU"),
+        RNA=lambda: Alphabet("RNA", "-?acgunACGNU"),
         AminoAcid=lambda: Alphabet("AminoAcid", "*-?acdefghiklmnpqrstvwxyACDEFGHIKLMNPQRSTVWXY"),
     )[alphabet]
 
@@ -247,6 +230,27 @@ class Alphabets:
 alphabets = Alphabets()
 
 
+def guess_alphabet(sequence: str, n_chars: int = 100) -> Alphabet:
+    """Guess the alphabet of a sequence string: the alphabet that contains the most sequence characters. Ties go to
+    the smallest alphabet, so a sequence of only nucleotide characters is DNA.
+
+    Examples:
+        >>> guess_alphabet('ACGTTGCA').name
+        'DNA'
+        >>> guess_alphabet('MKVLAAGIVGLL').name
+        'AminoAcid'
+
+    Args:
+        sequence (str): Sequence string
+        n_chars (int, optional): Number of sequence characters to use. Defaults to 100.
+
+    Returns:
+        Alphabet: Best matching alphabet
+    """
+    chars = sequence[:n_chars]
+    return max(sorted(alphabets, key=len), key=lambda alphabet: sum(char in alphabet for char in chars))
+
+
 def quote_gff3(attribute_value: Union[int, str, float]) -> str:
     """Percent-encode characters that have a special meaning in GFF3 attribute values
 
@@ -256,11 +260,7 @@ def quote_gff3(attribute_value: Union[int, str, float]) -> str:
     Returns:
         str: Encoded attribute value
     """
-    return reduce(
-        lambda acc, code: re.sub(code[0], code[1], acc),  # func
-        ENCODE_SPECIAL_CHARACTERS,  # iterable
-        str(attribute_value),  # initial accumulator
-    )
+    return GFF3_ENCODE_PATTERN.sub(lambda match: f"%{ord(match.group()):02X}", str(attribute_value))
 
 
 def encode_attribute_value(attribute_value: Iterable[Union[int, str, float]]) -> str:
@@ -278,7 +278,8 @@ def encode_attribute_value(attribute_value: Iterable[Union[int, str, float]]) ->
 
 
 def format_gtf_attribute_string(attributes: Dict[str, Iterable[Union[int, str, float]]]) -> str:
-    """Format attributes as a GTF column 9 string (``key "value";``)
+    """Format attributes as a GTF column 9 string (``key "value";``). Attributes with multiple values are written
+    as repeated keys.
 
     Args:
         attributes (Dict[str, Iterable[Union[int, str, float]]]): Attribute names and values
@@ -286,7 +287,11 @@ def format_gtf_attribute_string(attributes: Dict[str, Iterable[Union[int, str, f
     Returns:
         str: GTF attribute string
     """
-    return "".join(f' {key} "{encode_attribute_value(value)}";' for key, value in attributes.items()).strip()
+    parts = []
+    for key, value in attributes.items():
+        values = value if isinstance(value, (list, tuple)) else [value]
+        parts.extend(f'{key} "{v}";' for v in values)
+    return " ".join(parts) if parts else "."
 
 
 def format_gff_attribute_string(attributes: Dict[str, Iterable[Union[int, str, float]]]) -> str:
@@ -327,11 +332,7 @@ def unquote_gff3(attribute_value: str) -> str:
     Returns:
         str: Decoded attribute value
     """
-    return reduce(
-        lambda acc, code: re.sub(code[0], code[1], acc),  # func
-        DECODE_SPECIAL_CHARACTERS,  # iterable
-        attribute_value,  # initial
-    )
+    return unquote(attribute_value)
 
 
 def decode_attribute_value(attribute_value: str) -> List[str]:
@@ -350,23 +351,31 @@ def parse_gtf_attribute_string(gtf_attribute_string: str) -> Dict[str, List[str]
     """Parse a GTF column 9 string (``key "value";``) into a dictionary. Values are lists: repeated keys are
     collected in the same list.
 
+    Examples:
+        >>> dict(parse_gtf_attribute_string('gene_id "g1"; tag "basic"; tag "a;b"; exon_number 2;'))
+        {'gene_id': ['g1'], 'tag': ['basic', 'a;b'], 'exon_number': ['2']}
+
     Args:
         gtf_attribute_string (str): GTF attribute string
 
     Returns:
         Dict[str, List[str]]: Attribute names and values
+
+    Raises:
+        ValueError: If the attribute string can not be parsed
     """
     attributes = defaultdict(list)
-    for string_part in gtf_attribute_string.split(";"):
-        string_part = string_part.strip()
-        if not string_part:
-            continue
-        try:
-            key, value = string_part.split(" ", maxsplit=1)
-        except Exception as e:
-            print(gtf_attribute_string, string_part)
-            raise Exception("Error parsing gtf string") from e
-        attributes[key].append(value.strip('"'))
+    string = gtf_attribute_string.strip()
+    if string == ".":
+        return attributes
+    position = 0
+    while position < len(string):
+        match = GTF_ATTRIBUTE_PATTERN.match(string, position)
+        if not match:
+            raise ValueError(f"Error parsing GTF attribute string at position {position}: {gtf_attribute_string}")
+        key, value = match.groups()
+        attributes[key].append(value[1:-1] if value.startswith('"') else value)
+        position = match.end()
     return attributes
 
 
@@ -387,6 +396,8 @@ def parse_gff_attribute_string(
         Dict[str, List[str]]: Attribute names and values
     """
     attributes = defaultdict(list)
+    if gff_attribute_string.strip() == ".":
+        return attributes
     for string_part in gff_attribute_string.split(";"):
         if not string_part:
             continue
@@ -478,8 +489,22 @@ class SequenceAnnotation(DirectedAcyclicGraph):
     ) -> "SequenceAnnotation":
         """Read a GTF formatted file or string. Exactly one of ``filename`` or ``string`` must be given.
 
-        GTF lines are linked by their ``gene_id`` and ``transcript_id`` attributes. Gene and transcript (mRNA)
-        intervals are created from these, spanning all their child intervals.
+        GTF lines are linked by their ``gene_id`` and ``transcript_id`` attributes, and ``transcript`` lines become
+        ``mRNA`` intervals. Genes and transcripts that have no line of their own are created, spanning all their
+        child intervals. Other intervals get IDs based on their transcript and type, e.g. ``<transcript_id>.exon_0``.
+        Lines without a ``gene_id`` become intervals without parents, with IDs like ``repeat_region_0``.
+
+        Examples:
+            >>> gtf = (
+            ...     'ctg1\\t.\\texon\\t100\\t200\\t.\\t+\\t.\\tgene_id "g1"; transcript_id "t1";\\n'
+            ...     'ctg1\\t.\\texon\\t300\\t400\\t.\\t+\\t.\\tgene_id "g1"; transcript_id "t1";\\n'
+            ... )
+            >>> annotation = SequenceAnnotation.from_gtf(string=gtf)
+            >>> gene = annotation["g1"]
+            >>> gene.start, gene.end
+            (100, 400)
+            >>> [interval.ID for interval in gene.children]
+            ['t1', 't1.exon_0', 't1.exon_1']
 
         Args:
             filename (Optional[str]): GTF filename
@@ -493,13 +518,13 @@ class SequenceAnnotation(DirectedAcyclicGraph):
         """
         assert filename or string
         assert not (filename and string)
-        sequence_annotation = cls(sequence=sequence)
-        header = True
-
-        # start with just reading all intervals
         if filename:
             with open(filename) as filehandle:
                 string = filehandle.read()
+        sequence_annotation = cls(sequence=sequence)
+
+        header = True
+        intervals = []
         for line_number, line in enumerate(string.split("\n")):
             line = line.strip()
             if not line:
@@ -508,69 +533,79 @@ class SequenceAnnotation(DirectedAcyclicGraph):
                 if header:
                     sequence_annotation._gff_headers.append(line)
                 continue
+            header = False
+            intervals.append(SequenceInterval.from_gtf_line(gtf_line=line, line_number=line_number))
+
+        def first_value(interval: "SequenceInterval", key: str) -> Optional[str]:
+            values = interval.__dict__.get(key)
+            return values[0] if values else None
+
+        # GTF lines have no IDs: genes and transcripts are identified by their gene_id and transcript_id attributes,
+        # other intervals get an ID based on their transcript (or gene) and type. Genes and transcripts that are not
+        # in the file are created from their first child, and span all their children.
+        gene_ids = {first_value(interval, "gene_id") for interval in intervals if interval.interval_type == "gene"}
+        transcript_ids = {
+            first_value(interval, "transcript_id")
+            for interval in intervals
+            if interval.interval_type in ("transcript", "mRNA")
+        }
+        new_genes: Dict[str, SequenceInterval] = dict()
+        new_transcripts: Dict[str, SequenceInterval] = dict()
+        child_counter = Counter()
+        ordered_intervals = []
+        for interval in intervals:
+            gene_id = first_value(interval, "gene_id")
+            transcript_id = first_value(interval, "transcript_id")
+            if interval.interval_type == "gene" and gene_id:
+                interval._ID = gene_id
+            elif interval.interval_type in ("transcript", "mRNA") and transcript_id:
+                interval._ID = transcript_id
+                interval.interval_type = "mRNA"
+                interval.parent = [gene_id] if gene_id else []
+            elif not gene_id:
+                # not part of a gene (GTF requires a gene_id, but GFF3 converted to GTF can lack it)
+                child_count = child_counter[(None, interval.interval_type)]
+                child_counter[(None, interval.interval_type)] += 1
+                interval._ID = f"{interval.interval_type}_{child_count}"
+                interval.parent = []
             else:
-                header = False
-            interval = SequenceInterval.from_gtf_line(gtf_line=line, line_number=line_number)
+                if gene_id not in gene_ids and gene_id not in new_genes:
+                    new_genes[gene_id] = SequenceInterval._spanning_interval(
+                        interval, ID=gene_id, interval_type="gene", parent=None, gene_id=[gene_id]
+                    )
+                    ordered_intervals.append(new_genes[gene_id])
+                if transcript_id and transcript_id not in transcript_ids and transcript_id not in new_transcripts:
+                    new_transcripts[transcript_id] = SequenceInterval._spanning_interval(
+                        interval,
+                        ID=transcript_id,
+                        interval_type="mRNA",
+                        parent=[gene_id],
+                        gene_id=[gene_id],
+                        transcript_id=[transcript_id],
+                    )
+                    ordered_intervals.append(new_transcripts[transcript_id])
+                parent_id = transcript_id or gene_id
+                child_count = child_counter[(parent_id, interval.interval_type)]
+                child_counter[(parent_id, interval.interval_type)] += 1
+                interval._ID = f"{parent_id}.{interval.interval_type}_{child_count}"
+                interval.parent = [parent_id]
+            ordered_intervals.append(interval)
+
+        for interval in intervals:
+            for spanning_interval in (
+                new_genes.get(first_value(interval, "gene_id")),
+                new_transcripts.get(first_value(interval, "transcript_id")),
+            ):
+                if spanning_interval is not None:
+                    spanning_interval.start = min(spanning_interval.start, interval.start)
+                    spanning_interval.end = max(spanning_interval.end, interval.end)
+
+        for interval in ordered_intervals:
             interval._container = sequence_annotation
             sequence_annotation[interval.ID] = interval
-        # fix missing gene and transcript intervals
-        transcript_child_counter = Counter()
-        new_intervals = dict()
-        for interval in sequence_annotation:
-            gene_id = interval.gff_attributes["gene_id"][0]
-            transcript_id = interval.gff_attributes["transcript_id"][0]
-            interval_type = interval.interval_type
-            id_tuple = (gene_id, transcript_id, interval_type)
-            child_count = transcript_child_counter[id_tuple]
-            transcript_child_counter.update([id_tuple])
-            interval._ID = f"{transcript_id}.{interval_type}_{child_count}"
-            if transcript_id not in new_intervals:
-                # new transcript interval
-                transcript_interval = deepcopy(interval)
-                transcript_interval._container = interval._container
-                transcript_interval._ID = transcript_id
-                transcript_interval.interval_type = "mRNA"
-                transcript_interval.parent = [gene_id]
-                # new gene interval
-                gene_interval = deepcopy(interval)
-                gene_interval._container = interval._container
-                gene_interval._ID = gene_id
-                gene_interval.interval_type = "gene"
-                gene_interval.parent = None
 
-                new_intervals[transcript_id] = transcript_interval
-                new_intervals[gene_id] = gene_interval
-
-            interval.parent = [transcript_id]
-            new_intervals[interval.ID] = interval
-        sequence_annotation._intervals = new_intervals
-
-        # set children
         if link_parents:
             sequence_annotation._link_parents()
-
-        # fix gene and transcript start and stop coordinates
-        genes = sequence_annotation.groupby("interval_type")["gene"]
-        for gene in genes:
-            # fix gene first
-            start = 10e9
-            end = 0
-            for child in gene.children:
-                start = min(start, child.start)
-                end = max(end, child.end)
-            gene.start = start
-            gene.end = end
-
-            # fix transcripts
-            transcripts = gene.children.groupby("interval_type")["mRNA"]
-            for transcript in transcripts:
-                start = 10e9
-                end = 0
-                for child in transcript.children:
-                    start = min(start, child.start)
-                    end = max(end, child.end)
-                transcript.end = end
-                transcript.start = start
 
         return sequence_annotation
 
@@ -681,16 +716,7 @@ class SequenceAnnotation(DirectedAcyclicGraph):
                 child_interval = SequenceInterval.from_dict(interval_dict=child_dict)
                 child_interval._container = sequence_annotation
                 sequence_annotation[child_interval.ID] = child_interval
-        for interval in sequence_annotation:
-            if interval.parent:
-                for parent_ID in interval.parent:
-                    try:
-                        parent = sequence_annotation[parent_ID]
-                    except IndexError as err:
-                        raise IndexError(
-                            "Interval {interval.ID} is listing {parent_ID} " "as Parent, but parent could not be found."
-                        ) from err
-                    parent._children.append(interval.ID)
+        sequence_annotation._link_parents()
         return sequence_annotation
 
     def to_json(self, indent: Optional[int] = None) -> str:
@@ -851,8 +877,9 @@ class SequenceInterval(DAGElement):
 
     @property
     def gtf_attributes(self) -> Dict[str, str]:
-        """Attributes for GTF output: :attr:`gff_attributes`, plus a ``<type>_id`` attribute for every ancestor (e.g.
-        ``transcript_id`` and ``gene_id`` for an exon)
+        """Attributes for GTF output: :attr:`gff_attributes` without ``ID`` and ``Parent``, plus a ``<type>_id``
+        attribute for the interval itself if it is a gene or mRNA, and for every ancestor (e.g. ``transcript_id`` and
+        ``gene_id`` for an exon). Intervals with multiple parents of the same type get a single ``<type>_id``.
         """
         def get_gtf_type(gff_interval_type):
             return self._gtf_interval_types.get(gff_interval_type, gff_interval_type)
@@ -862,10 +889,32 @@ class SequenceInterval(DAGElement):
         else:
             parent_ids = dict()
 
-        attributes = self.gff_attributes
+        attributes = {key: value for key, value in self.gff_attributes.items() if key not in ("ID", "Parent")}
         if self.interval_type == "gene":
             attributes["gene_id"] = self.ID
+        elif self.interval_type == "mRNA":
+            attributes["transcript_id"] = self.ID
         return {**attributes, **parent_ids}
+
+    @classmethod
+    def _spanning_interval(
+        cls, child: "SequenceInterval", ID: str, interval_type: str, parent: Optional[List[str]], **attributes
+    ) -> "SequenceInterval":
+        """Create an interval (e.g. a gene) on the same sequence and strand as ``child``, starting with the span of
+        ``child``"""
+        return cls(
+            ID=ID,
+            seqid=child.seqid,
+            source=child.source,
+            interval_type=interval_type,
+            start=child.start,
+            end=child.end,
+            score=".",
+            strand=child.strand,
+            phase=".",
+            parent=parent,
+            **attributes,
+        )
 
     @classmethod
     def from_gtf_line(cls, gtf_line: Optional[str] = None, line_number: Optional[int] = None) -> "SequenceInterval":
@@ -922,10 +971,15 @@ class SequenceInterval(DAGElement):
             SequenceInterval: Interval
 
         Raises:
-            ValueError: If the start, end, score, strand, or phase column has an invalid value
+            ValueError: If the line does not have 9 columns, or if the start, end, score, strand, or phase column has
+                an invalid value
         """
         gff_parts = gff_line.split("\t")
-        assert len(gff_parts) == 9, gff_parts
+        if len(gff_parts) != 9:
+            error = f"GFF and GTF lines must have 9 tab-separated columns, found {len(gff_parts)}"
+            if line_number:
+                error = f"{error}, line {line_number}"
+            raise ValueError(error)
         seqid, source, interval_type, start, end, score, strand, phase = gff_parts[:8]
         try:
             start = int(start)
@@ -1022,8 +1076,12 @@ class SequenceInterval(DAGElement):
         Returns:
             SequenceInterval: Interval
         """
-        attributes = interval_dict.pop("attributes", dict())
-        return cls(**interval_dict, **attributes)
+        interval_dict = dict(interval_dict)
+        attributes = dict(interval_dict.pop("attributes", dict()))
+        parent = attributes.pop("Parent", attributes.pop("parent", None))
+        if isinstance(parent, str):
+            parent = [parent]
+        return cls(**interval_dict, **attributes, parent=parent)
 
     def to_dict(self, include_children: bool = False) -> Dict[str, Any]:
         """Dictionary with the eight fixed GFF3 fields, ``ID``, and an ``attributes`` dictionary with all other
@@ -1050,7 +1108,7 @@ class SequenceInterval(DAGElement):
             attributes=attributes,
         )
         if include_children:
-            children = [child.to_dict() for child in self.children[1:]]
+            children = [child.to_dict() for child in self.children]
             interval_dict["children"] = children
         return interval_dict
 
@@ -1085,7 +1143,7 @@ class Sequence:
         header (str): Sequence name
         sequence (str): Sequence string
         alphabet (Alphabet): Sequence alphabet. Detected from the sequence when not given (see
-            :meth:`Alphabet.score`).
+            :func:`guess_alphabet`). Sequences derived from this one (slices, complements, etc.) keep the alphabet.
         annotation (Optional[SequenceAnnotation]): Annotation of the sequence. Defaults to an empty annotation.
     """
 
@@ -1100,7 +1158,7 @@ class Sequence:
         if self.sequence is None:
             self.alphabet = alphabets.DNA
         else:
-            self.alphabet = sorted(alphabets, key=lambda alphabet: alphabet.score(self.sequence)).pop()
+            self.alphabet = guess_alphabet(self.sequence)
 
     def __getitem__(self, key) -> "Sequence":
         """Subset a sequence based on a key (can be int or slice)
@@ -1113,7 +1171,7 @@ alphabet=Alphabet(name='DNA', members='-?acgtnACGNT'))
             >>> len(s[2:])
             3
         """
-        return Sequence(self.header, self.sequence[key])
+        return Sequence(self.header, self.sequence[key], alphabet=self.alphabet)
 
     def __len__(self) -> int:
         """Length of the sequence
@@ -1134,7 +1192,7 @@ alphabet=Alphabet(name='DNA', members='-?acgtnACGNT'))
             >>> s.uppercase.sequence
             'ACGTA'
         """
-        return Sequence(self.header, self.sequence.upper())
+        return Sequence(self.header, self.sequence.upper(), alphabet=self.alphabet)
 
     @property
     def lowercase(self) -> "Sequence":
@@ -1145,7 +1203,7 @@ alphabet=Alphabet(name='DNA', members='-?acgtnACGNT'))
             >>> s.lowercase.sequence
             'acgta'
         """
-        return Sequence(self.header, self.sequence.lower())
+        return Sequence(self.header, self.sequence.lower(), alphabet=self.alphabet)
 
     @property
     def reverse(self) -> "Sequence":
@@ -1156,7 +1214,7 @@ alphabet=Alphabet(name='DNA', members='-?acgtnACGNT'))
             >>> s.reverse.sequence
             'ATGCA'
         """
-        return Sequence(self.header, self.sequence[::-1])
+        return Sequence(self.header, self.sequence[::-1], alphabet=self.alphabet)
 
     @property
     def complement(self) -> "Sequence":
@@ -1167,7 +1225,7 @@ alphabet=Alphabet(name='DNA', members='-?acgtnACGNT'))
             >>> s.complement.sequence
             'TGCAT'
         """
-        return Sequence(self.header, self.alphabet.complement(self.sequence))
+        return Sequence(self.header, self.alphabet.complement(self.sequence), alphabet=self.alphabet)
 
     @property
     def reverse_complement(self) -> "Sequence":
@@ -1181,7 +1239,7 @@ alphabet=Alphabet(name='DNA', members='-?acgtnACGNT'))
             >>> s.reverse_complement.sequence == s.reverse.complement.sequence == s.complement.reverse.sequence
             True
         """
-        return Sequence(self.header, self.alphabet.complement(self.sequence[::-1]))
+        return Sequence(self.header, self.alphabet.complement(self.sequence[::-1]), alphabet=self.alphabet)
 
     @property
     def amino_acids(self) -> "Sequence":
@@ -1195,7 +1253,7 @@ alphabet=Alphabet(name='DNA', members='-?acgtnACGNT'))
         if self.alphabet.name == "AminoAcid":
             return self
         else:
-            return Sequence(self.header, self.alphabet.translate(self.sequence))
+            return Sequence(self.header, self.alphabet.translate(self.sequence), alphabet=alphabets.AminoAcid)
 
     def to_dict(self) -> Dict[str, str]:
         """Make dictionary with header and sequence elements
@@ -1279,6 +1337,7 @@ class SequenceReader:
                 string = filehandle.read().strip()
 
         self.string = string
+        self._iterator = None
 
         if filetype == "fasta":
             self._iter = self._fasta_iter
@@ -1293,10 +1352,7 @@ class SequenceReader:
         Yields:
             Sequence: Next sequence
         """
-        try:
-            yield from self._iter()
-        except StopIteration:
-            return
+        yield from self._iter()
 
     def __next__(self) -> Sequence:
         """Next sequence
@@ -1304,7 +1360,9 @@ class SequenceReader:
         Returns:
             Sequence: Next sequence
         """
-        return next(self._iter())
+        if self._iterator is None:
+            self._iterator = self._iter()
+        return next(self._iterator)
 
     def _fasta_iter(self) -> Iterable[Sequence]:
         if self.string[0] != ">":
@@ -1325,13 +1383,13 @@ class SequenceReader:
 
 class BatchSequenceReader(SequenceReader):
     """Iterator over batches of sequences in a fasta or json formatted file or string. Every batch is a
-    :class:`SequenceCollection` of ``batchsize`` sequences.
+    :class:`SequenceCollection` of ``batchsize`` sequences, except for the last batch, which can be smaller.
 
     Examples:
-        >>> fasta_string = '>1\\nACGC\\n>2\\nTGTGTA\\n>3\\nAAGT\\n>4\\nCCA\\n'
+        >>> fasta_string = '>1\\nACGC\\n>2\\nTGTGTA\\n>3\\nAAGT\\n>4\\nCCA\\n>5\\nGGA\\n'
         >>> reader = BatchSequenceReader(string=fasta_string, filetype='fasta', batchsize=2)
         >>> [batch.headers for batch in reader]
-        [['1', '2'], ['3', '4']]
+        [['1', '2'], ['3', '4'], ['5']]
 
     Args:
         string (str): fasta or json formatted string
@@ -1349,24 +1407,31 @@ class BatchSequenceReader(SequenceReader):
     ) -> None:
         super().__init__(string, filename, filetype)
         self.batchsize = batchsize
-        self._currentbatch = SequenceCollection()
 
     def __iter__(self) -> Iterable["SequenceCollection"]:
-        for s in self._iter():
-            self._currentbatch[s.header] = s
-            if len(self._currentbatch) == self.batchsize:
-                yield self._currentbatch
-                self._currentbatch = SequenceCollection()
+        """Iterate over all batches. The last batch can have fewer than ``batchsize`` sequences.
+
+        Yields:
+            SequenceCollection: Next batch
+        """
+        batch = SequenceCollection()
+        for seq in self._iter():
+            batch[seq.header] = seq.sequence
+            if len(batch) == self.batchsize:
+                yield batch
+                batch = SequenceCollection()
+        if len(batch):
+            yield batch
 
     def __next__(self) -> "SequenceCollection":
-        currentbatch = self._currentbatch
-        self._currentbatch = SequenceCollection()
-        if len(currentbatch) == self.batchsize:
-            return currentbatch
-        for s in self._iter():
-            currentbatch[s.header] = s
-            if len(currentbatch) == self.batchsize:
-                yield currentbatch
+        """Next batch
+
+        Returns:
+            SequenceCollection: Next batch
+        """
+        if self._iterator is None:
+            self._iterator = iter(self)
+        return next(self._iterator)
 
 
 SequenceIndexKey = Union[int, List[int], slice]
@@ -1385,10 +1450,7 @@ class SequenceIndex:
         if isinstance(key, int):
             key = [key]
         elif isinstance(key, slice):
-            start = key.start if key.start is not None else 0
-            stop = key.stop if key.stop is not None else len(self.sequence_collection)
-            step = key.step if key.step is not None else 1
-            key = range(start, stop, step)
+            key = range(*key.indices(len(self.sequence_collection)))
         elif not isinstance(key, list):
             raise TypeError(f"SequenceIndex key must be of type f{SequenceIndexKey}")
         new_seq_col = self.sequence_collection.__class__()
@@ -1447,6 +1509,8 @@ class AbstractSequenceCollection(metaclass=ABCMeta):
 
     def __add__(self: SequenceType, other: SequenceType) -> SequenceType:
         new_collection = self.__class__()
+        for seq in chain(self, other):
+            new_collection[seq.header] = seq.sequence
         return new_collection
 
     @property
@@ -1695,13 +1759,18 @@ class SequenceCollection(AbstractSequenceCollection):
 
         Returns:
             MultipleSequenceAlignment: Aligned sequences
+
+        Raises:
+            RuntimeError: If the aligner exits with an error
         """
         if not method_kwargs:
             method_kwargs = dict()
         fasta = self.to_fasta()
         command = [method, *chain(*method_kwargs.items()), "-"]
         process = Popen(command, stdin=PIPE, stdout=PIPE, stderr=PIPE)
-        stdout, _ = process.communicate(input=fasta.encode())
+        stdout, stderr = process.communicate(input=fasta.encode())
+        if process.returncode != 0:
+            raise RuntimeError(f"{method} exited with code {process.returncode}: {stderr.decode().strip()}")
         aligned_fasta = stdout.decode().strip()
         return MultipleSequenceAlignment.from_fasta(string=aligned_fasta)
 
@@ -1729,7 +1798,6 @@ class MultipleSequenceAlignment(SequenceCollection):
         sequences: Optional[Iterable[Sequence]] = None,
         sequence_annotation: Optional["SequenceAnnotation"] = None,
     ) -> None:
-        super(MultipleSequenceAlignment).__init__()
         self._collection = np.empty((0, 0), dtype="uint8")
         self._header_idx = dict()
         if sequences:
@@ -1765,6 +1833,9 @@ class MultipleSequenceAlignment(SequenceCollection):
             self._collection = arr
         self._header_idx[header] = n_seq
 
+    def __delitem__(self, header: str) -> None:
+        self.pop(header)
+
     def __getitem__(self, header: str) -> Sequence:
         idx = self._header_idx[header]
         n_chars = self._collection.shape[1]
@@ -1790,21 +1861,35 @@ class MultipleSequenceAlignment(SequenceCollection):
         return self._collection.shape
 
     def to_nexus(self) -> str:
-        """Nexus ``data`` block with the alignment (the datatype is always ``dna``)
+        """Nexus ``data`` block with the alignment. The datatype is ``protein`` if any sequence is an amino acid
+        sequence, and ``dna`` otherwise.
+
+        Examples:
+            >>> msa = MultipleSequenceAlignment.from_fasta(string='>a\\nAC-GT\\n>b\\nACCGT')
+            >>> print(msa.to_nexus())
+            begin data;
+                dimensions ntax=2 nchar=5;
+                format datatype=dna gap=-;
+                matrix
+                a AC-GT
+                b ACCGT
+                ;
+            end;
 
         Returns:
             str: Nexus formatted string
         """
-        sequences = "\n".join([f"{s.header} {s.sequence}" for s in self])
-        return (
-            "begin data;"
-            f"\tdimensions ntax={self.n_seqs} nchar={self.n_chars};"
-            "\tformat datatype=dna gap=-;"
-            "\tmatrix"
-            f"\t{sequences}"
-            "\t;"
-            "end;"
-        )
+        datatype = "protein" if any(seq.alphabet.name == "AminoAcid" for seq in self) else "dna"
+        lines = [
+            "begin data;",
+            f"    dimensions ntax={self.n_seqs} nchar={self.n_chars};",
+            f"    format datatype={datatype} gap=-;",
+            "    matrix",
+            *(f"    {seq.header} {seq.sequence}" for seq in self),
+            "    ;",
+            "end;",
+        ]
+        return "\n".join(lines)
 
     def pop(self, header: str) -> Sequence:
         pop_idx = self._header_idx[header]

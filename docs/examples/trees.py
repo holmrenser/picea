@@ -53,7 +53,7 @@ a.parent.name, a.root.name, a.cumulative_length
 # This gene tree of hydroxycinnamoyl transferase (HCT) homologs has branch lengths and support values as internal
 # node names.
 
-# %% tags=["remove-stderr"]
+# %%
 hct = Tree.from_newick(filename="data/tree.newick")
 len(hct.leaves)
 
@@ -62,6 +62,13 @@ hct.rename_leaves(lambda name: name.removesuffix(".1"))
 
 fig, ax = plt.subplots(figsize=(8, 9))
 treeplot(hct, style="square", ax=ax);
+
+# %% [markdown]
+# The radial style puts the root in the center.
+
+# %%
+fig, ax = plt.subplots(figsize=(9, 9))
+treeplot(hct, style="radial", node_labels=False, ax=ax);
 
 # %% [markdown]
 # Leaf markers can be styled per leaf with a function, for example to color leaves by species. Without

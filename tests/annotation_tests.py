@@ -116,3 +116,107 @@ class AnnotationTests(TestCase):
                 for cds in cdss:
                     cds.to_gff_line()
                     cds.to_gtf_line()
+
+
+class AnnotationBugfixTests(TestCase):
+    def setUp(self):
+        self.gff3 = (
+            "ctg1\t.\tgene\t100\t400\t.\t+\t.\tID=g1;Name=foo bar\n"
+            "ctg1\t.\tmRNA\t100\t400\t.\t+\t.\tID=t1;Parent=g1;Note=a%3Bb,c%2Cd\n"
+            "ctg1\t.\texon\t100\t200\t.\t+\t.\tID=e1;Parent=t1\n"
+            "ctg1\t.\texon\t300\t400\t.\t+\t.\tID=e2;Parent=t1\n"
+        )
+        # GTF without gene and transcript lines
+        self.gtf = (
+            'ctg1\tsrc\texon\t100\t200\t.\t+\t.\tgene_id "g1"; transcript_id "t1";\n'
+            'ctg1\tsrc\tCDS\t150\t200\t.\t+\t0\tgene_id "g1"; transcript_id "t1";\n'
+            'ctg1\tsrc\texon\t300\t400\t.\t+\t.\tgene_id "g1"; transcript_id "t1";\n'
+            'ctg1\tsrc\texon\t50\t250\t.\t+\t.\tgene_id "g1"; transcript_id "t2";\n'
+        )
+        # GTF with gene and transcript lines (Ensembl style)
+        self.full_gtf = (
+            'ctg1\tsrc\tgene\t100\t400\t.\t+\t.\tgene_id "g1"; gene_name "G1";\n'
+            'ctg1\tsrc\ttranscript\t100\t400\t.\t+\t.\tgene_id "g1"; transcript_id "t1";\n'
+            'ctg1\tsrc\texon\t100\t200\t.\t+\t.\tgene_id "g1"; transcript_id "t1"; exon_number "1";\n'
+            'ctg1\tsrc\texon\t300\t400\t.\t+\t.\tgene_id "g1"; transcript_id "t1"; exon_number "2";\n'
+        )
+
+    def test_gff_attribute_values_with_special_characters(self):
+        ann = SequenceAnnotation.from_gff(string=self.gff3)
+        self.assertEqual(ann["g1"].name, ["foo bar"])
+        self.assertEqual(ann["t1"].note, ["a;b", "c,d"])
+        self.assertEqual(ann.to_gff(), self.gff3)
+
+    def test_gff_decodes_any_percent_encoding(self):
+        line = "ctg1\t.\tgene\t1\t9\t.\t+\t.\tID=g1;product=x%20y%2Fz"
+        interval = SequenceInterval.from_gff_line(line)
+        self.assertEqual(interval.product, ["x y/z"])
+        self.assertEqual(interval.to_gff_line(), "ctg1\t.\tgene\t1\t9\t.\t+\t.\tID=g1;product=x y/z")
+
+    def test_real_gff_round_trip(self):
+        real_gff3 = AnnotationTests("setUp")
+        real_gff3.setUp()
+        ann = SequenceAnnotation.from_gff(string=real_gff3.real_gff3)
+        self.assertEqual(ann.to_gff(), real_gff3.real_gff3)
+
+    def test_gtf_creates_genes_and_transcripts(self):
+        ann = SequenceAnnotation.from_gtf(string=self.gtf)
+        groups = ann.groupby(lambda interval: interval.interval_type)
+        self.assertEqual({key: len(value) for key, value in groups.items()}, {"gene": 1, "mRNA": 2, "exon": 3, "CDS": 1})
+        gene = ann["g1"]
+        self.assertEqual((gene.start, gene.end), (50, 400))
+        self.assertEqual((ann["t1"].start, ann["t1"].end), (100, 400))
+        self.assertEqual((ann["t2"].start, ann["t2"].end), (50, 250))
+        self.assertEqual(len(gene.children), 6)
+        self.assertEqual(len(ann["t1"].children), 3)
+
+    def test_gtf_with_gene_and_transcript_lines(self):
+        ann = SequenceAnnotation.from_gtf(string=self.full_gtf)
+        self.assertEqual(len(ann), 4)
+        self.assertEqual(ann["g1"].gene_name, ["G1"])
+        self.assertEqual(ann["t1"].interval_type, "mRNA")
+        self.assertEqual([child.ID for child in ann["t1"].children], ["t1.exon_0", "t1.exon_1"])
+
+    def test_gtf_round_trip(self):
+        ann = SequenceAnnotation.from_gtf(string=self.gtf)
+        ann2 = SequenceAnnotation.from_gtf(string=ann.to_gtf())
+        self.assertEqual(sorted(interval.ID for interval in ann), sorted(interval.ID for interval in ann2))
+        self.assertEqual(ann2.to_gtf(), ann.to_gtf())
+
+    def test_gtf_from_gff(self):
+        ann = SequenceAnnotation.from_gff(string=self.gff3)
+        gtf_lines = ann.to_gtf().split("\n")
+        self.assertIn('transcript_id "t1";', gtf_lines[2])
+        self.assertIn('gene_id "g1";', gtf_lines[2])
+        self.assertNotIn("Parent", ann.to_gtf())
+        ann2 = SequenceAnnotation.from_gtf(string=ann.to_gtf())
+        self.assertEqual(len(ann2["g1"].children), 3)
+
+    def test_json_round_trip(self):
+        ann = SequenceAnnotation.from_gff(string=self.gff3)
+        ann2 = SequenceAnnotation.from_json(string=ann.to_json())
+        self.assertEqual(ann2.to_gff(), self.gff3)
+        self.assertEqual(ann2["t1"].parent, ["g1"])
+        self.assertEqual(len(ann2["g1"].children), 3)
+
+    def test_json_include_children(self):
+        ann = SequenceAnnotation.from_gff(string=self.gff3)
+        gene_dict = ann["g1"].to_dict(include_children=True)
+        self.assertEqual([child["ID"] for child in gene_dict["children"]], ["t1", "e1", "e2"])
+        ann2 = SequenceAnnotation.from_json(string=f'[{ann["g1"].to_json(include_children=True)}]')
+        self.assertEqual(len(ann2["g1"].children), 3)
+
+    def test_rename_interval(self):
+        ann = SequenceAnnotation.from_gff(string=self.gff3)
+        ann["t1"].ID = "transcript1"
+        self.assertNotIn("t1", ann)
+        self.assertEqual(ann["e1"].parent, ["transcript1"])
+        self.assertEqual([child.ID for child in ann["g1"].children], ["transcript1", "e1", "e2"])
+
+    def test_gtf_line_without_gene_id(self):
+        gff3 = self.gff3 + "ctg1\t.\trepeat_region\t500\t600\t.\t+\t.\tID=r1\n"
+        ann = SequenceAnnotation.from_gff(string=gff3)
+        ann2 = SequenceAnnotation.from_gtf(string=ann.to_gtf())
+        self.assertEqual(len(ann2), 5)
+        self.assertEqual(ann2["repeat_region_0"].parent, [])
+        self.assertEqual(len(ann2["g1"].children), 3)

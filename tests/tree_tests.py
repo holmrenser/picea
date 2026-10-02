@@ -1,6 +1,15 @@
+import math
+import warnings
 from unittest import TestCase
 
-from picea import Tree
+import matplotlib
+
+matplotlib.use("Agg")
+
+from matplotlib import pyplot as plt  # noqa: E402
+
+from picea import Tree, calculate_tree_layout, treeplot  # noqa: E402
+from picea.tree import TreeStyle  # noqa: E402
 
 
 class TreeTests(TestCase):
@@ -48,3 +57,87 @@ class TreeTests(TestCase):
             filename='./tests/data/fasttree.quoted_labels.newick'
         )
     """
+
+
+class TreeBugfixTests(TestCase):
+    def setUp(self):
+        self.newick = "((a:1,b:2)ab:1,c:3)root;"
+
+    def tearDown(self):
+        plt.close("all")
+
+    def test_root_without_branch_length_does_not_warn(self):
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            tree = Tree.from_newick(self.newick)
+        self.assertEqual(tree.cumulative_length, 0.0)
+
+    def test_zero_length_branch_cumulative_length(self):
+        tree = Tree.from_newick("((a:1,(b:1)x:0)y:2,c:1);")
+        self.assertEqual(tree.loc["b"].cumulative_length, 3.0)
+        self.assertEqual(tree.loc["x"].cumulative_length, 2.0)
+
+    def test_subtree_to_newick(self):
+        tree = Tree.from_newick(self.newick)
+        self.assertEqual(tree.loc["ab"].to_newick(branch_lengths=True), "(a:1.0,b:2.0)ab;")
+
+    def test_rename_leaves_copy(self):
+        tree = Tree.from_newick(self.newick)
+        renamed = tree.rename_leaves(str.upper, inplace=False)
+        self.assertEqual(sorted(leaf.name for leaf in renamed.leaves), ["A", "B", "C"])
+        self.assertEqual(sorted(leaf.name for leaf in tree.leaves), ["a", "b", "c"])
+        self.assertIsNone(tree.rename_leaves(str.upper))
+
+    def test_layout_uses_distance_to_root(self):
+        tree = Tree.from_newick(self.newick)
+        layout = calculate_tree_layout(tree)
+        for node in tree.nodes:
+            self.assertEqual(layout[node.ID].x, node.cumulative_length)
+        rtl = calculate_tree_layout(tree, ltr=False)
+        self.assertEqual(rtl[tree.loc["b"].ID].x, -3.0)
+
+    def test_cladogram_layout_aligns_leaves(self):
+        for tree, branchlengths in ((Tree.from_newick(self.newick), False), (Tree.from_newick("((a,b),c);"), True)):
+            layout = calculate_tree_layout(tree, branchlengths=branchlengths)
+            self.assertEqual({layout[leaf.ID].x for leaf in tree.leaves}, {2.0})
+
+    def test_radial_layout(self):
+        tree = Tree.from_newick(self.newick)
+        layout = calculate_tree_layout(tree, style="radial")
+        for leaf in tree.leaves:
+            x, y = layout[leaf.ID]
+            self.assertAlmostEqual(math.hypot(x, y), leaf.cumulative_length)
+        angles = sorted(math.atan2(layout[leaf.ID].y, layout[leaf.ID].x) % (2 * math.pi) for leaf in tree.leaves)
+        self.assertAlmostEqual(angles[1] - angles[0], 2 * math.pi / 3)
+
+    def test_invalid_style(self):
+        with self.assertRaises(ValueError):
+            calculate_tree_layout(Tree.from_newick(self.newick), style="rectangular")
+
+    def test_treeplot_styles(self):
+        for newick in (self.newick, "(((a,b),(c,d)),e);"):
+            tree = Tree.from_newick(newick)
+            for style in ("square", "triangular", "radial", TreeStyle.square):
+                for ltr in (True, False):
+                    treeplot(tree, style=style, ltr=ltr)
+
+    def test_treeplot_options(self):
+        tree = Tree.from_newick(self.newick)
+        linestyles = []
+
+        def branch_linestyle(branch):
+            linestyles.append(branch)
+            return {"color": "red"}
+
+        ax = treeplot(
+            tree,
+            leaf_labels=False,
+            leaf_marker=None,
+            leaf_marker_fill=lambda leaf: "red",
+            branch_linestyle=branch_linestyle,
+        )
+        self.assertEqual(len(linestyles), len(tree.links))
+        self.assertEqual([text.get_text() for text in ax.texts], ["root", "ab"])
+        ax, layout = treeplot(tree, node_labels=False, return_layout=True)
+        self.assertEqual(sorted(text.get_text() for text in ax.texts), ["a", "b", "c"])
+        self.assertEqual(layout[tree.loc["c"].ID].x, 3.0)

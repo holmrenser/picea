@@ -35,6 +35,9 @@ dna
 # %%
 dna.alphabet.name, len(dna)
 
+# %%
+Sequence("peptide", "MKVLAAGIVGLL").alphabet.name
+
 # %% [markdown]
 # Transformations return new sequence objects, so they can be chained.
 

@@ -143,7 +143,7 @@ class Tree:
         """Parse a Newick formatted file or string. Exactly one of ``string`` or ``filename`` must be given.
 
         Node names (including internal node names such as support values) and branch lengths are read when present.
-        If some nodes have a branch length, nodes without one get length 0.0 with a warning.
+        If some nodes have a branch length, other nodes (except the root) without one get length 0.0 with a warning.
 
         Examples:
             >>> tree = Tree.from_newick('((a:1,b:2)ab:1,c:3)root:0;')
@@ -190,29 +190,30 @@ class Tree:
                     tree.length = float(token)
                     tree.cumulative_length = 0.0
         tree.depth = 0
+        if found_branchlengths:
+            tree.cumulative_length = 0.0
         queue: list[Tree] = [tree]
         while queue:
             node = queue.pop(0)
-            if found_branchlengths:
-                if node.length is None:
-                    warn(
-                        "Found branchlengths on some parts of the tree, but node "
-                        f"{node.ID} has no branchlength specified, setting to "
-                        "branchlength 0.0"
-                    )
-                    node.length = 0.0
-                    node.cumulative_length = 0.0
             for child in node.children:
                 child.parent = node
                 child.depth = node.depth + 1
-                if child.length:
+                if found_branchlengths:
+                    if child.length is None:
+                        warn(
+                            "Found branchlengths on some parts of the tree, but node "
+                            f"{child.ID} has no branchlength specified, setting to "
+                            "branchlength 0.0"
+                        )
+                        child.length = 0.0
                     child.cumulative_length = node.cumulative_length + abs(child.length)
             queue += node.children
 
         return tree
 
     def to_newick(self, branch_lengths: bool = False) -> str:
-        """Newick formatted string of the (sub)tree
+        """Newick formatted string of the (sub)tree. The node this is called on is the root of the Newick tree, so its
+        branch length is not written.
 
         Examples:
             >>> tree = Tree.from_newick('((a:1,b:2)ab:1,c:3)root:0;')
@@ -226,18 +227,19 @@ class Tree:
         Returns:
             str: Newick formatted string
         """
-        if self.name:
-            name = str(self.name)
-        else:
-            name = ""
+        return f"{self._to_newick(branch_lengths=branch_lengths, include_length=False)};"
+
+    def _to_newick(self, branch_lengths: bool, include_length: bool = True) -> str:
+        """Newick string of the (sub)tree without the closing semicolon"""
+        name = str(self.name) if self.name else ""
 
         if self.children:
-            subtree_string = ",".join([c.to_newick(branch_lengths=branch_lengths) for c in self.children])
+            subtree_string = ",".join(child._to_newick(branch_lengths=branch_lengths) for child in self.children)
             newick = f"({subtree_string}){name}"
         else:
             newick = name
 
-        if branch_lengths and self.ID != 0:
+        if branch_lengths and include_length:
             length = self.length
             if length is None:
                 warn(
@@ -248,9 +250,6 @@ class Tree:
             if length == 0:
                 length = int(0)
             newick += f":{length}"
-
-        if self == self.root:
-            newick += ";"
 
         return newick
 
@@ -349,11 +348,15 @@ class Tree:
 
         Args:
             rename_func (Callable[[str], str]): Function that takes a leaf name and returns a new name
-            inplace (bool): Rename the leaves of this tree. If False, rename the leaves of a copy.
+            inplace (bool): Rename the leaves of this tree. If False, rename and return a copy.
+
+        Returns:
+            Optional[Tree]: The renamed copy if ``inplace`` is False, otherwise None
         """
         tree = self if inplace else deepcopy(self)
         for leaf in tree.leaves:
             leaf.name = rename_func(leaf.name)
+        return None if inplace else tree
 
 
 class TreeIndex(object):
@@ -387,7 +390,7 @@ def unequal_separation(node_a: "Tree", node_b: "Tree", sep_1: float = 1.0, sep_2
     Returns:
         float: Separation
     """
-    if node_a.parent == node_b.parent:
+    if node_a.parent is node_b.parent:
         return sep_1
     return sep_2
 
@@ -414,76 +417,114 @@ class TwoDCoordinate:
     def __iter__(self):
         yield from (self.x, self.y)
 
-    def to_polar(self):
-        return TwoDCoordinate(x=self.x * np.cos(self.y), y=self.x * np.sin(self.y))
-
-    def to_cartesian(self):
-        return TwoDCoordinate(x=np.sqrt(self.x**2 + self.y**2), y=np.arctan2(self.y, self.x))
-
 
 Ax = Type[SubplotBase]
 TreeStyle = Enum("TreeStyle", ("square", "radial", "triangular"))
 LayoutDict = DefaultDict[int, TwoDCoordinate]
 
 
+def _tree_style(style: Union[str, TreeStyle]) -> TreeStyle:
+    """Convert a style name to a TreeStyle"""
+    if isinstance(style, TreeStyle):
+        return style
+    try:
+        return TreeStyle[style]
+    except KeyError:
+        raise ValueError(f"Unknown tree style {style!r}, must be one of {[s.name for s in TreeStyle]}") from None
+
+
+def _rectangular_layout(tree: Tree, ltr: bool, branchlengths: bool) -> Tuple[LayoutDict, int]:
+    """Rectangular layout (see :func:`calculate_tree_layout`) and the number of leaves"""
+    layout: LayoutDict = defaultdict(TwoDCoordinate)
+
+    n_leaves = 0
+    for node in tree.depth_first(post_order=True):
+        if node.children:
+            layout[node.ID].y = sum(layout[child.ID].y for child in node.children) / len(node.children)
+        else:
+            layout[node.ID].y = float(n_leaves)
+            n_leaves += 1
+
+    if branchlengths and any(node.length is not None for node in tree.nodes if node is not tree):
+        # distance to the root
+        stack = [(tree, 0.0)]
+        while stack:
+            node, x = stack.pop()
+            layout[node.ID].x = x
+            stack.extend((child, x + abs(child.length or 0.0)) for child in node.children)
+    else:
+        # cladogram: levels below the root, with all leaves aligned
+        heights = dict()
+        for node in tree.depth_first(post_order=True):
+            heights[node.ID] = 1 + max(heights[child.ID] for child in node.children) if node.children else 0
+        for node in tree.nodes:
+            layout[node.ID].x = float(heights[tree.ID] - heights[node.ID])
+
+    if not ltr:
+        for coordinate in layout.values():
+            coordinate.x = -coordinate.x
+    return layout, n_leaves
+
+
+def _polar(coordinate: TwoDCoordinate, n_leaves: int) -> Tuple[float, float]:
+    """Radius and angle of a rectangular layout coordinate in the radial layout"""
+    return abs(coordinate.x), 2 * np.pi * coordinate.y / max(n_leaves, 1)
+
+
 def calculate_tree_layout(
     tree: Tree,
-    style: TreeStyle = TreeStyle.square,
+    style: Union[str, TreeStyle] = TreeStyle.square,
     ltr: bool = True,
     branchlengths: bool = True,
 ) -> LayoutDict:
     """Calculate 2D coordinates of all nodes, as used by :func:`treeplot`
 
-    Leaves get consecutive y coordinates in depth first order, and internal nodes are centered on their children.
-    The x coordinate is based on branch lengths, or on the number of levels below a node if ``branchlengths`` is
-    False.
+    Leaves get consecutive y coordinates (0, 1, 2, ...) in depth first order, and internal nodes are centered on
+    their children. With branch lengths, x is the distance to the root. Without branch lengths, or for trees that
+    have none, x is the number of levels below the root, with all leaves aligned (a cladogram). In the radial layout
+    the root is in the center, the radius is the distance to the root, and leaves are spread evenly over the circle.
+
+    Examples:
+        >>> tree = Tree.from_newick('((a:1,b:2)ab:1,c:3)root;')
+        >>> layout = calculate_tree_layout(tree)
+        >>> [(node.name, layout[node.ID].x, layout[node.ID].y) for node in tree.leaves]
+        [('c', 3.0, 2.0), ('a', 2.0, 0.0), ('b', 3.0, 1.0)]
 
     Args:
         tree (Tree): Tree
-        style (TreeStyle, optional): ``"square"``, ``"triangular"`` or ``"radial"``. Only ``"radial"`` changes
-            the layout (to polar coordinates). Defaults to ``TreeStyle.square``.
-        ltr (bool, optional): Left to right layout (root on the left). Defaults to True.
+        style (Union[str, TreeStyle], optional): ``"square"``, ``"triangular"`` or ``"radial"``. Only ``"radial"``
+            changes the node coordinates. Defaults to ``TreeStyle.square``.
+        ltr (bool, optional): Left to right layout (root on the left). If False, x coordinates are negative.
+            Ignored for the radial layout. Defaults to True.
         branchlengths (bool, optional): Use branch lengths. Defaults to True.
 
     Returns:
         LayoutDict: Coordinates of every node, by node ID
+
+    Raises:
+        ValueError: If ``style`` is not a valid style
     """
-    layout = defaultdict(TwoDCoordinate)
-    previous_node = None
-    y = 0
-    # separation = equal_separation
-    for node in tree.depth_first(post_order=True):
-        node_coords = layout[node.ID]
-        if node.children:
-            child_x_coords, child_y_coords = zip(*(layout[c.ID] for c in node.children), strict=True)
-            node_coords.y = sum(child_y_coords) / len(node.children)
-            increment = node.length if branchlengths else 1.0
-            if ltr:
-                node_coords.x = increment + max(child_x_coords)
-            else:
-                node_coords.x = min(child_x_coords) - increment
-        else:
-            if previous_node:
-                y += 1.0
-                layout[node.ID].y = y
-            else:
-                layout[node.ID].y = 0
-            layout[node.ID].x = node.length if branchlengths else 0.0
-            previous_node = node
-
-    for node in tree.depth_first(post_order=True):
-        layout[node.ID].x = (layout[tree.ID].x - layout[node.ID].x) * 1.0
-        layout[node.ID].y = (layout[node.ID].y - layout[tree.ID].y) * 1.0
-
-    if style == "radial":
-        for node_id in layout.keys():
-            layout[node_id] = layout[node_id].to_polar()
+    style = _tree_style(style)
+    layout, n_leaves = _rectangular_layout(tree, ltr=ltr, branchlengths=branchlengths)
+    if style == TreeStyle.radial:
+        for coordinate in layout.values():
+            radius, angle = _polar(coordinate, n_leaves)
+            coordinate.x, coordinate.y = radius * np.cos(angle), radius * np.sin(angle)
     return layout
+
+
+def _as_function(value: Union[str, dict, Callable, None], name: str) -> Callable:
+    """Wrap a constant plotting option in a function, so that constant and per-node options can be used the same way"""
+    if callable(value):
+        return value
+    if value is None or isinstance(value, (str, dict)):
+        return lambda _: value
+    raise TypeError(f"{type(value)} is not a valid {name} type")
 
 
 def treeplot(
     tree: Tree,
-    style: TreeStyle = TreeStyle.square,
+    style: Union[str, TreeStyle] = TreeStyle.square,
     branchlengths: bool = True,
     ltr: bool = True,
     node_labels: bool = True,
@@ -491,7 +532,7 @@ def treeplot(
     leaf_marker: Union[str, Callable, None] = "o",
     leaf_marker_fill: Union[str, Callable[[Tree], "str"], None] = "white",
     leaf_marker_edge: Union[str, Callable[[Tree], "str"], None] = "black",
-    branch_linestyle: Union[dict, Callable[[Tree], dict], None] = None,
+    branch_linestyle: Union[dict, Callable[[Tuple[Tree, Tree]], dict], None] = None,
     ax: Optional[Ax] = None,
     return_layout: bool = False,
 ) -> Union[Ax, Tuple[Ax, LayoutDict]]:
@@ -499,20 +540,21 @@ def treeplot(
 
     Args:
         tree (Tree): Tree to plot
-        style (TreeStyle, optional): Branch style: ``"square"`` (right angles), ``"triangular"`` (straight lines
-            from parent to child), or ``"radial"``. Defaults to ``TreeStyle.square``.
-        branchlengths (bool, optional): Scale branches by their length. Use False to plot a cladogram, or to
-            plot a tree without branch lengths. Defaults to True.
-        ltr (bool, optional): Plot left to right (root on the left). Defaults to True.
+        style (Union[str, TreeStyle], optional): Branch style: ``"square"`` (right angles), ``"triangular"``
+            (straight lines from parent to child), or ``"radial"`` (root in the center). Defaults to
+            ``TreeStyle.square``.
+        branchlengths (bool, optional): Scale branches by their length. Use False to plot a cladogram. Trees without
+            branch lengths are always plotted as a cladogram. Defaults to True.
+        ltr (bool, optional): Plot left to right (root on the left). Ignored for the radial style. Defaults to True.
         node_labels (bool, optional): Show the names of internal nodes, e.g. support values. Defaults to True.
-        leaf_labels (bool, optional): Currently unused: leaf names are always shown. Defaults to True.
+        leaf_labels (bool, optional): Show leaf names. Defaults to True.
         leaf_marker (Union[str, Callable, None], optional): Matplotlib marker for leaves, a function that takes a
             leaf and returns a marker, or None for no markers. Defaults to ``"o"``.
         leaf_marker_fill (Union[str, Callable[[Tree], str], None], optional): Marker fill color, or a function
             that takes a leaf and returns a color. Defaults to ``"white"``.
         leaf_marker_edge (Union[str, Callable[[Tree], str], None], optional): Marker edge color, or a function
             that takes a leaf and returns a color. Defaults to ``"black"``.
-        branch_linestyle (Union[dict, Callable[[Tree], dict], None], optional): Keyword arguments for
+        branch_linestyle (Union[dict, Callable[[Tuple[Tree, Tree]], dict], None], optional): Keyword arguments for
             :meth:`matplotlib.axes.Axes.plot` used to draw branches, or a function that takes a
             ``(parent, child)`` tuple and returns them. Defaults to None (thin black lines).
         ax (Optional[Ax], optional): Axes to plot on. A new figure is created when not given.
@@ -521,106 +563,59 @@ def treeplot(
 
     Returns:
         Union[Ax, Tuple[Ax, LayoutDict]]: The axes, or an ``(axes, layout)`` tuple if ``return_layout`` is True
+
+    Raises:
+        ValueError: If ``style`` is not a valid style
+        TypeError: If a styling option has an invalid type
     """
+    style = _tree_style(style)
+    radial = style == TreeStyle.radial
+    rectangular_layout, n_leaves = _rectangular_layout(tree, ltr=ltr, branchlengths=branchlengths)
     layout = calculate_tree_layout(tree=tree, style=style, ltr=ltr, branchlengths=branchlengths)
+
+    default_linestyle = dict(linewidth=1, color="black", zorder=1)
+    branch_linestyle_fun = _as_function(branch_linestyle, "branch_linestyle")
+    leaf_marker_fun = _as_function(leaf_marker, "leaf_marker")
+    leaf_marker_fill_fun = _as_function(leaf_marker_fill, "leaf_marker_fill")
+    leaf_marker_edge_fun = _as_function(leaf_marker_edge, "leaf_marker_edge")
 
     if not ax:
         _, ax = plt.subplots(figsize=(6, 6))
 
-    default_linestyle = dict(linewidth=1, color="black", zorder=1)
-    if branch_linestyle is None:
-
-        def linestyle_fun(_) -> dict:
-            return default_linestyle
-
-    elif isinstance(branch_linestyle, dict):
-
-        def linestyle_fun(_) -> dict:
-            return {**default_linestyle, **branch_linestyle}
-
-    elif callable(branch_linestyle):
-
-        def linestyle_fun(branch: Tuple[Tree, Tree]) -> dict:
-            return {**default_linestyle, **branch_linestyle(leaf)}
-
-    else:
-        raise TypeError(f"{type(branch_linestyle)} is not valid branch_linestyle type")
-
-    for node1, node2 in tree.links:
-        node1_x, node1_y = node1_coords = layout[node1.ID]
-        node2_x, node2_y = node2_coords = layout[node2.ID]
-        if node_labels:
-            ax.text(
-                node1_x,
-                node1_y,
-                node1.name,
-                fontsize=8,
-                verticalalignment="center_baseline",
-            )
-        if style == "square":
-            ax.plot((node1_x, node1_x), (node1_y, node2_y), **linestyle_fun((node1, node2)))
-            ax.plot((node1_x, node2_x), (node2_y, node2_y), **linestyle_fun((node1, node2)))
-        elif style == "radial":
-            if node2.root == node1:
-                ax.plot(
-                    (node1_x, node2_x),
-                    (node1_y, node2_y),
-                    **linestyle_fun((node1, node2)),
-                )
-            else:
-                corner = TwoDCoordinate(x=node1_coords.to_cartesian().x, y=node2_coords.to_cartesian().y).to_polar()
-
-                ax.plot(
-                    (node1_x, corner.x),
-                    (node1_y, corner.y),
-                    **linestyle_fun((node1, node2)),
-                )
-                ax.plot(
-                    (corner.x, node2_x),
-                    (corner.y, node2_y),
-                    **linestyle_fun((node1, node2)),
-                )
+    for parent, child in tree.links:
+        linestyle = {**default_linestyle, **(branch_linestyle_fun((parent, child)) or dict())}
+        parent_x, parent_y = layout[parent.ID]
+        child_x, child_y = layout[child.ID]
+        if style == TreeStyle.square:
+            ax.plot((parent_x, parent_x, child_x), (parent_y, child_y, child_y), **linestyle)
+        elif style == TreeStyle.triangular:
+            ax.plot((parent_x, child_x), (parent_y, child_y), **linestyle)
         else:
-            ax.plot((node1_x, node2_x), (node1_y, node2_y), **linestyle_fun((node1, node2)))
+            # arc at the radius of the parent, followed by a radial line to the child
+            parent_radius, parent_angle = _polar(rectangular_layout[parent.ID], n_leaves)
+            child_radius, child_angle = _polar(rectangular_layout[child.ID], n_leaves)
+            angles = np.linspace(parent_angle, child_angle, max(2, int(abs(child_angle - parent_angle) / 0.02)))
+            radii = np.append(np.full(angles.shape, parent_radius), child_radius)
+            angles = np.append(angles, child_angle)
+            ax.plot(radii * np.cos(angles), radii * np.sin(angles), **linestyle)
 
-    xmin, xmax = ax.get_xlim()
-    xspacer = 0.0  # 25  # 0.01 * (xmax - xmin)
-
-    if isinstance(leaf_marker, str):
-
-        def leaf_marker_fun(_):
-            return leaf_marker
-
-    elif callable(leaf_marker):
-        leaf_marker_fun = leaf_marker
-    elif leaf_marker is None:
-        pass
-    else:
-        raise TypeError(f"{type(leaf_marker)} is not a valid leaf_marker type")
-
-    if isinstance(leaf_marker_fill, str) or leaf_marker_fill is None:
-
-        def leaf_marker_fill_fun(_):
-            return leaf_marker_fill
-
-    elif callable(leaf_marker_fill):
-        leaf_marker_fill_fun = leaf_marker_fill
-    else:
-        raise TypeError(f"{type(leaf_marker)} is not a valid leaf_marker type")
-
-    if isinstance(leaf_marker_edge, str) or leaf_marker_edge is None:
-
-        def leaf_marker_edge_fun(_):
-            return leaf_marker_edge
-
-    elif callable(leaf_marker_edge):
-        leaf_marker_edge_fun = leaf_marker_edge
-    else:
-        raise TypeError(f"{type(leaf_marker)} is not a valid leaf_marker type")
+    if node_labels:
+        for node in tree.nodes:
+            if node.children and node.name:
+                x, y = layout[node.ID]
+                ax.annotate(
+                    node.name,
+                    (x, y),
+                    xytext=(-2, 2) if ltr or radial else (2, 2),
+                    textcoords="offset points",
+                    fontsize=8,
+                    horizontalalignment="right" if ltr or radial else "left",
+                    verticalalignment="bottom",
+                )
 
     for leaf in tree.leaves:
-        x, y = leaf_coords = layout[leaf.ID]
-        if leaf_marker:
+        x, y = layout[leaf.ID]
+        if leaf_marker is not None:
             ax.scatter(
                 x,
                 y,
@@ -630,39 +625,47 @@ def treeplot(
                 marker=leaf_marker_fun(leaf),
                 zorder=2,
             )
-
-        # x, y = leaf_coords = layout[leaf.ID]
-        if style == "radial":
-            # pass
-            polar_coords = leaf_coords.to_polar()
-            polar_coords.x *= 1.1
-            x, y = leaf_coords = polar_coords.to_cartesian()
+        if not leaf_labels:
+            continue
+        if radial:
+            _, angle = _polar(rectangular_layout[leaf.ID], n_leaves)
+            degrees = np.degrees(angle) % 360
+            flip = 90 < degrees < 270
+            text_options = dict(
+                xytext=(6 * np.cos(angle), 6 * np.sin(angle)),
+                rotation=degrees - 180 if flip else degrees,
+                rotation_mode="anchor",
+                horizontalalignment="right" if flip else "left",
+            )
         else:
-            x = x + xspacer if ltr else x - xspacer
-            y += 0.05
-        horizontalalignment = "left" if ltr else "right"
-        ax.text(
-            x,
-            y,
+            text_options = dict(xytext=(6, 0) if ltr else (-6, 0), horizontalalignment="left" if ltr else "right")
+        ax.annotate(
             leaf.name,
+            (x, y),
+            textcoords="offset points",
             fontsize=12,
-            in_layout=True,
-            clip_on=True,
-            verticalalignment="center_baseline",
-            horizontalalignment=horizontalalignment,
+            verticalalignment="center",
+            **text_options,
         )
 
     ax.set_xticks(())
-    xmin, xmax = ax.get_xlim()
-    if style != "radial":
-        if ltr:
-            ax.set_xlim((0.8 * xmin, 1.8 * xmax))
-        else:
-            ax.set_xlim((1.8 * xmin, 1.2 * xmax))
-
     ax.set_yticks(())
+    xmin, xmax = ax.get_xlim()
+    width = xmax - xmin
+    if radial:
+        # leave room for the leaf labels on all sides, and no rectangular frame around a circular tree
+        ax.set_aspect("equal")
+        for spine in ax.spines.values():
+            spine.set_visible(False)
+        ymin, ymax = ax.get_ylim()
+        ax.set_xlim((xmin - 0.4 * width, xmax + 0.4 * width))
+        ax.set_ylim((ymin - 0.4 * (ymax - ymin), ymax + 0.4 * (ymax - ymin)))
+    elif ltr:
+        ax.set_xlim((xmin, xmax + 0.8 * width))
+    else:
+        ax.set_xlim((xmin - 0.8 * width, xmax))
 
-    plt.tight_layout()
+    ax.figure.tight_layout()
 
     if return_layout:
         return (ax, layout)
