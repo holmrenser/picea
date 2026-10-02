@@ -1,3 +1,5 @@
+import sys
+from copy import deepcopy
 from unittest import TestCase
 
 from picea import (
@@ -147,3 +149,79 @@ class SequenceTests(TestCase):
         self.assertEqual(3, len(seq_col))
         self.assertIn("C", seq_col.headers)
         self.assertEqual(seq_col["C"].sequence, "GTAGT")
+
+
+class SequenceBugfixTests(TestCase):
+    def setUp(self):
+        self.fasta = ">A\nACGT\n>B\nGGCC\n>C\nTTAA"
+
+    def test_short_protein_is_amino_acid(self):
+        self.assertEqual(Sequence("p", "MKVLAAGIVGLL").alphabet, alphabets.AminoAcid)
+        self.assertEqual(Sequence("p", "MKV").alphabet, alphabets.AminoAcid)
+
+    def test_nucleotides_only_is_dna(self):
+        self.assertEqual(Sequence("d", "ACGT").alphabet, alphabets.DNA)
+        self.assertEqual(Sequence("d", "acgtn").alphabet, alphabets.DNA)
+
+    def test_derived_sequences_keep_alphabet(self):
+        protein = Sequence("p", "MACGTACGT")
+        self.assertEqual(protein[1:].alphabet, alphabets.AminoAcid)
+        self.assertEqual(protein.reverse.alphabet, alphabets.AminoAcid)
+        self.assertEqual(Sequence("d", "ATGGCC").amino_acids.alphabet, alphabets.AminoAcid)
+
+    def test_deepcopy_alphabet(self):
+        self.assertEqual(deepcopy(alphabets.DNA), alphabets.DNA)
+
+    def test_sequencereader_next(self):
+        reader = SequenceReader(string=self.fasta, filetype="fasta")
+        self.assertEqual([next(reader).header for _ in range(3)], ["A", "B", "C"])
+        with self.assertRaises(StopIteration):
+            next(reader)
+
+    def test_batchsequencereader_last_partial_batch(self):
+        batches = list(BatchSequenceReader(string=self.fasta, filetype="fasta", batchsize=2))
+        self.assertEqual([batch.headers for batch in batches], [["A", "B"], ["C"]])
+        self.assertEqual(batches[0]["A"].sequence, "ACGT")
+
+    def test_batchsequencereader_next(self):
+        reader = BatchSequenceReader(string=self.fasta, filetype="fasta", batchsize=2)
+        self.assertEqual(next(reader).headers, ["A", "B"])
+        self.assertEqual(next(reader).headers, ["C"])
+        with self.assertRaises(StopIteration):
+            next(reader)
+
+    def test_add_collections(self):
+        for cls in (SequenceCollection, MultipleSequenceAlignment):
+            seqs = cls.from_fasta(string=self.fasta)
+            other = cls.from_fasta(string=">D\nGGGG")
+            combined = seqs + other
+            self.assertIsInstance(combined, cls)
+            self.assertEqual(combined.headers, ["A", "B", "C", "D"])
+            self.assertEqual(combined["D"].sequence, "GGGG")
+
+    def test_delitem(self):
+        for cls in (SequenceCollection, MultipleSequenceAlignment):
+            seqs = cls.from_fasta(string=self.fasta)
+            del seqs["B"]
+            self.assertEqual(seqs.headers, ["A", "C"])
+            self.assertEqual(seqs["C"].sequence, "TTAA")
+
+    def test_iloc_negative_and_step(self):
+        seqs = SequenceCollection.from_fasta(string=self.fasta)
+        self.assertEqual(seqs.iloc[-2:].headers, ["B", "C"])
+        self.assertEqual(seqs.iloc[::2].headers, ["A", "C"])
+        self.assertEqual(seqs.iloc[-1].headers, ["C"])
+
+    def test_to_nexus(self):
+        msa = MultipleSequenceAlignment.from_fasta(string=">a\nAC-GT\n>b\nACCGT")
+        lines = msa.to_nexus().split("\n")
+        self.assertEqual(lines[0], "begin data;")
+        self.assertIn("    dimensions ntax=2 nchar=5;", lines)
+        self.assertIn("    a AC-GT", lines)
+        protein = MultipleSequenceAlignment.from_fasta(string=">a\nMKVL\n>b\nMK-L")
+        self.assertIn("    format datatype=protein gap=-;", protein.to_nexus().split("\n"))
+
+    def test_align_failure_raises(self):
+        seqs = SequenceCollection.from_fasta(string=self.fasta)
+        with self.assertRaises(RuntimeError):
+            seqs.align(method=sys.executable, method_kwargs={"-c": "import sys; sys.exit(1)"})

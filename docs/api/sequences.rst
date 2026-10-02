@@ -8,6 +8,7 @@ Sequences
    Sequence
    Alphabet
    alphabets
+   guess_alphabet
    SequenceCollection
    MultipleSequenceAlignment
    AbstractSequenceCollection
@@ -20,6 +21,8 @@ Sequences
 
 .. autodata:: alphabets
    :no-value:
+
+.. autofunction:: guess_alphabet
 
 .. autoclass:: SequenceCollection
 

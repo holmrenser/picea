@@ -138,7 +138,7 @@ class Alphabet(set):
         super().__init__(self.members)
 
     def __deepcopy__(self, memo) -> "Alphabet":
-        return Alphabet(self, self.name)
+        return Alphabet(self.name, self.members)
 
     def score(
         self,
@@ -225,7 +225,7 @@ def alphabet_factory(alphabet):
     """
     return dict(
         DNA=lambda: Alphabet("DNA", "-?acgtnACGNT"),
-        RNA=lambda: Alphabet("RNA", "-?acgtnACGNU"),
+        RNA=lambda: Alphabet("RNA", "-?acgunACGNU"),
         AminoAcid=lambda: Alphabet("AminoAcid", "*-?acdefghiklmnpqrstvwxyACDEFGHIKLMNPQRSTVWXY"),
     )[alphabet]
 
@@ -245,6 +245,27 @@ class Alphabets:
 
 
 alphabets = Alphabets()
+
+
+def guess_alphabet(sequence: str, n_chars: int = 100) -> Alphabet:
+    """Guess the alphabet of a sequence string: the alphabet that contains the most sequence characters. Ties go to
+    the smallest alphabet, so a sequence of only nucleotide characters is DNA.
+
+    Examples:
+        >>> guess_alphabet('ACGTTGCA').name
+        'DNA'
+        >>> guess_alphabet('MKVLAAGIVGLL').name
+        'AminoAcid'
+
+    Args:
+        sequence (str): Sequence string
+        n_chars (int, optional): Number of sequence characters to use. Defaults to 100.
+
+    Returns:
+        Alphabet: Best matching alphabet
+    """
+    chars = sequence[:n_chars]
+    return max(sorted(alphabets, key=len), key=lambda alphabet: sum(char in alphabet for char in chars))
 
 
 def quote_gff3(attribute_value: Union[int, str, float]) -> str:
@@ -1085,7 +1106,7 @@ class Sequence:
         header (str): Sequence name
         sequence (str): Sequence string
         alphabet (Alphabet): Sequence alphabet. Detected from the sequence when not given (see
-            :meth:`Alphabet.score`).
+            :func:`guess_alphabet`). Sequences derived from this one (slices, complements, etc.) keep the alphabet.
         annotation (Optional[SequenceAnnotation]): Annotation of the sequence. Defaults to an empty annotation.
     """
 
@@ -1100,7 +1121,7 @@ class Sequence:
         if self.sequence is None:
             self.alphabet = alphabets.DNA
         else:
-            self.alphabet = sorted(alphabets, key=lambda alphabet: alphabet.score(self.sequence)).pop()
+            self.alphabet = guess_alphabet(self.sequence)
 
     def __getitem__(self, key) -> "Sequence":
         """Subset a sequence based on a key (can be int or slice)
@@ -1113,7 +1134,7 @@ alphabet=Alphabet(name='DNA', members='-?acgtnACGNT'))
             >>> len(s[2:])
             3
         """
-        return Sequence(self.header, self.sequence[key])
+        return Sequence(self.header, self.sequence[key], alphabet=self.alphabet)
 
     def __len__(self) -> int:
         """Length of the sequence
@@ -1134,7 +1155,7 @@ alphabet=Alphabet(name='DNA', members='-?acgtnACGNT'))
             >>> s.uppercase.sequence
             'ACGTA'
         """
-        return Sequence(self.header, self.sequence.upper())
+        return Sequence(self.header, self.sequence.upper(), alphabet=self.alphabet)
 
     @property
     def lowercase(self) -> "Sequence":
@@ -1145,7 +1166,7 @@ alphabet=Alphabet(name='DNA', members='-?acgtnACGNT'))
             >>> s.lowercase.sequence
             'acgta'
         """
-        return Sequence(self.header, self.sequence.lower())
+        return Sequence(self.header, self.sequence.lower(), alphabet=self.alphabet)
 
     @property
     def reverse(self) -> "Sequence":
@@ -1156,7 +1177,7 @@ alphabet=Alphabet(name='DNA', members='-?acgtnACGNT'))
             >>> s.reverse.sequence
             'ATGCA'
         """
-        return Sequence(self.header, self.sequence[::-1])
+        return Sequence(self.header, self.sequence[::-1], alphabet=self.alphabet)
 
     @property
     def complement(self) -> "Sequence":
@@ -1167,7 +1188,7 @@ alphabet=Alphabet(name='DNA', members='-?acgtnACGNT'))
             >>> s.complement.sequence
             'TGCAT'
         """
-        return Sequence(self.header, self.alphabet.complement(self.sequence))
+        return Sequence(self.header, self.alphabet.complement(self.sequence), alphabet=self.alphabet)
 
     @property
     def reverse_complement(self) -> "Sequence":
@@ -1181,7 +1202,7 @@ alphabet=Alphabet(name='DNA', members='-?acgtnACGNT'))
             >>> s.reverse_complement.sequence == s.reverse.complement.sequence == s.complement.reverse.sequence
             True
         """
-        return Sequence(self.header, self.alphabet.complement(self.sequence[::-1]))
+        return Sequence(self.header, self.alphabet.complement(self.sequence[::-1]), alphabet=self.alphabet)
 
     @property
     def amino_acids(self) -> "Sequence":
@@ -1195,7 +1216,7 @@ alphabet=Alphabet(name='DNA', members='-?acgtnACGNT'))
         if self.alphabet.name == "AminoAcid":
             return self
         else:
-            return Sequence(self.header, self.alphabet.translate(self.sequence))
+            return Sequence(self.header, self.alphabet.translate(self.sequence), alphabet=alphabets.AminoAcid)
 
     def to_dict(self) -> Dict[str, str]:
         """Make dictionary with header and sequence elements
@@ -1279,6 +1300,7 @@ class SequenceReader:
                 string = filehandle.read().strip()
 
         self.string = string
+        self._iterator = None
 
         if filetype == "fasta":
             self._iter = self._fasta_iter
@@ -1293,10 +1315,7 @@ class SequenceReader:
         Yields:
             Sequence: Next sequence
         """
-        try:
-            yield from self._iter()
-        except StopIteration:
-            return
+        yield from self._iter()
 
     def __next__(self) -> Sequence:
         """Next sequence
@@ -1304,7 +1323,9 @@ class SequenceReader:
         Returns:
             Sequence: Next sequence
         """
-        return next(self._iter())
+        if self._iterator is None:
+            self._iterator = self._iter()
+        return next(self._iterator)
 
     def _fasta_iter(self) -> Iterable[Sequence]:
         if self.string[0] != ">":
@@ -1325,13 +1346,13 @@ class SequenceReader:
 
 class BatchSequenceReader(SequenceReader):
     """Iterator over batches of sequences in a fasta or json formatted file or string. Every batch is a
-    :class:`SequenceCollection` of ``batchsize`` sequences.
+    :class:`SequenceCollection` of ``batchsize`` sequences, except for the last batch, which can be smaller.
 
     Examples:
-        >>> fasta_string = '>1\\nACGC\\n>2\\nTGTGTA\\n>3\\nAAGT\\n>4\\nCCA\\n'
+        >>> fasta_string = '>1\\nACGC\\n>2\\nTGTGTA\\n>3\\nAAGT\\n>4\\nCCA\\n>5\\nGGA\\n'
         >>> reader = BatchSequenceReader(string=fasta_string, filetype='fasta', batchsize=2)
         >>> [batch.headers for batch in reader]
-        [['1', '2'], ['3', '4']]
+        [['1', '2'], ['3', '4'], ['5']]
 
     Args:
         string (str): fasta or json formatted string
@@ -1349,24 +1370,31 @@ class BatchSequenceReader(SequenceReader):
     ) -> None:
         super().__init__(string, filename, filetype)
         self.batchsize = batchsize
-        self._currentbatch = SequenceCollection()
 
     def __iter__(self) -> Iterable["SequenceCollection"]:
-        for s in self._iter():
-            self._currentbatch[s.header] = s
-            if len(self._currentbatch) == self.batchsize:
-                yield self._currentbatch
-                self._currentbatch = SequenceCollection()
+        """Iterate over all batches. The last batch can have fewer than ``batchsize`` sequences.
+
+        Yields:
+            SequenceCollection: Next batch
+        """
+        batch = SequenceCollection()
+        for seq in self._iter():
+            batch[seq.header] = seq.sequence
+            if len(batch) == self.batchsize:
+                yield batch
+                batch = SequenceCollection()
+        if len(batch):
+            yield batch
 
     def __next__(self) -> "SequenceCollection":
-        currentbatch = self._currentbatch
-        self._currentbatch = SequenceCollection()
-        if len(currentbatch) == self.batchsize:
-            return currentbatch
-        for s in self._iter():
-            currentbatch[s.header] = s
-            if len(currentbatch) == self.batchsize:
-                yield currentbatch
+        """Next batch
+
+        Returns:
+            SequenceCollection: Next batch
+        """
+        if self._iterator is None:
+            self._iterator = iter(self)
+        return next(self._iterator)
 
 
 SequenceIndexKey = Union[int, List[int], slice]
@@ -1385,10 +1413,7 @@ class SequenceIndex:
         if isinstance(key, int):
             key = [key]
         elif isinstance(key, slice):
-            start = key.start if key.start is not None else 0
-            stop = key.stop if key.stop is not None else len(self.sequence_collection)
-            step = key.step if key.step is not None else 1
-            key = range(start, stop, step)
+            key = range(*key.indices(len(self.sequence_collection)))
         elif not isinstance(key, list):
             raise TypeError(f"SequenceIndex key must be of type f{SequenceIndexKey}")
         new_seq_col = self.sequence_collection.__class__()
@@ -1447,6 +1472,8 @@ class AbstractSequenceCollection(metaclass=ABCMeta):
 
     def __add__(self: SequenceType, other: SequenceType) -> SequenceType:
         new_collection = self.__class__()
+        for seq in chain(self, other):
+            new_collection[seq.header] = seq.sequence
         return new_collection
 
     @property
@@ -1695,13 +1722,18 @@ class SequenceCollection(AbstractSequenceCollection):
 
         Returns:
             MultipleSequenceAlignment: Aligned sequences
+
+        Raises:
+            RuntimeError: If the aligner exits with an error
         """
         if not method_kwargs:
             method_kwargs = dict()
         fasta = self.to_fasta()
         command = [method, *chain(*method_kwargs.items()), "-"]
         process = Popen(command, stdin=PIPE, stdout=PIPE, stderr=PIPE)
-        stdout, _ = process.communicate(input=fasta.encode())
+        stdout, stderr = process.communicate(input=fasta.encode())
+        if process.returncode != 0:
+            raise RuntimeError(f"{method} exited with code {process.returncode}: {stderr.decode().strip()}")
         aligned_fasta = stdout.decode().strip()
         return MultipleSequenceAlignment.from_fasta(string=aligned_fasta)
 
@@ -1729,7 +1761,6 @@ class MultipleSequenceAlignment(SequenceCollection):
         sequences: Optional[Iterable[Sequence]] = None,
         sequence_annotation: Optional["SequenceAnnotation"] = None,
     ) -> None:
-        super(MultipleSequenceAlignment).__init__()
         self._collection = np.empty((0, 0), dtype="uint8")
         self._header_idx = dict()
         if sequences:
@@ -1765,6 +1796,9 @@ class MultipleSequenceAlignment(SequenceCollection):
             self._collection = arr
         self._header_idx[header] = n_seq
 
+    def __delitem__(self, header: str) -> None:
+        self.pop(header)
+
     def __getitem__(self, header: str) -> Sequence:
         idx = self._header_idx[header]
         n_chars = self._collection.shape[1]
@@ -1790,21 +1824,35 @@ class MultipleSequenceAlignment(SequenceCollection):
         return self._collection.shape
 
     def to_nexus(self) -> str:
-        """Nexus ``data`` block with the alignment (the datatype is always ``dna``)
+        """Nexus ``data`` block with the alignment. The datatype is ``protein`` if any sequence is an amino acid
+        sequence, and ``dna`` otherwise.
+
+        Examples:
+            >>> msa = MultipleSequenceAlignment.from_fasta(string='>a\\nAC-GT\\n>b\\nACCGT')
+            >>> print(msa.to_nexus())
+            begin data;
+                dimensions ntax=2 nchar=5;
+                format datatype=dna gap=-;
+                matrix
+                a AC-GT
+                b ACCGT
+                ;
+            end;
 
         Returns:
             str: Nexus formatted string
         """
-        sequences = "\n".join([f"{s.header} {s.sequence}" for s in self])
-        return (
-            "begin data;"
-            f"\tdimensions ntax={self.n_seqs} nchar={self.n_chars};"
-            "\tformat datatype=dna gap=-;"
-            "\tmatrix"
-            f"\t{sequences}"
-            "\t;"
-            "end;"
-        )
+        datatype = "protein" if any(seq.alphabet.name == "AminoAcid" for seq in self) else "dna"
+        lines = [
+            "begin data;",
+            f"    dimensions ntax={self.n_seqs} nchar={self.n_chars};",
+            f"    format datatype={datatype} gap=-;",
+            "    matrix",
+            *(f"    {seq.header} {seq.sequence}" for seq in self),
+            "    ;",
+            "end;",
+        ]
+        return "\n".join(lines)
 
     def pop(self, header: str) -> Sequence:
         pop_idx = self._header_idx[header]
