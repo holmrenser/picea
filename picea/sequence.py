@@ -192,9 +192,9 @@ class Alphabet(set):
             str: complementary strand sequence string
         """
         if self.name == "DNA":
-            complement = dict(zip("acgtnACGTN-?", "tgcanTGCAN-?"))
+            complement = dict(zip("acgtnACGTN-?", "tgcanTGCAN-?", strict=True))
         elif self.name == "RNA":
-            complement = dict(zip("acgunACGUN-?", "ugcanUGCAN-?"))
+            complement = dict(zip("acgunACGUN-?", "ugcanUGCAN-?", strict=True))
         else:
             raise TypeError("Cannot complement non-DNA or non-RNA alphabet")
         return "".join(complement[s] for s in sequence)
@@ -248,11 +248,14 @@ alphabets = Alphabets()
 
 
 def quote_gff3(attribute_value: Union[int, str, float]) -> str:
-    """pattern, repl = ENCODE_SPECIAL_CHARACTERS[0]
-    quoted_value = re.sub(pattern, repl, attribute_value)
-    for pattern, repl in ENCODE_SPECIAL_CHARACTERS[1:]:
-        quoted_value = re.sub(pattern, repl, attribute_value)
-    return quoted_value"""
+    """Percent-encode characters that have a special meaning in GFF3 attribute values
+
+    Args:
+        attribute_value (Union[int, str, float]): Attribute value
+
+    Returns:
+        str: Encoded attribute value
+    """
     return reduce(
         lambda acc, code: re.sub(code[0], code[1], acc),  # func
         ENCODE_SPECIAL_CHARACTERS,  # iterable
@@ -261,13 +264,13 @@ def quote_gff3(attribute_value: Union[int, str, float]) -> str:
 
 
 def encode_attribute_value(attribute_value: Iterable[Union[int, str, float]]) -> str:
-    """[summary]
+    """Encode one or more GFF3 attribute values as a comma-separated string
 
     Args:
-        attribute_value (Iterable[Union[int, str, float]]): [description]
+        attribute_value (Iterable[Union[int, str, float]]): Single value, or list/tuple of values
 
     Returns:
-        str: [description]
+        str: Comma-separated, percent-encoded values
     """
     if not isinstance(attribute_value, (list, tuple)):
         attribute_value = [attribute_value]
@@ -275,25 +278,26 @@ def encode_attribute_value(attribute_value: Iterable[Union[int, str, float]]) ->
 
 
 def format_gtf_attribute_string(attributes: Dict[str, Iterable[Union[int, str, float]]]) -> str:
-    """[summary]
+    """Format attributes as a GTF column 9 string (``key "value";``)
 
     Args:
-        attributes (Dict[str, Iterable[Union[int, str, float]]]): [description]
+        attributes (Dict[str, Iterable[Union[int, str, float]]]): Attribute names and values
 
     Returns:
-        str: [description]
+        str: GTF attribute string
     """
     return "".join(f' {key} "{encode_attribute_value(value)}";' for key, value in attributes.items()).strip()
 
 
 def format_gff_attribute_string(attributes: Dict[str, Iterable[Union[int, str, float]]]) -> str:
-    """[summary]
+    """Format attributes as a GFF3 column 9 string (``key=value;``). Predefined GFF3 attributes are capitalized, and
+    ``ID`` and ``Parent`` are written first.
 
     Args:
-        attributes (Dict[str, Iterable[Union[int, str, float]]]): [description]
+        attributes (Dict[str, Iterable[Union[int, str, float]]]): Attribute names and values, must contain ``ID``
 
     Returns:
-        str: [description]
+        str: GFF3 attribute string
     """
     partially_formatted = {
         (key.capitalize() if key in SequenceInterval._predefined_gff3_attributes else key): encode_attribute_value(
@@ -315,13 +319,13 @@ def format_gff_attribute_string(attributes: Dict[str, Iterable[Union[int, str, f
 
 
 def unquote_gff3(attribute_value: str) -> str:
-    """[summary]
+    """Decode percent-encoded characters in a GFF3 attribute value
 
     Args:
-        attribute_value (str): [description]
+        attribute_value (str): Encoded attribute value
 
     Returns:
-        str: [description]
+        str: Decoded attribute value
     """
     return reduce(
         lambda acc, code: re.sub(code[0], code[1], acc),  # func
@@ -331,25 +335,26 @@ def unquote_gff3(attribute_value: str) -> str:
 
 
 def decode_attribute_value(attribute_value: str) -> List[str]:
-    """[summary]
+    """Split a comma-separated GFF3 attribute value and decode every part
 
     Args:
-        attribute_value (str): [description]
+        attribute_value (str): Encoded attribute value
 
     Returns:
-        List[str]: [description]
+        List[str]: Decoded values
     """
     return [unquote_gff3(v) for v in attribute_value.split(",")]
 
 
 def parse_gtf_attribute_string(gtf_attribute_string: str) -> Dict[str, List[str]]:
-    """[summary]
+    """Parse a GTF column 9 string (``key "value";``) into a dictionary. Values are lists: repeated keys are
+    collected in the same list.
 
     Args:
-        gtf_attribute_string (str): [description]
+        gtf_attribute_string (str): GTF attribute string
 
     Returns:
-        Dict[str, List[str]]: [description]
+        Dict[str, List[str]]: Attribute names and values
     """
     attributes = defaultdict(list)
     for string_part in gtf_attribute_string.split(";"):
@@ -368,11 +373,18 @@ def parse_gtf_attribute_string(gtf_attribute_string: str) -> Dict[str, List[str]
 def parse_gff_attribute_string(
     gff_attribute_string: str, case_sensitive_attribute_keys: bool = False
 ) -> Dict[str, List[str]]:
-    """[summary]
+    """Parse a GFF3 column 9 string (``key=value;``) into a dictionary.
+
+    Keys are lowercased (except ``ID``), and keys that collide with the eight fixed GFF3 columns get an underscore
+    prefix. Values are split on commas and percent-decoded, so every value is a list. See "Column 9: Attributes" in
     https://github.com/The-Sequence-Ontology/Specifications/blob/master/gff3.md
-    See "Column 9: Attributes"
+
     Args:
-        gff_attribute_string ([type]): [description]
+        gff_attribute_string (str): GFF3 attribute string
+        case_sensitive_attribute_keys (bool): Currently unused
+
+    Returns:
+        Dict[str, List[str]]: Attribute names and values
     """
     attributes = defaultdict(list)
     for string_part in gff_attribute_string.split(";"):
@@ -404,13 +416,29 @@ def parse_gff_attribute_string(
 
 
 class SequenceAnnotation(DirectedAcyclicGraph):
-    def __init__(self, sequence: Optional["Sequence"] = None) -> None:
-        """[summary]
+    """Sequence annotation: a collection of :class:`SequenceInterval` objects (genes, mRNAs, exons, ...) stored by
+    ID, and linked into a directed acyclic graph by their ``Parent`` attributes.
 
-        Args:
-            sequence (Optional[Sequence], optional): [description]. Defaults\
-                 to None.
-        """
+    Intervals with duplicate IDs are renamed (``ID_1``, ``ID_2``, ...) with a warning.
+
+    Examples:
+        >>> gff = (
+        ...     "ctg1\\t.\\tgene\\t1\\t90\\t.\\t+\\t.\\tID=gene1\\n"
+        ...     "ctg1\\t.\\tmRNA\\t1\\t90\\t.\\t+\\t.\\tID=mRNA1;Parent=gene1\\n"
+        ... )
+        >>> annotation = SequenceAnnotation.from_gff(string=gff)
+        >>> len(annotation)
+        2
+        >>> annotation["mRNA1"].parent
+        ['gene1']
+        >>> [interval.ID for interval in annotation["gene1"].children]
+        ['mRNA1']
+
+    Args:
+        sequence (Optional[Sequence]): Annotated sequence. If given, its ``annotation`` is set to this annotation.
+    """
+
+    def __init__(self, sequence: Optional["Sequence"] = None) -> None:
         super().__init__()
         if sequence:
             sequence.annotation = self
@@ -419,6 +447,7 @@ class SequenceAnnotation(DirectedAcyclicGraph):
 
     @property
     def intervals(self):
+        """List of all intervals"""
         return list(self)
 
     def _link_parents(self) -> None:
@@ -447,14 +476,20 @@ class SequenceAnnotation(DirectedAcyclicGraph):
         sequence: Optional["Sequence"] = None,
         link_parents: Optional[bool] = True,
     ) -> "SequenceAnnotation":
-        """[summary]
+        """Read a GTF formatted file or string. Exactly one of ``filename`` or ``string`` must be given.
 
-        Raises:
-            IndexError: [description]
-            IndexError: [description]
+        GTF lines are linked by their ``gene_id`` and ``transcript_id`` attributes. Gene and transcript (mRNA)
+        intervals are created from these, spanning all their child intervals.
+
+        Args:
+            filename (Optional[str]): GTF filename
+            string (Optional[str]): GTF formatted string
+            sequence (Optional[Sequence]): Annotated sequence
+            link_parents (Optional[bool]): Link parent intervals to their children, so that
+                :attr:`~SequenceInterval.children` works
 
         Returns:
-            [type]: [description]
+            SequenceAnnotation: Sequence annotation
         """
         assert filename or string
         assert not (filename and string)
@@ -540,6 +575,11 @@ class SequenceAnnotation(DirectedAcyclicGraph):
         return sequence_annotation
 
     def to_gtf(self) -> str:
+        """GTF formatted string with all intervals
+
+        Returns:
+            str: GTF formatted string
+        """
         return "\n".join(interval.to_gtf_line() for interval in self)
 
     @classmethod
@@ -550,16 +590,18 @@ class SequenceAnnotation(DirectedAcyclicGraph):
         sequence: Optional["Sequence"] = None,
         link_parents: bool = True,
     ) -> "SequenceAnnotation":
-        """[summary]
+        """Read a GFF3 formatted file or string. Exactly one of ``filename`` or ``string`` must be given. Comment lines
+        are skipped, and reading stops at a ``##FASTA`` line.
 
         Args:
-            filename ([type], optional): [description]. Defaults to None.
-            string ([type], optional): [description]. Defaults to None.
-            sequence ([type], optional): [description].
-                Defaults to None.
+            filename (Optional[str]): GFF3 filename
+            string (Optional[str]): GFF3 formatted string
+            sequence (Optional[Sequence]): Annotated sequence
+            link_parents (bool): Link parent intervals to their children, so that
+                :attr:`~SequenceInterval.children` works
 
         Returns:
-            [type]: [description]
+            SequenceAnnotation: Sequence annotation
         """
         assert filename or string
         assert not (filename and string)
@@ -591,10 +633,10 @@ class SequenceAnnotation(DirectedAcyclicGraph):
         return sequence_annotation
 
     def to_gff(self) -> str:
-        """[summary]
+        """GFF3 formatted string with all intervals (without header lines)
 
         Returns:
-            str: [description]
+            str: GFF3 formatted string
         """
         return "".join(interval.to_gff_line(trailing_newline=True) for interval in self)
 
@@ -605,7 +647,20 @@ class SequenceAnnotation(DirectedAcyclicGraph):
         string: Optional[str] = None,
         sequence: Optional["Sequence"] = None,
     ) -> "SequenceAnnotation":
-        """[summary]"""
+        """Read a json formatted file or string, as written by :meth:`to_json`. Exactly one of ``filename`` or
+        ``string`` must be given.
+
+        The json must be a list of interval dictionaries (see :meth:`SequenceInterval.to_dict`). Each interval
+        dictionary can have a ``children`` list with more interval dictionaries.
+
+        Args:
+            filename (Optional[str]): json filename
+            string (Optional[str]): json formatted string
+            sequence (Optional[Sequence]): Annotated sequence
+
+        Returns:
+            SequenceAnnotation: Sequence annotation
+        """
         assert filename or string
         assert not (filename and string)
         if filename:
@@ -639,16 +694,49 @@ class SequenceAnnotation(DirectedAcyclicGraph):
         return sequence_annotation
 
     def to_json(self, indent: Optional[int] = None) -> str:
-        """[summary]
+        """json formatted string with a list of interval dictionaries (see :meth:`SequenceInterval.to_dict`)
+
+        Args:
+            indent (Optional[int]): Indentation, passed to :func:`json.dumps`
 
         Returns:
-            str: [description]
+            str: json formatted string
         """
         interval_dicts = [interval.to_dict() for interval in self]
         return json.dumps(interval_dicts, indent=indent)
 
 
 class SequenceInterval(DAGElement):
+    """Single annotated interval on a sequence, such as a gene, mRNA, exon or CDS. Corresponds to one line in a
+    GFF3 or GTF file.
+
+    The eight fixed GFF3 columns are stored as attributes (``seqid``, ``source``, ``interval_type``, ``start``,
+    ``end``, ``score``, ``strand``, ``phase``). Column 9 attributes are stored as additional attributes with
+    lowercase keys (except ``ID``) and list values, and can also be accessed by key (``interval["name"]``).
+    Predefined GFF3 attributes that are not set are ``None``.
+
+    Examples:
+        >>> interval = SequenceInterval.from_gff_line("ctg1\\t.\\tgene\\t1000\\t9000\\t.\\t+\\t.\\tID=gene1;Name=EDEN")
+        >>> interval.interval_type, interval.start, interval.end, interval.strand
+        ('gene', 1000, 9000, '+')
+        >>> interval.name
+        ['EDEN']
+
+    Args:
+        ID (Optional[str]): Unique identifier
+        seqid (Optional[str]): Name of the sequence the interval is on (e.g. a chromosome)
+        source (Optional[str]): Program or database that produced the interval
+        interval_type (Optional[str]): Feature type, e.g. ``gene``, ``mRNA``, ``exon`` or ``CDS``
+        start (Optional[int]): Start position (as in GFF3: 1-based, inclusive)
+        end (Optional[int]): End position (as in GFF3: 1-based, inclusive)
+        score (Optional[float]): Score
+        strand (Optional[str]): ``+``, ``-`` or ``.``
+        phase (Optional[str]): Phase of CDS intervals: ``0``, ``1``, ``2`` or ``.``
+        children (Optional[List[str]]): IDs of child intervals
+        container (Optional[SequenceAnnotation]): Annotation the interval belongs to
+        **kwargs: Additional attributes. ``parent`` is the list of parent interval IDs.
+    """
+
     _predefined_gff3_attributes = (
         "ID",
         "name",
@@ -689,25 +777,6 @@ class SequenceInterval(DAGElement):
         container: Optional[SequenceAnnotation] = None,
         **kwargs,
     ):
-        """[summary]
-
-        Args:
-            ID (Optional[str], optional): [description]. Defaults to None.
-            seqid (Optional[str], optional): [description]. Defaults to None.
-            source (Optional[str], optional): [description]. Defaults to None.
-            interval_type (Optional[str], optional): [description]. Defaults
-                to None.
-            start (Optional[int], optional): [description]. Defaults to None.
-            end (Optional[int], optional): [description]. Defaults to None.
-            score (Optional[float], optional): [description]. Defaults to None.
-            strand (Optional[str], optional): [description]. Defaults to None.
-            phase (Optional[str], optional): [description]. Defaults to
-                None.
-            children (Optional[List], optional): [description]. Defaults to
-                None.
-            container (Optional[SequenceAnnotation], optional): [description].
-                Defaults to None.
-        """
         parents = kwargs.pop("parent", None)
         super().__init__(ID=ID, children=children, container=container, parents=parents)
 
@@ -742,6 +811,9 @@ class SequenceInterval(DAGElement):
 
     @property
     def parent(self):
+        """IDs of the direct parent intervals (the GFF3 ``Parent`` attribute). Can be set with a single ID or a list of
+        IDs. See :attr:`parents` for all ancestors.
+        """
         return self._parents
 
     @parent.setter
@@ -752,6 +824,9 @@ class SequenceInterval(DAGElement):
 
     @property
     def gff_attributes(self) -> Dict[str, str]:
+        """Column 9 attributes as a dictionary, including ``ID`` and ``Parent``. Attributes that are ``None`` are left
+        out.
+        """
         gff_attributes = {
             attr: self[attr]  # dictionary comprehension
             for attr in self.__dict__
@@ -776,6 +851,9 @@ class SequenceInterval(DAGElement):
 
     @property
     def gtf_attributes(self) -> Dict[str, str]:
+        """Attributes for GTF output: :attr:`gff_attributes`, plus a ``<type>_id`` attribute for every ancestor (e.g.
+        ``transcript_id`` and ``gene_id`` for an exon)
+        """
         def get_gtf_type(gff_interval_type):
             return self._gtf_interval_types.get(gff_interval_type, gff_interval_type)
 
@@ -791,21 +869,25 @@ class SequenceInterval(DAGElement):
 
     @classmethod
     def from_gtf_line(cls, gtf_line: Optional[str] = None, line_number: Optional[int] = None) -> "SequenceInterval":
-        """[summary]
+        """Create an interval from a single GTF line
+
+        Args:
+            gtf_line (Optional[str]): GTF formatted line
+            line_number (Optional[int]): Line number, used in error messages
 
         Returns:
-            [type]: [description]
+            SequenceInterval: Interval
 
-        Yields:
-            [type]: [description]
+        Raises:
+            ValueError: If the start, end, score, strand, or phase column has an invalid value
         """
         return cls.from_gff_line(gtf_line, line_number, parse_gtf_attribute_string)
 
     def to_gtf_line(self) -> str:
-        """[summary]
+        """GTF formatted line (without a trailing newline). The ``mRNA`` type is written as ``transcript``.
 
         Returns:
-            str: [description]
+            str: GTF formatted line
         """
         interval_type = self._gtf_interval_types.get(self.interval_type, self.interval_type)
         return "\t".join(
@@ -829,16 +911,18 @@ class SequenceInterval(DAGElement):
         line_number: Optional[int] = None,
         attribute_parser: Callable = parse_gff_attribute_string,
     ) -> "SequenceInterval":
-        """[summary]
+        """Create an interval from a single GFF3 line. Intervals without an ``ID`` attribute get a random UUID.
 
         Args:
-            gff_line (Optional[str], optional): [description]. Defaults
-                to None.
-            line_number (Optional[int], optional): [description]. Defaults
-                to None.
+            gff_line (Optional[str]): GFF3 formatted line
+            line_number (Optional[int]): Line number, used in error messages
+            attribute_parser (Callable): Function that parses column 9 into a dictionary of lists
 
         Returns:
-            [type]: [description]
+            SequenceInterval: Interval
+
+        Raises:
+            ValueError: If the start, end, score, strand, or phase column has an invalid value
         """
         gff_parts = gff_line.split("\t")
         assert len(gff_parts) == 9, gff_parts
@@ -901,10 +985,13 @@ class SequenceInterval(DAGElement):
         )
 
     def to_gff_line(self, trailing_newline: bool = False) -> str:
-        """[summary]
+        """GFF3 formatted line
+
+        Args:
+            trailing_newline (bool): End the line with a newline
 
         Returns:
-            str: [description]
+            str: GFF3 formatted line
         """
         # attributes = dict(ID=self.ID, **self.gff_attributes)
 
@@ -927,21 +1014,26 @@ class SequenceInterval(DAGElement):
 
     @classmethod
     def from_dict(cls, interval_dict: Dict[str, Any]) -> "SequenceInterval":
-        """[summary]
+        """Create an interval from a dictionary, as created by :meth:`to_dict`
+
         Args:
-            interval_dict
+            interval_dict (Dict[str, Any]): The eight fixed GFF3 fields, ``ID``, and an ``attributes`` dictionary
 
         Returns:
-            [type]: [description]
+            SequenceInterval: Interval
         """
         attributes = interval_dict.pop("attributes", dict())
         return cls(**interval_dict, **attributes)
 
     def to_dict(self, include_children: bool = False) -> Dict[str, Any]:
-        """[summary]
+        """Dictionary with the eight fixed GFF3 fields, ``ID``, and an ``attributes`` dictionary with all other
+        attributes
+
+        Args:
+            include_children (bool): Add a ``children`` list with the dictionaries of all descendant intervals
 
         Returns:
-            Dict[str, Any]: [description]
+            Dict[str, Any]: Interval dictionary
         """
         attributes = dict(**self.gff_attributes)
         attributes.pop("ID")
@@ -963,35 +1055,38 @@ class SequenceInterval(DAGElement):
         return interval_dict
 
     def to_json(self, include_children: bool = False, indent: Optional[int] = None) -> str:
-        """[summary]
+        """json formatted string of :meth:`to_dict`
 
         Args:
-            include_children (bool, optional): [description]. Defaults to \
-                False.
+            include_children (bool): Include all descendant intervals
+            indent (Optional[int]): Indentation, passed to :func:`json.dumps`
 
         Returns:
-            str: [description]
+            str: json formatted string
         """
         return json.dumps(self.to_dict(include_children=include_children), indent=indent)
 
 
 @dataclass
 class Sequence:
-    """Container for a single biological sequence
+    """Single biological sequence with a header
 
     Examples:
-        >>> s1 = Sequence('test_dna', 'ACGATCGACTAGCA')
-        >>> s1
-        Sequence(header='test_dna', \
-alphabet=Alphabet(name='DNA', members='-?acgtnACGNT'))
-        >>> s2 = Sequence('test_aa', 'QAPISAIWPOIWQ*')
-        >>> s2
-        Sequence(header='test_aa', \
-alphabet=Alphabet(name='AminoAcid', \
-members='*-?acdefghiklmnpqrstvwxyACDEFGHIKLMNPQRSTVWXY'))
+        >>> dna = Sequence('test_dna', 'ACGATCGACTAGCA')
+        >>> dna.alphabet.name
+        'DNA'
+        >>> protein = Sequence('test_aa', 'QAPISAIWPOIWQ*')
+        >>> protein.alphabet.name
+        'AminoAcid'
+        >>> dna.reverse_complement.sequence
+        'TGCTAGTCGATCGT'
 
-    Returns:
-        [type]: [description]
+    Args:
+        header (str): Sequence name
+        sequence (str): Sequence string
+        alphabet (Alphabet): Sequence alphabet. Detected from the sequence when not given (see
+            :meth:`Alphabet.score`).
+        annotation (Optional[SequenceAnnotation]): Annotation of the sequence. Defaults to an empty annotation.
     """
 
     header: str = None
@@ -1117,19 +1212,18 @@ alphabet=Alphabet(name='DNA', members='-?acgtnACGNT'))
 
     @classmethod
     def from_fasta(cls, string: str) -> "Sequence":
-        """Create a sequence object from a fasta formatted file. _single sequence only_
+        """Create a sequence from a fasta formatted string (single sequence only)
 
         Examples:
-            >>> fasta_string = '>test\\nACGT'
-            >>> Sequence.from_fasta(fasta_string)
-            Sequence(header='test', \
-alphabet=Alphabet(name='DNA', members='-?acgtnACGNT'))
+            >>> s = Sequence.from_fasta('>test\\nACGT')
+            >>> s.header, s.sequence
+            ('test', 'ACGT')
 
-        Arguments:
-            string (str)
+        Args:
+            string (str): fasta formatted string
 
         Returns:
-            Sequence
+            Sequence: Sequence
         """
         lines = string.strip().split("\n")
         header = lines[0][1:]
@@ -1137,44 +1231,48 @@ alphabet=Alphabet(name='DNA', members='-?acgtnACGNT'))
         return cls(header, sequence)
 
     def to_fasta(self, linewidth: int = 80) -> str:
-        """Make fasta formatted sequence entry
+        """fasta formatted string
 
         Examples:
             >>> s = Sequence('test_dna', 'ACGTA')
             >>> s.to_fasta()
             '>test_dna\\nACGTA'
 
-        Arguments:
-            linewidth (int)
+        Args:
+            linewidth (int): Maximum number of sequence characters per line
 
         Returns:
-            str: sequence in fasta format
+            str: fasta formatted string
         """
         sequence_lines = "\n".join(re.findall(f".{{1,{linewidth}}}", self.sequence))
         return f">{self.header}\n{sequence_lines}"
 
 
 class FastaParseError(Exception):
+    """Raised when a string can not be parsed as fasta"""
+
     pass
 
 
 class SequenceReader:
+    """Iterator over the sequences in a fasta or json formatted file or string. Exactly one of ``string`` or
+    ``filename`` must be given. json input is a list of objects with ``header`` and ``sequence`` keys.
+
+    Examples:
+        >>> fasta_string = '>1\\nACGC\\n>2\\nTGTGTA\\n'
+        >>> [seq.header for seq in SequenceReader(string=fasta_string, filetype='fasta')]
+        ['1', '2']
+
+    Args:
+        string (str): fasta or json formatted string
+        filename (str): fasta or json filename
+        filetype (str): ``"fasta"`` or ``"json"``
+
+    Raises:
+        ValueError: If ``filetype`` is not supported
+    """
+
     def __init__(self, string: str = None, filename: str = None, filetype: str = None) -> None:
-        """Iterator over fasta/json formatted sequence strings
-
-        Args:
-            string (str): fasta/json formatted string
-            filename (str): fasta/json file name
-            filetype (str): fasta or json
-
-        Examples:
-            >>> fasta_string = '>1\\nACGC\\n>2\\nTGTGTA\\n'
-            >>> fasta_reader = SequenceReader(string=fasta_string, \
-filetype='fasta')
-            >>> next(fasta_reader)
-            Sequence(header='1', \
-alphabet=Alphabet(name='DNA', members='-?acgtnACGNT'))
-        """
         assert bool(string) ^ bool(filename), "Must specify exactly one of string or filename"  # exclusive OR
         if filename:
             with open(filename, "r") as filehandle:
@@ -1190,13 +1288,10 @@ alphabet=Alphabet(name='DNA', members='-?acgtnACGNT'))
             raise ValueError(f'filetype "{filetype}" is not supported')
 
     def __iter__(self) -> Iterable[Sequence]:
-        """Iterate over header,sequence tuples
-
-        Returns:
-            Iterable[Sequence]: [description]
+        """Iterate over all sequences
 
         Yields:
-            Iterable[Sequence]: [description]
+            Sequence: Next sequence
         """
         try:
             yield from self._iter()
@@ -1204,10 +1299,10 @@ alphabet=Alphabet(name='DNA', members='-?acgtnACGNT'))
             return
 
     def __next__(self) -> Sequence:
-        """Next header and sequence in the iterator
+        """Next sequence
 
         Returns:
-            Tuple[str, str]: [description]
+            Sequence: Next sequence
         """
         return next(self._iter())
 
@@ -1229,6 +1324,22 @@ alphabet=Alphabet(name='DNA', members='-?acgtnACGNT'))
 
 
 class BatchSequenceReader(SequenceReader):
+    """Iterator over batches of sequences in a fasta or json formatted file or string. Every batch is a
+    :class:`SequenceCollection` of ``batchsize`` sequences.
+
+    Examples:
+        >>> fasta_string = '>1\\nACGC\\n>2\\nTGTGTA\\n>3\\nAAGT\\n>4\\nCCA\\n'
+        >>> reader = BatchSequenceReader(string=fasta_string, filetype='fasta', batchsize=2)
+        >>> [batch.headers for batch in reader]
+        [['1', '2'], ['3', '4']]
+
+    Args:
+        string (str): fasta or json formatted string
+        filename (str): fasta or json filename
+        filetype (str): ``"fasta"`` or ``"json"``
+        batchsize (int): Number of sequences per batch
+    """
+
     def __init__(
         self,
         string: str = None,
@@ -1236,20 +1347,6 @@ class BatchSequenceReader(SequenceReader):
         filetype: str = None,
         batchsize: int = 10,
     ) -> None:
-        """[summary]
-
-        Args:
-            string (str, optional): [description]. Defaults to None.
-            filename (str, optional): [description]. Defaults to None.
-            filetype (str, optional): [description]. Defaults to None.
-            batchsize (int, optional): [description]. Defaults to 10.
-
-        Returns:
-            [type]: [description]
-
-        Yields:
-            [type]: [description]
-        """
         super().__init__(string, filename, filetype)
         self.batchsize = batchsize
         self._currentbatch = SequenceCollection()
@@ -1276,6 +1373,8 @@ SequenceIndexKey = Union[int, List[int], slice]
 
 
 class SequenceIndex:
+    """Position based index of a sequence collection, see :attr:`AbstractSequenceCollection.iloc`"""
+
     def __init__(
         self,
         sequence_collection: Union["SequenceCollection", "MultipleSequenceAlignment"],
@@ -1300,23 +1399,15 @@ class SequenceIndex:
 
 
 class AbstractSequenceCollection(metaclass=ABCMeta):
-    """
-    (Partially) Abstract Base Class for sequence collections.
-    Classes extending from this baseclass should override
-    `__setitem__`, `__getitem__`, `__delitem__`, `headers`, and `n_seqs`.
+    """(Partially) abstract base class for sequence collections.
 
-    If the above methods are implemented, this automatically enables the
-    following methods: `from_fasta`, `to_fasta`, `from_json`, `to_json`.
+    Subclasses implement storage: ``__setitem__``, ``__getitem__``, ``__delitem__``, :meth:`pop`, :attr:`headers`
+    and :attr:`n_seqs`. All other methods (reading and writing fasta and json, iteration, indexing with
+    :attr:`iloc`, renaming) build on these.
 
-    Args:
-        sequences (Optional[Iterable[Tuple[str, str]]], optional):
-            Iterable of (header, sequence) tuples. Defaults to None.
-        sequence_annotation (Optional[SequenceAnnotation]):
-                picea SequenceAnnotation object. Defaults to None.
-
-    Raises:
-        NotImplementedError: Abstract Base Class can not be initialized
-            and serves as a template only
+    Sequences are stored by header, and indexing with a header returns a :class:`Sequence`. Setting a header that
+    already exists does not overwrite the existing sequence: the new sequence gets a unique header (``header_1``,
+    ``header_2``, ...) and a warning is issued.
     """
 
     @abstractmethod
@@ -1361,14 +1452,10 @@ class AbstractSequenceCollection(metaclass=ABCMeta):
     @property
     @abstractmethod
     def headers(self) -> List[str]:
-        """List of sequences headers.
-        Overridden in subclasses.
-
-        Raises:
-            NotImplementedError
+        """Sequence headers, in insertion order
 
         Returns:
-            List[str]: List of sequence headers
+            List[str]: Sequence headers
         """
         raise NotImplementedError(
             ("Classes extending from AbstractSequenceCollection should " "implement headers property")
@@ -1376,10 +1463,15 @@ class AbstractSequenceCollection(metaclass=ABCMeta):
 
     @property
     def iloc(self) -> SequenceIndex:
-        """[summary]
+        """Position based indexing: index with an int, a list of ints, or a slice to get a new collection of the same
+        type with the selected sequences
 
-        Returns:
-            SequenceIndex: [description]
+        Examples:
+            >>> seqs = SequenceCollection.from_fasta(string='>a\\nACGT\\n>b\\nGGCC\\n>c\\nTTAA')
+            >>> seqs.iloc[1:].headers
+            ['b', 'c']
+            >>> seqs.iloc[[0, 2]].headers
+            ['a', 'c']
         """
         return SequenceIndex(self)
 
@@ -1395,14 +1487,10 @@ class AbstractSequenceCollection(metaclass=ABCMeta):
     @property
     @abstractmethod
     def n_seqs(self) -> int:
-        """Return the number of sequences in the collection.
-        Overridden in subclasses
-
-        Raises:
-            NotImplementedError
+        """Number of sequences in the collection
 
         Returns:
-            int: number of sequences
+            int: Number of sequences
         """
         raise NotImplementedError(
             ("Classes extending from AbstractSequenceCollection should " "implement n_seqs property")
@@ -1410,13 +1498,13 @@ class AbstractSequenceCollection(metaclass=ABCMeta):
 
     @classmethod
     def from_sequence_iter(cls, sequence_iter: Iterable[Sequence]) -> "SequenceCollection":
-        """[summary]
+        """Create a collection from :class:`Sequence` objects
 
-        Raises:
-            NotImplementedError: [description]
+        Args:
+            sequence_iter (Iterable[Sequence]): Sequences
 
         Returns:
-            [type]: [description]
+            New collection of the class this method is called on
         """
         sequencecollection = cls()
         for seq in sequence_iter:
@@ -1429,14 +1517,19 @@ class AbstractSequenceCollection(metaclass=ABCMeta):
         filename: str = None,
         string: str = None,
     ) -> "SequenceCollection":
-        """Parse a fasta formatted string into a SequenceCollection object
+        """Read a fasta formatted file or string. Exactly one of ``filename`` or ``string`` must be given.
 
-        Keyword Arguments:
-            filename {String} -- filename string (default: {None})
-            string {String} -- fasta formatted string (default: {None})
+        Examples:
+            >>> seqs = SequenceCollection.from_fasta(string='>a\\nACGT\\n>b\\nGGCC')
+            >>> seqs.headers
+            ['a', 'b']
+
+        Args:
+            filename (str): fasta filename
+            string (str): fasta formatted string
 
         Returns:
-            SequenceCollection -- SequenceCollection instance
+            New collection of the class this method is called on
         """
         sequencecollection = cls()
 
@@ -1445,22 +1538,27 @@ class AbstractSequenceCollection(metaclass=ABCMeta):
         return sequencecollection
 
     def to_fasta(self, linewidth: int = 80) -> str:
-        """Get a fasta-formatted string of the sequence collection
+        """fasta formatted string of all sequences
+
+        Args:
+            linewidth (int): Maximum number of sequence characters per line
 
         Returns:
-            str: Multi-line fasta-formatted string
+            str: Multi-line fasta formatted string
         """
         return "\n".join([seq.to_fasta(linewidth=linewidth) for seq in self])
 
     @classmethod
     def from_json(cls, filename: Optional[str] = None, string: Optional[str] = None) -> "SequenceCollection":
-        """[summary]
+        """Read a json formatted file or string, as written by :meth:`to_json`. Exactly one of ``filename`` or
+        ``string`` must be given.
 
-        Keyword Arguments:
-            string {String} -- JSON formatted string
+        Args:
+            filename (Optional[str]): json filename
+            string (Optional[str]): json formatted string: a list of objects with ``header`` and ``sequence`` keys
 
         Returns:
-            SequenceCollection -- SequenceCollection instance
+            New collection of the class this method is called on
         """
         sequencecollection = cls()
 
@@ -1470,53 +1568,80 @@ class AbstractSequenceCollection(metaclass=ABCMeta):
         return sequencecollection
 
     def to_json(self, indent: Optional[int] = None) -> str:
-        """[summary]
+        """json formatted string: a list of objects with ``header`` and ``sequence`` keys
+
+        Args:
+            indent (Optional[int]): Indentation, passed to :func:`json.dumps`
 
         Returns:
-            str: [description]
+            str: json formatted string
         """
         gene_dicts = [seq.to_dict() for seq in self]
         return json.dumps(gene_dicts, indent=indent)
 
     @abstractmethod
     def pop(self, header: str) -> Sequence:
-        """[summary]
+        """Remove a sequence from the collection and return it
 
         Args:
-            header (str): [description]
+            header (str): Header of the sequence to remove
 
         Returns:
-            Sequence: [description]
+            Sequence: The removed sequence
+
+        Raises:
+            KeyError: If there is no sequence with this header
         """
         raise NotImplementedError("Classes extending from AbstractSequenceCollection should implement pop method")
 
     def add(self, seq: Sequence) -> None:
-        """Insert a sequence inplace
+        """Add a sequence to the collection (in place)
 
         Args:
-            seq (Sequence): sequence to be added
+            seq (Sequence): Sequence to add
         """
         self[seq.header] = seq.sequence
 
     def modify_inplace(self, mod_func: Callable[[str, str], tuple[str, str]]) -> None:
-        """Change headers and/or sequences in place by calling mod_func and storing the result"""
+        """Change headers and/or sequences in place by calling ``mod_func`` on every sequence
+
+        Examples:
+            >>> seqs = SequenceCollection.from_fasta(string='>a\\nacgt\\n>b\\nggcc')
+            >>> seqs.modify_inplace(lambda header, sequence: (header.upper(), sequence.upper()))
+            >>> seqs.to_fasta()
+            '>A\\nACGT\\n>B\\nGGCC'
+
+        Args:
+            mod_func (Callable[[str, str], tuple[str, str]]): Function that takes a header and a sequence string, and
+                returns a new header and sequence string
+        """
         for header in self.headers:
             s: Sequence = self.pop(header)
             new_header, new_sequence = mod_func(s.header, s.sequence)
             self[new_header] = new_sequence
 
     def rename_inplace(self, rename_func: Callable[[str], str]) -> None:
-        """Rename all headers by calling `rename_func` on each header
+        """Rename all headers in place by calling ``rename_func`` on every header
 
         Args:
-            rename_func (Callable): [description]
+            rename_func (Callable[[str], str]): Function that takes a header and returns a new header
         """
         self.modify_inplace(lambda header, sequence: (rename_func(header), sequence))
 
 
 class SequenceCollection(AbstractSequenceCollection):
-    """
-    A container for multiple (unaligned) DNA or amino acid sequences
+    """Collection of (unaligned) DNA or amino acid sequences
+
+    Examples:
+        >>> seqs = SequenceCollection([('a', 'ACGT'), ('b', 'GGCCAA')])
+        >>> len(seqs)
+        2
+        >>> seqs['b'].sequence
+        'GGCCAA'
+
+    Args:
+        sequences (Iterable[Tuple[str, str]]): (header, sequence) tuples
+        sequence_annotation (SequenceAnnotation): Annotation of the sequences
     """
 
     def __init__(
@@ -1559,15 +1684,17 @@ class SequenceCollection(AbstractSequenceCollection):
     def align(
         self, method: Optional[str] = "mafft", method_kwargs: Optional[Mapping[str, str]] = None
     ) -> "MultipleSequenceAlignment":
-        """[summary]
+        """Align the sequences with an external multiple sequence aligner. The aligner is called as
+        ``<method> <method_kwargs> -``, and must read fasta from stdin and write aligned fasta to stdout (like
+        `MAFFT <https://mafft.cbrc.jp/alignment/software/>`_).
 
         Args:
-            method (str, optional): [description]. Defaults to 'mafft'.
-            method_kwargs (Mapping[str, str], optional): [description]. \
-                Defaults to dict().
+            method (Optional[str]): Name of the aligner executable
+            method_kwargs (Optional[Mapping[str, str]]): Command line options for the aligner, e.g.
+                ``{"--thread": "4"}``
 
         Returns:
-            [type]: [description]
+            MultipleSequenceAlignment: Aligned sequences
         """
         if not method_kwargs:
             method_kwargs = dict()
@@ -1584,8 +1711,17 @@ class SequenceCollection(AbstractSequenceCollection):
 
 
 class MultipleSequenceAlignment(SequenceCollection):
-    """
-    A container for multiple aligned DNA or amino acid sequences
+    """Collection of aligned DNA or amino acid sequences, stored as a numpy matrix with one row per sequence.
+    Sequences shorter than the alignment are padded with gaps (``-``) at the end.
+
+    Examples:
+        >>> msa = MultipleSequenceAlignment.from_fasta(string='>a\\nAC-GT\\n>b\\nACCGT')
+        >>> msa.shape
+        (2, 5)
+
+    Args:
+        sequences (Optional[Iterable[Sequence]]): Sequences
+        sequence_annotation (Optional[SequenceAnnotation]): Annotation of the sequences
     """
 
     def __init__(
@@ -1645,14 +1781,20 @@ class MultipleSequenceAlignment(SequenceCollection):
 
     @property
     def n_chars(self) -> int:
+        """Number of alignment columns"""
         return self._collection.shape[1]
 
     @property
-    def shape(self) -> int:
+    def shape(self) -> Tuple[int, int]:
+        """Number of sequences and number of alignment columns"""
         return self._collection.shape
 
     def to_nexus(self) -> str:
-        """ """
+        """Nexus ``data`` block with the alignment (the datatype is always ``dna``)
+
+        Returns:
+            str: Nexus formatted string
+        """
         sequences = "\n".join([f"{s.header} {s.sequence}" for s in self])
         return (
             "begin data;"
@@ -1674,4 +1816,5 @@ class MultipleSequenceAlignment(SequenceCollection):
         return Sequence(header, sequence)
 
     def pairwise_distances(self, distance_measure: str = "identity") -> npt.NDArray[np.float64]:
+        """Not implemented yet, returns ``None``"""
         pass

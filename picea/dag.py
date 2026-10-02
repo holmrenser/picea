@@ -7,8 +7,14 @@ from warnings import warn
 
 
 class DAGElement:
-    """
-    Element in a DAG, intended to be used as BaseClass
+    """Element in a :class:`DirectedAcyclicGraph`, intended to be used as base class. Elements refer to their
+    parents and children by ID, and keep a reference to the graph (container) they belong to.
+
+    Args:
+        ID (str): Unique identifier
+        container (DirectedAcyclicGraph): Graph the element belongs to
+        children (List[str], optional): IDs of child elements
+        parents (List[str], optional): IDs of parent elements
     """
 
     def __init__(
@@ -52,6 +58,9 @@ class DAGElement:
 
     @property
     def ID(self):
+        """Unique identifier of the element. Setting a new ID also updates the parent references of child elements,
+        and the key of the element in its container.
+        """
         return self._ID
 
     @ID.setter
@@ -68,6 +77,9 @@ class DAGElement:
 
     @property
     def parents(self) -> "DirectedAcyclicGraph":
+        """All ancestors of this element (parents, their parents, etc.), as a new graph of the same type as the
+        container
+        """
         graph = self._container.__class__()
         for element in self._traverse(direction="parents"):
             if element == self:
@@ -77,6 +89,9 @@ class DAGElement:
 
     @property
     def children(self) -> "DirectedAcyclicGraph":
+        """All descendants of this element (children, their children, etc.), as a new graph of the same type as the
+        container
+        """
         graph = self._container.__class__()
         for element in self._traverse(direction="children"):
             if element == self:
@@ -102,7 +117,10 @@ class DAGElement:
 
 
 class DirectedAcyclicGraph:
-    """Base DAG class"""
+    """Base class for directed acyclic graphs: a collection of :class:`DAGElement` objects stored by ID.
+
+    Elements with duplicate IDs are renamed (``ID_1``, ``ID_2``, ...) with a warning.
+    """
 
     def __init__(self) -> None:
         self._elements: Dict[Hashable, DAGElement] = dict()
@@ -137,12 +155,29 @@ class DirectedAcyclicGraph:
 
     @property
     def elements(self) -> List[DAGElement]:
+        """List of all elements"""
         return list(self)
 
     def add(self, element: DAGElement) -> None:
+        """Add an element, stored by its ID
+
+        Args:
+            element (DAGElement): Element to add
+        """
         self[element.ID] = element
 
     def pop(self, ID: Hashable) -> DAGElement:
+        """Remove an element and return it
+
+        Args:
+            ID (Hashable): ID of the element to remove
+
+        Returns:
+            DAGElement: The removed element
+
+        Raises:
+            KeyError: If there is no element with this ID
+        """
         return self._elements.pop(ID)
 
     def groupby(self, group_func: Callable[[DAGElement], Hashable]) -> DefaultDict[Hashable, "DirectedAcyclicGraph"]:

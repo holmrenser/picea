@@ -27,7 +27,25 @@ TreeDict = Dict[str, Union[str, int, float, List[Optional["TreeDict"]]]]
 
 @dataclass
 class Tree:
-    """Recursive Tree object"""
+    """Tree (e.g. a phylogeny). Trees are recursive: every node is a :class:`Tree` with a list of child nodes, so
+    every node is also the root of its own subtree.
+
+    Trees are usually created with :meth:`from_newick` or :meth:`from_sklearn`. These also set the derived node
+    attributes ``parent``, ``depth``, ``cumulative_length`` (distance to the root) and ``ID`` (see :attr:`iloc`).
+
+    Examples:
+        >>> tree = Tree.from_newick('((a,b)ab,c);')
+        >>> [leaf.name for leaf in tree.leaves]
+        ['c', 'a', 'b']
+        >>> tree.loc['a'].parent.name
+        'ab'
+
+    Args:
+        name (Optional[str]): Node name
+        length (Optional[float]): Length of the branch to the parent node
+        children (Optional[List[Tree]]): Child nodes
+        ID (Optional[int]): Node ID
+    """
 
     name: Optional[str] = None
     length: Optional[float] = None
@@ -39,16 +57,13 @@ class Tree:
     cumulative_length: InitVar[Optional[float]] = None
 
     def __post_init__(self, ID, *args, **kwargs):
-        """[summary]
-
-        Args:
-            ID ([type]): [description]
-        """
+        """Store the node ID. The other init-only fields are set by the parsers."""
         self.ID = ID
 
     @property
-    def loc(self) -> "Tree":
-        """Name based index
+    def loc(self) -> "TreeIndex":
+        """Name based index: ``tree.loc[name]`` returns the first node with that name (in post-order depth first
+        traversal)
 
         Example:
             >>> from picea import Tree
@@ -57,28 +72,25 @@ class Tree:
             >>> tree.loc['a']
             Tree(name='a', length=None, children=[])
 
-        Returns:
-            Tree: tree node matching name
-
         Raises:
-            IndexError
+            IndexError: If no node has this name
         """
         return TreeIndex(iterator=self.depth_first, eq_func=lambda node, name: node.name == name)
 
     @property
-    def iloc(self) -> "Tree":
-        """Index based index
+    def iloc(self) -> "TreeIndex":
+        """ID based index: ``tree.iloc[ID]`` returns the node with that ID. :meth:`from_newick` numbers nodes in
+        pre-order, starting with 0 for the root.
 
         Example:
             >>> from picea import Tree
             >>> newick = '(((a,b),(c,d)),e);'
             >>> tree = Tree.from_newick(newick)
-            >>> tree.iloc[2]
-            Tree(name='', length=None, children=[Tree(name='a', length=None, \
-children=[]), Tree(name='b', length=None, children=[])])
+            >>> [leaf.name for leaf in tree.iloc[2].leaves]
+            ['a', 'b']
 
-        Returns:
-            Tree: tree node matching index
+        Raises:
+            IndexError: If no node has this ID
         """
         return TreeIndex(iterator=self.depth_first, eq_func=lambda node, index: node.ID == index)
 
@@ -128,13 +140,22 @@ children=[]), Tree(name='b', length=None, children=[])])
 
     @classmethod
     def from_newick(cls, string: Optional[str] = None, filename: Optional[str] = None) -> "Tree":
-        """Parse a newick formatted string into a Tree object
+        """Parse a Newick formatted file or string. Exactly one of ``string`` or ``filename`` must be given.
 
-        Arguments:
-            newick_string (string): Newick formatted tree string
+        Node names (including internal node names such as support values) and branch lengths are read when present.
+        If some nodes have a branch length, nodes without one get length 0.0 with a warning.
+
+        Examples:
+            >>> tree = Tree.from_newick('((a:1,b:2)ab:1,c:3)root:0;')
+            >>> tree.loc['b'].cumulative_length
+            3.0
+
+        Args:
+            string (Optional[str]): Newick formatted string
+            filename (Optional[str]): Newick filename
 
         Returns:
-            Tree: Tree object
+            Tree: Root node
         """
         assert filename or string
         assert not (filename and string)
@@ -191,14 +212,19 @@ children=[]), Tree(name='b', length=None, children=[])])
         return tree
 
     def to_newick(self, branch_lengths: bool = False) -> str:
-        """Make a Newick formatted string
+        """Newick formatted string of the (sub)tree
+
+        Examples:
+            >>> tree = Tree.from_newick('((a:1,b:2)ab:1,c:3)root:0;')
+            >>> tree.to_newick(branch_lengths=True)
+            '((a:1.0,b:2.0)ab:1.0,c:3.0)root;'
 
         Args:
-            branch_lengths (bool, optional): Whether to include branch lengths\
-             in the Newick string. Defaults to True.
+            branch_lengths (bool, optional): Include branch lengths. Nodes without a branch length are written with
+                length 0, with a warning. Defaults to False.
 
         Returns:
-            String: Newick formatted tree string
+            str: Newick formatted string
         """
         if self.name:
             name = str(self.name)
@@ -230,14 +256,14 @@ children=[]), Tree(name='b', length=None, children=[])])
 
     @classmethod
     def from_sklearn(cls, clustering) -> "Tree":
-        """Read a tree from sklearn agglomerative clustering
+        """Create a tree from a fitted scikit-learn ``AgglomerativeClustering`` model. Leaves are named by sample
+        index, and the tree has no branch lengths.
 
         Args:
-            clustering (sklearn object): sklearn agglomerative clustering\
-                 object.
+            clustering (sklearn.cluster.AgglomerativeClustering): Fitted clustering model
 
         Returns:
-            Tree: Tree object
+            Tree: Root node
         """
         nodes = clustering.children_
         n_leaves = nodes.shape[0] + 1
@@ -259,28 +285,39 @@ children=[]), Tree(name='b', length=None, children=[])])
 
     def to_sklearn(self):
         # TODO
+        """Not implemented yet"""
         raise NotImplementedError()
 
     @classmethod
     def from_json(cls):
         # TODO
+        """Not implemented yet"""
         raise NotImplementedError()
 
     def to_json(self, indent: Optional[int] = None) -> str:
+        """json formatted string of :meth:`to_dict`
+
+        Args:
+            indent (Optional[int]): Indentation, passed to :func:`json.dumps`
+
+        Returns:
+            str: json formatted string
+        """
         return json.dumps(self.to_dict(), indent=indent)
 
     @classmethod
     def from_dict(cls, tree_dict):
         # TODO
+        """Not implemented yet"""
         raise NotImplementedError()
         # tree = cls()
         # return tree
 
     def to_dict(self) -> TreeDict:
-        """[summary]
+        """Nested dictionary with the ``name``, ``length`` and ``children`` of every node
 
         Returns:
-            TreeDict: [description]
+            TreeDict: Tree dictionary
         """
         return asdict(self)
 
@@ -308,21 +345,26 @@ children=[]), Tree(name='b', length=None, children=[])])
             yield self
 
     def rename_leaves(self, rename_func: Callable, inplace: bool = True) -> Optional["Tree"]:
-        """[summary]"""
+        """Rename all leaves by calling ``rename_func`` on every leaf name
+
+        Args:
+            rename_func (Callable[[str], str]): Function that takes a leaf name and returns a new name
+            inplace (bool): Rename the leaves of this tree. If False, rename the leaves of a copy.
+        """
         tree = self if inplace else deepcopy(self)
         for leaf in tree.leaves:
             leaf.name = rename_func(leaf.name)
 
 
 class TreeIndex(object):
-    def __init__(self, iterator: Iterable[Tree], eq_func: Callable[[int, str], bool]):
-        """[summary]
+    """Index into a tree, see :attr:`Tree.loc` and :attr:`Tree.iloc`
 
-        Args:
-            object ([type]): [description]
-            iterator ([type]): [description]
-            eq_func ([type]): [description]
-        """
+    Args:
+        iterator (Callable[[], Iterable[Tree]]): Function that returns an iterator over all nodes
+        eq_func (Callable[[Tree, Any], bool]): Function that tests whether a node matches an index key
+    """
+
+    def __init__(self, iterator: Iterable[Tree], eq_func: Callable[[int, str], bool]):
         self.iterator = iterator
         self.eq_func = eq_func
 
@@ -334,16 +376,16 @@ class TreeIndex(object):
 
 
 def unequal_separation(node_a: "Tree", node_b: "Tree", sep_1: float = 1.0, sep_2: float = 2.0) -> float:
-    """[summary]
+    """Separation between two neighbouring nodes: ``sep_1`` for siblings, ``sep_2`` otherwise
 
     Args:
-        node_a (Tree): [description]
-        node_b (Tree): [description]
-        sep_1 (float, optional): [description]. Defaults to 1.0.
-        sep_2 (float, optional): [description]. Defaults to 2.0.
+        node_a (Tree): First node
+        node_b (Tree): Second node
+        sep_1 (float, optional): Separation between siblings. Defaults to 1.0.
+        sep_2 (float, optional): Separation between non-siblings. Defaults to 2.0.
 
     Returns:
-        float: [description]
+        float: Separation
     """
     if node_a.parent == node_b.parent:
         return sep_1
@@ -351,15 +393,15 @@ def unequal_separation(node_a: "Tree", node_b: "Tree", sep_1: float = 1.0, sep_2
 
 
 def equal_separation(node_a: "Tree", node_b: "Tree", separation: float = 1.0) -> float:
-    """[summary]
+    """Constant separation between two neighbouring nodes
 
     Args:
-        node_a (Tree): [description]
-        node_b (Tree): [description]
-        separation (float, optional): [description]. Defaults to 1.0.
+        node_a (Tree): First node
+        node_b (Tree): Second node
+        separation (float, optional): Separation. Defaults to 1.0.
 
     Returns:
-        float: [description]
+        float: Separation
     """
     return separation
 
@@ -390,16 +432,21 @@ def calculate_tree_layout(
     ltr: bool = True,
     branchlengths: bool = True,
 ) -> LayoutDict:
-    """[summary]
+    """Calculate 2D coordinates of all nodes, as used by :func:`treeplot`
+
+    Leaves get consecutive y coordinates in depth first order, and internal nodes are centered on their children.
+    The x coordinate is based on branch lengths, or on the number of levels below a node if ``branchlengths`` is
+    False.
 
     Args:
-        tree (Tree): [description]
-        style (Treestyle, optional): [description]. Defaults to \
-            Treestyle.square.
-        ltr (bool, optional): [description]. Defaults to True.
+        tree (Tree): Tree
+        style (TreeStyle, optional): ``"square"``, ``"triangular"`` or ``"radial"``. Only ``"radial"`` changes
+            the layout (to polar coordinates). Defaults to ``TreeStyle.square``.
+        ltr (bool, optional): Left to right layout (root on the left). Defaults to True.
+        branchlengths (bool, optional): Use branch lengths. Defaults to True.
 
     Returns:
-        LayoutDict: [description]
+        LayoutDict: Coordinates of every node, by node ID
     """
     layout = defaultdict(TwoDCoordinate)
     previous_node = None
@@ -408,7 +455,7 @@ def calculate_tree_layout(
     for node in tree.depth_first(post_order=True):
         node_coords = layout[node.ID]
         if node.children:
-            child_x_coords, child_y_coords = zip(*(layout[c.ID] for c in node.children))
+            child_x_coords, child_y_coords = zip(*(layout[c.ID] for c in node.children), strict=True)
             node_coords.y = sum(child_y_coords) / len(node.children)
             increment = node.length if branchlengths else 1.0
             if ltr:
@@ -448,29 +495,32 @@ def treeplot(
     ax: Optional[Ax] = None,
     return_layout: bool = False,
 ) -> Union[Ax, Tuple[Ax, LayoutDict]]:
-    """[summary]
+    """Plot a tree with matplotlib. See the :doc:`/examples/trees` example for usage.
 
     Args:
-        tree (Tree): [description]
-        style (TreeStyle, optional): [description]. Defaults to TreeStyle.\
-            square.
-        branchlengths (bool, optional): [description]. Defaults to True.
-        ltr (bool, optional): [description]. Defaults to True.
-        node_labels (bool, optional): [description]. Defaults to True.
-        leaf_labels (bool, optional): [description]. Defaults to True.
-        leaf_marker (Union[str, Callable, None], optional): [description].\
-             Defaults to 'o'.
-        leaf_marker_fill (Union[str, Callable[[Tree],, optional): \
-            [description]. Defaults to 'white'.
-        leaf_marker_edge (Union[str, Callable[[Tree],, optional): \
-            [description]. Defaults to 'black'.
-        branch_linestyle (Union[dict, Callable[[Tree], dict], None], \
-            optional): [description]. Defaults to None.
-        ax (Optional[Ax], optional): [description]. Defaults to None.
-        return_layout (bool, optional): [description]. Defaults to False.
+        tree (Tree): Tree to plot
+        style (TreeStyle, optional): Branch style: ``"square"`` (right angles), ``"triangular"`` (straight lines
+            from parent to child), or ``"radial"``. Defaults to ``TreeStyle.square``.
+        branchlengths (bool, optional): Scale branches by their length. Use False to plot a cladogram, or to
+            plot a tree without branch lengths. Defaults to True.
+        ltr (bool, optional): Plot left to right (root on the left). Defaults to True.
+        node_labels (bool, optional): Show the names of internal nodes, e.g. support values. Defaults to True.
+        leaf_labels (bool, optional): Currently unused: leaf names are always shown. Defaults to True.
+        leaf_marker (Union[str, Callable, None], optional): Matplotlib marker for leaves, a function that takes a
+            leaf and returns a marker, or None for no markers. Defaults to ``"o"``.
+        leaf_marker_fill (Union[str, Callable[[Tree], str], None], optional): Marker fill color, or a function
+            that takes a leaf and returns a color. Defaults to ``"white"``.
+        leaf_marker_edge (Union[str, Callable[[Tree], str], None], optional): Marker edge color, or a function
+            that takes a leaf and returns a color. Defaults to ``"black"``.
+        branch_linestyle (Union[dict, Callable[[Tree], dict], None], optional): Keyword arguments for
+            :meth:`matplotlib.axes.Axes.plot` used to draw branches, or a function that takes a
+            ``(parent, child)`` tuple and returns them. Defaults to None (thin black lines).
+        ax (Optional[Ax], optional): Axes to plot on. A new figure is created when not given.
+        return_layout (bool, optional): Also return the node coordinates (see :func:`calculate_tree_layout`).
+            Defaults to False.
 
     Returns:
-        Union[Ax, Tuple[Ax, LayoutDict]]: [description]
+        Union[Ax, Tuple[Ax, LayoutDict]]: The axes, or an ``(axes, layout)`` tuple if ``return_layout`` is True
     """
     layout = calculate_tree_layout(tree=tree, style=style, ltr=ltr, branchlengths=branchlengths)
 

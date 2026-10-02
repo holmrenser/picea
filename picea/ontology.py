@@ -7,6 +7,16 @@ from .dag import DAGElement, DirectedAcyclicGraph
 
 
 class OntologyTerm(DAGElement):
+    """Single term in an :class:`Ontology`. OBO tags are stored as attributes with list values. ``name`` and ``def``
+    are always present (``None`` when missing). Use ``term["def"]``, since ``def`` is a Python keyword.
+
+    Args:
+        ID (str): Term ID, e.g. ``GO:0008150``
+        parents (List[str]): IDs of parent terms
+        container (Ontology): Ontology the term belongs to
+        **kwargs: OBO tags
+    """
+
     _predefined_ontology_elements = ("name", "def")
 
     def __init__(self, ID, parents, container, **kwargs):
@@ -20,6 +30,28 @@ class OntologyTerm(DAGElement):
 
 
 class Ontology(DirectedAcyclicGraph):
+    """Ontology such as the Gene Ontology or the Sequence Ontology: a directed acyclic graph of
+    :class:`OntologyTerm` objects stored by ID, linked by ``is_a`` and ``part_of`` relationships.
+
+    Examples:
+        >>> obo = '''format-version: 1.2
+        ...
+        ... [Term]
+        ... id: SO:0000001
+        ... name: region
+        ...
+        ... [Term]
+        ... id: SO:0000704
+        ... name: gene
+        ... is_a: SO:0000001 ! region
+        ... '''
+        >>> so = Ontology.from_obo(string=obo)
+        >>> so['SO:0000704'].name
+        ['gene']
+        >>> [term.ID for term in so['SO:0000001'].children]
+        ['SO:0000704']
+    """
+
     def __init__(self):
         super().__init__()
         self._header: List[str] = []
@@ -34,6 +66,19 @@ class Ontology(DirectedAcyclicGraph):
 
     @classmethod
     def from_obo(cls, filename: str = None, string: str = None, skip_obsolete=True) -> "Ontology":
+        """Read an OBO formatted file or string. Exactly one of ``filename`` or ``string`` must be given.
+
+        Only ``[Term]`` stanzas are read. Parents are taken from ``is_a`` and ``part_of`` relationships. Every
+        alternative ID (``alt_id``) is stored as a separate term with the same parents.
+
+        Args:
+            filename (str): OBO filename
+            string (str): OBO formatted string
+            skip_obsolete (bool): Skip terms that are marked ``is_obsolete``
+
+        Returns:
+            Ontology: Ontology
+        """
         assert filename or string
         assert not (filename and string)
         ontology = cls()
