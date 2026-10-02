@@ -408,7 +408,7 @@ def calculate_tree_layout(
     for node in tree.depth_first(post_order=True):
         node_coords = layout[node.ID]
         if node.children:
-            child_x_coords, child_y_coords = zip(*(layout[c.ID] for c in node.children))
+            child_x_coords, child_y_coords = zip(*(layout[c.ID] for c in node.children), strict=True)
             node_coords.y = sum(child_y_coords) / len(node.children)
             increment = node.length if branchlengths else 1.0
             if ltr:

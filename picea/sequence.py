@@ -192,9 +192,9 @@ class Alphabet(set):
             str: complementary strand sequence string
         """
         if self.name == "DNA":
-            complement = dict(zip("acgtnACGTN-?", "tgcanTGCAN-?"))
+            complement = dict(zip("acgtnACGTN-?", "tgcanTGCAN-?", strict=True))
         elif self.name == "RNA":
-            complement = dict(zip("acgunACGUN-?", "ugcanUGCAN-?"))
+            complement = dict(zip("acgunACGUN-?", "ugcanUGCAN-?", strict=True))
         else:
             raise TypeError("Cannot complement non-DNA or non-RNA alphabet")
         return "".join(complement[s] for s in sequence)
@@ -1117,7 +1117,7 @@ alphabet=Alphabet(name='DNA', members='-?acgtnACGNT'))
 
     @classmethod
     def from_fasta(cls, string: str) -> "Sequence":
-        """Create a sequence object from a fasta formatted file. _single sequence only_
+        """Create a sequence object from a fasta formatted string (single sequence only)
 
         Examples:
             >>> fasta_string = '>test\\nACGT'
