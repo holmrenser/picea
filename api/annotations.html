@@ -1,0 +1,815 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="Trees" href="trees.html"><link rel="prev" title="Sequences" href="sequences.html">
+
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+        <title>Sequence annotation - picea 0.0.31</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d111a655" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f2f2f2;
+  --color-code-foreground: #1e1e1e;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">picea 0.0.31</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  
+  <span class="sidebar-brand-text">picea 0.0.31</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/sequences.html">Sequences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/sequence_annotation.html">Sequence annotation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/trees.html">Trees</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/ontologies.html">Ontologies</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="sequences.html">Sequences</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Sequence annotation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trees.html">Trees</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ontologies.html">Ontologies</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Project</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="https://github.com/holmrenser/picea/blob/master/docs/api/annotations.rst?plain=true" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div><div class="edit-this-page">
+  <a class="muted-link" href="https://github.com/holmrenser/picea/edit/master/docs/api/annotations.rst" rel="edit" title="Edit this page">
+    <svg><use href="#svg-pencil"></use></svg>
+    <span class="visually-hidden">Edit this page</span>
+  </a>
+</div><div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="sequence-annotation">
+<h1>Sequence annotation<a class="headerlink" href="#sequence-annotation" title="Link to this heading">¶</a></h1>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#picea.SequenceAnnotation" title="picea.SequenceAnnotation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SequenceAnnotation</span></code></a>([sequence])</p></td>
+<td><p>Sequence annotation: a collection of <a class="reference internal" href="#picea.SequenceInterval" title="picea.SequenceInterval"><code class="xref py py-class docutils literal notranslate"><span class="pre">SequenceInterval</span></code></a> objects (genes, mRNAs, exons, ...) stored by ID, and linked into a directed acyclic graph by their <code class="docutils literal notranslate"><span class="pre">Parent</span></code> attributes.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#picea.SequenceInterval" title="picea.SequenceInterval"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SequenceInterval</span></code></a>([ID, seqid, source, ...])</p></td>
+<td><p>Single annotated interval on a sequence, such as a gene, mRNA, exon or CDS.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<dl class="py class">
+<dt class="sig sig-object py" id="picea.SequenceAnnotation">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">picea.</span></span><span class="sig-name descname"><span class="pre">SequenceAnnotation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sequence</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/picea/sequence.html#SequenceAnnotation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#picea.SequenceAnnotation" title="Link to this definition">¶</a></dt>
+<dd><p>Sequence annotation: a collection of <a class="reference internal" href="#picea.SequenceInterval" title="picea.SequenceInterval"><code class="xref py py-class docutils literal notranslate"><span class="pre">SequenceInterval</span></code></a> objects (genes, mRNAs, exons, …) stored by
+ID, and linked into a directed acyclic graph by their <code class="docutils literal notranslate"><span class="pre">Parent</span></code> attributes.</p>
+<p>Intervals with duplicate IDs are renamed (<code class="docutils literal notranslate"><span class="pre">ID_1</span></code>, <code class="docutils literal notranslate"><span class="pre">ID_2</span></code>, …) with a warning.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">gff</span> <span class="o">=</span> <span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">"ctg1</span><span class="se">\t</span><span class="s2">.</span><span class="se">\t</span><span class="s2">gene</span><span class="se">\t</span><span class="s2">1</span><span class="se">\t</span><span class="s2">90</span><span class="se">\t</span><span class="s2">.</span><span class="se">\t</span><span class="s2">+</span><span class="se">\t</span><span class="s2">.</span><span class="se">\t</span><span class="s2">ID=gene1</span><span class="se">\n</span><span class="s2">"</span>
+<span class="gp">... </span>    <span class="s2">"ctg1</span><span class="se">\t</span><span class="s2">.</span><span class="se">\t</span><span class="s2">mRNA</span><span class="se">\t</span><span class="s2">1</span><span class="se">\t</span><span class="s2">90</span><span class="se">\t</span><span class="s2">.</span><span class="se">\t</span><span class="s2">+</span><span class="se">\t</span><span class="s2">.</span><span class="se">\t</span><span class="s2">ID=mRNA1;Parent=gene1</span><span class="se">\n</span><span class="s2">"</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">annotation</span> <span class="o">=</span> <span class="n">SequenceAnnotation</span><span class="o">.</span><span class="n">from_gff</span><span class="p">(</span><span class="n">string</span><span class="o">=</span><span class="n">gff</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">annotation</span><span class="p">)</span>
+<span class="go">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">annotation</span><span class="p">[</span><span class="s2">"mRNA1"</span><span class="p">]</span><span class="o">.</span><span class="n">parent</span>
+<span class="go">['gene1']</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">interval</span><span class="o">.</span><span class="n">ID</span> <span class="k">for</span> <span class="n">interval</span> <span class="ow">in</span> <span class="n">annotation</span><span class="p">[</span><span class="s2">"gene1"</span><span class="p">]</span><span class="o">.</span><span class="n">children</span><span class="p">]</span>
+<span class="go">['mRNA1']</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>sequence</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="sequences.html#picea.Sequence" title="picea.Sequence"><em>Sequence</em></a><em>]</em>) – Annotated sequence. If given, its <code class="docutils literal notranslate"><span class="pre">annotation</span></code> is set to this annotation.</p>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="picea.SequenceAnnotation.intervals">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">intervals</span></span><a class="headerlink" href="#picea.SequenceAnnotation.intervals" title="Link to this definition">¶</a></dt>
+<dd><p>List of all intervals</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="picea.SequenceAnnotation.from_gtf">
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">from_gtf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">string</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sequence</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">link_parents</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/picea/sequence.html#SequenceAnnotation.from_gtf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#picea.SequenceAnnotation.from_gtf" title="Link to this definition">¶</a></dt>
+<dd><p>Read a GTF formatted file or string. Exactly one of <code class="docutils literal notranslate"><span class="pre">filename</span></code> or <code class="docutils literal notranslate"><span class="pre">string</span></code> must be given.</p>
+<p>GTF lines are linked by their <code class="docutils literal notranslate"><span class="pre">gene_id</span></code> and <code class="docutils literal notranslate"><span class="pre">transcript_id</span></code> attributes. Gene and transcript (mRNA)
+intervals are created from these, spanning all their child intervals.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – GTF filename</p></li>
+<li><p><strong>string</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – GTF formatted string</p></li>
+<li><p><strong>sequence</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="sequences.html#picea.Sequence" title="picea.Sequence"><em>Sequence</em></a><em>]</em>) – Annotated sequence</p></li>
+<li><p><strong>link_parents</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>]</em>) – Link parent intervals to their children, so that
+<a class="reference internal" href="#picea.SequenceInterval.children" title="picea.SequenceInterval.children"><code class="xref py py-attr docutils literal notranslate"><span class="pre">children</span></code></a> works</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Sequence annotation</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#picea.SequenceAnnotation" title="picea.SequenceAnnotation">SequenceAnnotation</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="picea.SequenceAnnotation.to_gtf">
+<span class="sig-name descname"><span class="pre">to_gtf</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/picea/sequence.html#SequenceAnnotation.to_gtf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#picea.SequenceAnnotation.to_gtf" title="Link to this definition">¶</a></dt>
+<dd><p>GTF formatted string with all intervals</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>GTF formatted string</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="picea.SequenceAnnotation.from_gff">
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">from_gff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">string</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sequence</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">link_parents</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/picea/sequence.html#SequenceAnnotation.from_gff"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#picea.SequenceAnnotation.from_gff" title="Link to this definition">¶</a></dt>
+<dd><p>Read a GFF3 formatted file or string. Exactly one of <code class="docutils literal notranslate"><span class="pre">filename</span></code> or <code class="docutils literal notranslate"><span class="pre">string</span></code> must be given. Comment lines
+are skipped, and reading stops at a <code class="docutils literal notranslate"><span class="pre">##FASTA</span></code> line.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – GFF3 filename</p></li>
+<li><p><strong>string</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – GFF3 formatted string</p></li>
+<li><p><strong>sequence</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="sequences.html#picea.Sequence" title="picea.Sequence"><em>Sequence</em></a><em>]</em>) – Annotated sequence</p></li>
+<li><p><strong>link_parents</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Link parent intervals to their children, so that
+<a class="reference internal" href="#picea.SequenceInterval.children" title="picea.SequenceInterval.children"><code class="xref py py-attr docutils literal notranslate"><span class="pre">children</span></code></a> works</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Sequence annotation</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#picea.SequenceAnnotation" title="picea.SequenceAnnotation">SequenceAnnotation</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="picea.SequenceAnnotation.to_gff">
+<span class="sig-name descname"><span class="pre">to_gff</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/picea/sequence.html#SequenceAnnotation.to_gff"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#picea.SequenceAnnotation.to_gff" title="Link to this definition">¶</a></dt>
+<dd><p>GFF3 formatted string with all intervals (without header lines)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>GFF3 formatted string</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="picea.SequenceAnnotation.from_json">
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">from_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">string</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sequence</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/picea/sequence.html#SequenceAnnotation.from_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#picea.SequenceAnnotation.from_json" title="Link to this definition">¶</a></dt>
+<dd><p>Read a json formatted file or string, as written by <a class="reference internal" href="#picea.SequenceAnnotation.to_json" title="picea.SequenceAnnotation.to_json"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to_json()</span></code></a>. Exactly one of <code class="docutils literal notranslate"><span class="pre">filename</span></code> or
+<code class="docutils literal notranslate"><span class="pre">string</span></code> must be given.</p>
+<p>The json must be a list of interval dictionaries (see <a class="reference internal" href="#picea.SequenceInterval.to_dict" title="picea.SequenceInterval.to_dict"><code class="xref py py-meth docutils literal notranslate"><span class="pre">SequenceInterval.to_dict()</span></code></a>). Each interval
+dictionary can have a <code class="docutils literal notranslate"><span class="pre">children</span></code> list with more interval dictionaries.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – json filename</p></li>
+<li><p><strong>string</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – json formatted string</p></li>
+<li><p><strong>sequence</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="sequences.html#picea.Sequence" title="picea.Sequence"><em>Sequence</em></a><em>]</em>) – Annotated sequence</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Sequence annotation</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#picea.SequenceAnnotation" title="picea.SequenceAnnotation">SequenceAnnotation</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="picea.SequenceAnnotation.to_json">
+<span class="sig-name descname"><span class="pre">to_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">indent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/picea/sequence.html#SequenceAnnotation.to_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#picea.SequenceAnnotation.to_json" title="Link to this definition">¶</a></dt>
+<dd><p>json formatted string with a list of interval dictionaries (see <a class="reference internal" href="#picea.SequenceInterval.to_dict" title="picea.SequenceInterval.to_dict"><code class="xref py py-meth docutils literal notranslate"><span class="pre">SequenceInterval.to_dict()</span></code></a>)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>indent</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – Indentation, passed to <a class="reference external" href="https://docs.python.org/3/library/json.html#json.dumps" title="(in Python v3.14)"><code class="xref py py-func docutils literal notranslate"><span class="pre">json.dumps()</span></code></a></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>json formatted string</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="picea.SequenceAnnotation.add">
+<span class="sig-name descname"><span class="pre">add</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">element</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#picea.SequenceAnnotation.add" title="Link to this definition">¶</a></dt>
+<dd><p>Add an element, stored by its ID</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>element</strong> (<em>DAGElement</em>) – Element to add</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="picea.SequenceAnnotation.elements">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">elements</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><span class="pre">DAGElement</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#picea.SequenceAnnotation.elements" title="Link to this definition">¶</a></dt>
+<dd><p>List of all elements</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="picea.SequenceAnnotation.filter">
+<span class="sig-name descname"><span class="pre">filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filter_func</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#picea.SequenceAnnotation.filter" title="Link to this definition">¶</a></dt>
+<dd><p>Filter elements in the current collection based on the output of filter_func</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filter_func</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><em>Callable</em></a><em>[</em><em>[</em><em>DAGElement</em><em>]</em><em>, </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>]</em>) – Callable[[DagElement], bool] receives as input an element                 of the current collection and returns a boolean indicating whether the                 element should be kept (i.e. an element with a ‘True’ return value will                be kept)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DirectedAcyclicGraph subclass with unwanted elements removed</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>DirectedAcyclicGraph</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="picea.SequenceAnnotation.groupby">
+<span class="sig-name descname"><span class="pre">groupby</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">group_func</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#picea.SequenceAnnotation.groupby" title="Link to this definition">¶</a></dt>
+<dd><p>Group elements in the current collection by calling ‘group_func’ and using         the results as a dictionary key</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>group_func</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><em>Callable</em></a><em>[</em><em>[</em><em>DAGElement</em><em>]</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Hashable" title="(in Python v3.14)"><em>Hashable</em></a><em>]</em>) – Callable[[DagElement], Hashable] receives as input an element                 of the current collection and should return something that can be used                 as a dictionary key (i.e. it should be hashable)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary with keys for groups and values individual DirectedAcyclicGraph                 subclasses</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.DefaultDict" title="(in Python v3.14)"><em>DefaultDict</em></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Hashable" title="(in Python v3.14)"><em>Hashable</em></a>, <em>DirectedAcyclicGraph</em>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="picea.SequenceAnnotation.pop">
+<span class="sig-name descname"><span class="pre">pop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ID</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#picea.SequenceAnnotation.pop" title="Link to this definition">¶</a></dt>
+<dd><p>Remove an element and return it</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ID</strong> (<em>Hashable</em>) – ID of the element to remove</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The removed element</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>DAGElement</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#KeyError" title="(in Python v3.14)"><strong>KeyError</strong></a> – If there is no element with this ID</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="picea.SequenceInterval">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">picea.</span></span><span class="sig-name descname"><span class="pre">SequenceInterval</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ID</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seqid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interval_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">score</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strand</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phase</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">children</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">container</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/picea/sequence.html#SequenceInterval"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#picea.SequenceInterval" title="Link to this definition">¶</a></dt>
+<dd><p>Single annotated interval on a sequence, such as a gene, mRNA, exon or CDS. Corresponds to one line in a
+GFF3 or GTF file.</p>
+<p>The eight fixed GFF3 columns are stored as attributes (<code class="docutils literal notranslate"><span class="pre">seqid</span></code>, <code class="docutils literal notranslate"><span class="pre">source</span></code>, <code class="docutils literal notranslate"><span class="pre">interval_type</span></code>, <code class="docutils literal notranslate"><span class="pre">start</span></code>,
+<code class="docutils literal notranslate"><span class="pre">end</span></code>, <code class="docutils literal notranslate"><span class="pre">score</span></code>, <code class="docutils literal notranslate"><span class="pre">strand</span></code>, <code class="docutils literal notranslate"><span class="pre">phase</span></code>). Column 9 attributes are stored as additional attributes with
+lowercase keys (except <code class="docutils literal notranslate"><span class="pre">ID</span></code>) and list values, and can also be accessed by key (<code class="docutils literal notranslate"><span class="pre">interval[&quot;name&quot;]</span></code>).
+Predefined GFF3 attributes that are not set are <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interval</span> <span class="o">=</span> <span class="n">SequenceInterval</span><span class="o">.</span><span class="n">from_gff_line</span><span class="p">(</span><span class="s2">"ctg1</span><span class="se">\t</span><span class="s2">.</span><span class="se">\t</span><span class="s2">gene</span><span class="se">\t</span><span class="s2">1000</span><span class="se">\t</span><span class="s2">9000</span><span class="se">\t</span><span class="s2">.</span><span class="se">\t</span><span class="s2">+</span><span class="se">\t</span><span class="s2">.</span><span class="se">\t</span><span class="s2">ID=gene1;Name=EDEN"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interval</span><span class="o">.</span><span class="n">interval_type</span><span class="p">,</span> <span class="n">interval</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">interval</span><span class="o">.</span><span class="n">end</span><span class="p">,</span> <span class="n">interval</span><span class="o">.</span><span class="n">strand</span>
+<span class="go">('gene', 1000, 9000, '+')</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interval</span><span class="o">.</span><span class="n">name</span>
+<span class="go">['EDEN']</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ID</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – Unique identifier</p></li>
+<li><p><strong>seqid</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – Name of the sequence the interval is on (e.g. a chromosome)</p></li>
+<li><p><strong>source</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – Program or database that produced the interval</p></li>
+<li><p><strong>interval_type</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – Feature type, e.g. <code class="docutils literal notranslate"><span class="pre">gene</span></code>, <code class="docutils literal notranslate"><span class="pre">mRNA</span></code>, <code class="docutils literal notranslate"><span class="pre">exon</span></code> or <code class="docutils literal notranslate"><span class="pre">CDS</span></code></p></li>
+<li><p><strong>start</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – Start position (as in GFF3: 1-based, inclusive)</p></li>
+<li><p><strong>end</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – End position (as in GFF3: 1-based, inclusive)</p></li>
+<li><p><strong>score</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>]</em>) – Score</p></li>
+<li><p><strong>strand</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – <code class="docutils literal notranslate"><span class="pre">+</span></code>, <code class="docutils literal notranslate"><span class="pre">-</span></code> or <code class="docutils literal notranslate"><span class="pre">.</span></code></p></li>
+<li><p><strong>phase</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – Phase of CDS intervals: <code class="docutils literal notranslate"><span class="pre">0</span></code>, <code class="docutils literal notranslate"><span class="pre">1</span></code>, <code class="docutils literal notranslate"><span class="pre">2</span></code> or <code class="docutils literal notranslate"><span class="pre">.</span></code></p></li>
+<li><p><strong>children</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>]</em>) – IDs of child intervals</p></li>
+<li><p><strong>container</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="#picea.SequenceAnnotation" title="picea.SequenceAnnotation"><em>SequenceAnnotation</em></a><em>]</em>) – Annotation the interval belongs to</p></li>
+<li><p><strong>**kwargs</strong> – Additional attributes. <code class="docutils literal notranslate"><span class="pre">parent</span></code> is the list of parent interval IDs.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="picea.SequenceInterval.parent">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">parent</span></span><a class="headerlink" href="#picea.SequenceInterval.parent" title="Link to this definition">¶</a></dt>
+<dd><p>IDs of the direct parent intervals (the GFF3 <code class="docutils literal notranslate"><span class="pre">Parent</span></code> attribute). Can be set with a single ID or a list of
+IDs. See <a class="reference internal" href="#picea.SequenceInterval.parents" title="picea.SequenceInterval.parents"><code class="xref py py-attr docutils literal notranslate"><span class="pre">parents</span></code></a> for all ancestors.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="picea.SequenceInterval.gff_attributes">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">gff_attributes</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#picea.SequenceInterval.gff_attributes" title="Link to this definition">¶</a></dt>
+<dd><p>Column 9 attributes as a dictionary, including <code class="docutils literal notranslate"><span class="pre">ID</span></code> and <code class="docutils literal notranslate"><span class="pre">Parent</span></code>. Attributes that are <code class="docutils literal notranslate"><span class="pre">None</span></code> are left
+out.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="picea.SequenceInterval.gtf_attributes">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">gtf_attributes</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#picea.SequenceInterval.gtf_attributes" title="Link to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="#picea.SequenceInterval.gff_attributes" title="picea.SequenceInterval.gff_attributes"><code class="xref py py-attr docutils literal notranslate"><span class="pre">gff_attributes</span></code></a>, plus a <code class="docutils literal notranslate"><span class="pre">&lt;type&gt;_id</span></code> attribute for every ancestor (e.g.
+<code class="docutils literal notranslate"><span class="pre">transcript_id</span></code> and <code class="docutils literal notranslate"><span class="pre">gene_id</span></code> for an exon)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Attributes for GTF output</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="picea.SequenceInterval.from_gtf_line">
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">from_gtf_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gtf_line</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_number</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/picea/sequence.html#SequenceInterval.from_gtf_line"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#picea.SequenceInterval.from_gtf_line" title="Link to this definition">¶</a></dt>
+<dd><p>Create an interval from a single GTF line</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>gtf_line</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – GTF formatted line</p></li>
+<li><p><strong>line_number</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – Line number, used in error messages</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Interval</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#picea.SequenceInterval" title="picea.SequenceInterval">SequenceInterval</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If the start, end, score, strand, or phase column has an invalid value</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="picea.SequenceInterval.to_gtf_line">
+<span class="sig-name descname"><span class="pre">to_gtf_line</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/picea/sequence.html#SequenceInterval.to_gtf_line"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#picea.SequenceInterval.to_gtf_line" title="Link to this definition">¶</a></dt>
+<dd><p>GTF formatted line (without a trailing newline). The <code class="docutils literal notranslate"><span class="pre">mRNA</span></code> type is written as <code class="docutils literal notranslate"><span class="pre">transcript</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>GTF formatted line</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="picea.SequenceInterval.from_gff_line">
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">from_gff_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gff_line</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_number</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attribute_parser</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;function</span> <span class="pre">parse_gff_attribute_string&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/picea/sequence.html#SequenceInterval.from_gff_line"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#picea.SequenceInterval.from_gff_line" title="Link to this definition">¶</a></dt>
+<dd><p>Create an interval from a single GFF3 line. Intervals without an <code class="docutils literal notranslate"><span class="pre">ID</span></code> attribute get a random UUID.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>gff_line</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – GFF3 formatted line</p></li>
+<li><p><strong>line_number</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – Line number, used in error messages</p></li>
+<li><p><strong>attribute_parser</strong> (<em>Callable</em>) – Function that parses column 9 into a dictionary of lists</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Interval</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#picea.SequenceInterval" title="picea.SequenceInterval">SequenceInterval</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If the start, end, score, strand, or phase column has an invalid value</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="picea.SequenceInterval.to_gff_line">
+<span class="sig-name descname"><span class="pre">to_gff_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trailing_newline</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/picea/sequence.html#SequenceInterval.to_gff_line"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#picea.SequenceInterval.to_gff_line" title="Link to this definition">¶</a></dt>
+<dd><p>GFF3 formatted line</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>trailing_newline</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – End the line with a newline</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>GFF3 formatted line</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="picea.SequenceInterval.from_dict">
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">from_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">interval_dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/picea/sequence.html#SequenceInterval.from_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#picea.SequenceInterval.from_dict" title="Link to this definition">¶</a></dt>
+<dd><p>Create an interval from a dictionary, as created by <a class="reference internal" href="#picea.SequenceInterval.to_dict" title="picea.SequenceInterval.to_dict"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to_dict()</span></code></a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>interval_dict</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – The eight fixed GFF3 fields, <code class="docutils literal notranslate"><span class="pre">ID</span></code>, and an <code class="docutils literal notranslate"><span class="pre">attributes</span></code> dictionary</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Interval</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#picea.SequenceInterval" title="picea.SequenceInterval">SequenceInterval</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="picea.SequenceInterval.to_dict">
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">include_children</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/picea/sequence.html#SequenceInterval.to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#picea.SequenceInterval.to_dict" title="Link to this definition">¶</a></dt>
+<dd><p>Dictionary with the eight fixed GFF3 fields, <code class="docutils literal notranslate"><span class="pre">ID</span></code>, and an <code class="docutils literal notranslate"><span class="pre">attributes</span></code> dictionary with all other
+attributes</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>include_children</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Add a <code class="docutils literal notranslate"><span class="pre">children</span></code> list with the dictionaries of all descendant intervals</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Interval dictionary</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)">str</a>, Any]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="picea.SequenceInterval.to_json">
+<span class="sig-name descname"><span class="pre">to_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">include_children</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/picea/sequence.html#SequenceInterval.to_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#picea.SequenceInterval.to_json" title="Link to this definition">¶</a></dt>
+<dd><p>json formatted string of <a class="reference internal" href="#picea.SequenceInterval.to_dict" title="picea.SequenceInterval.to_dict"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to_dict()</span></code></a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>include_children</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Include all descendant intervals</p></li>
+<li><p><strong>indent</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – Indentation, passed to <a class="reference external" href="https://docs.python.org/3/library/json.html#json.dumps" title="(in Python v3.14)"><code class="xref py py-func docutils literal notranslate"><span class="pre">json.dumps()</span></code></a></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>json formatted string</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="picea.SequenceInterval.ID">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">ID</span></span><a class="headerlink" href="#picea.SequenceInterval.ID" title="Link to this definition">¶</a></dt>
+<dd><p>Unique identifier of the element. Setting a new ID also updates the parent references of child elements,
+and the key of the element in its container.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="picea.SequenceInterval.children">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">children</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">DirectedAcyclicGraph</span></span><a class="headerlink" href="#picea.SequenceInterval.children" title="Link to this definition">¶</a></dt>
+<dd><p>All descendants of this element (children, their children, etc.), as a new graph of the same type as the
+container</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="picea.SequenceInterval.parents">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">parents</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">DirectedAcyclicGraph</span></span><a class="headerlink" href="#picea.SequenceInterval.parents" title="Link to this definition">¶</a></dt>
+<dd><p>All ancestors of this element (parents, their parents, etc.), as a new graph of the same type as the
+container</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="trees.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Trees</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="sequences.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Sequences</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; Rens Holmer
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Sequence annotation</a><ul>
+<li><a class="reference internal" href="#picea.SequenceAnnotation"><code class="docutils literal notranslate"><span class="pre">SequenceAnnotation</span></code></a><ul>
+<li><a class="reference internal" href="#picea.SequenceAnnotation.intervals"><code class="docutils literal notranslate"><span class="pre">SequenceAnnotation.intervals</span></code></a></li>
+<li><a class="reference internal" href="#picea.SequenceAnnotation.from_gtf"><code class="docutils literal notranslate"><span class="pre">SequenceAnnotation.from_gtf()</span></code></a></li>
+<li><a class="reference internal" href="#picea.SequenceAnnotation.to_gtf"><code class="docutils literal notranslate"><span class="pre">SequenceAnnotation.to_gtf()</span></code></a></li>
+<li><a class="reference internal" href="#picea.SequenceAnnotation.from_gff"><code class="docutils literal notranslate"><span class="pre">SequenceAnnotation.from_gff()</span></code></a></li>
+<li><a class="reference internal" href="#picea.SequenceAnnotation.to_gff"><code class="docutils literal notranslate"><span class="pre">SequenceAnnotation.to_gff()</span></code></a></li>
+<li><a class="reference internal" href="#picea.SequenceAnnotation.from_json"><code class="docutils literal notranslate"><span class="pre">SequenceAnnotation.from_json()</span></code></a></li>
+<li><a class="reference internal" href="#picea.SequenceAnnotation.to_json"><code class="docutils literal notranslate"><span class="pre">SequenceAnnotation.to_json()</span></code></a></li>
+<li><a class="reference internal" href="#picea.SequenceAnnotation.add"><code class="docutils literal notranslate"><span class="pre">SequenceAnnotation.add()</span></code></a></li>
+<li><a class="reference internal" href="#picea.SequenceAnnotation.elements"><code class="docutils literal notranslate"><span class="pre">SequenceAnnotation.elements</span></code></a></li>
+<li><a class="reference internal" href="#picea.SequenceAnnotation.filter"><code class="docutils literal notranslate"><span class="pre">SequenceAnnotation.filter()</span></code></a></li>
+<li><a class="reference internal" href="#picea.SequenceAnnotation.groupby"><code class="docutils literal notranslate"><span class="pre">SequenceAnnotation.groupby()</span></code></a></li>
+<li><a class="reference internal" href="#picea.SequenceAnnotation.pop"><code class="docutils literal notranslate"><span class="pre">SequenceAnnotation.pop()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#picea.SequenceInterval"><code class="docutils literal notranslate"><span class="pre">SequenceInterval</span></code></a><ul>
+<li><a class="reference internal" href="#picea.SequenceInterval.parent"><code class="docutils literal notranslate"><span class="pre">SequenceInterval.parent</span></code></a></li>
+<li><a class="reference internal" href="#picea.SequenceInterval.gff_attributes"><code class="docutils literal notranslate"><span class="pre">SequenceInterval.gff_attributes</span></code></a></li>
+<li><a class="reference internal" href="#picea.SequenceInterval.gtf_attributes"><code class="docutils literal notranslate"><span class="pre">SequenceInterval.gtf_attributes</span></code></a></li>
+<li><a class="reference internal" href="#picea.SequenceInterval.from_gtf_line"><code class="docutils literal notranslate"><span class="pre">SequenceInterval.from_gtf_line()</span></code></a></li>
+<li><a class="reference internal" href="#picea.SequenceInterval.to_gtf_line"><code class="docutils literal notranslate"><span class="pre">SequenceInterval.to_gtf_line()</span></code></a></li>
+<li><a class="reference internal" href="#picea.SequenceInterval.from_gff_line"><code class="docutils literal notranslate"><span class="pre">SequenceInterval.from_gff_line()</span></code></a></li>
+<li><a class="reference internal" href="#picea.SequenceInterval.to_gff_line"><code class="docutils literal notranslate"><span class="pre">SequenceInterval.to_gff_line()</span></code></a></li>
+<li><a class="reference internal" href="#picea.SequenceInterval.from_dict"><code class="docutils literal notranslate"><span class="pre">SequenceInterval.from_dict()</span></code></a></li>
+<li><a class="reference internal" href="#picea.SequenceInterval.to_dict"><code class="docutils literal notranslate"><span class="pre">SequenceInterval.to_dict()</span></code></a></li>
+<li><a class="reference internal" href="#picea.SequenceInterval.to_json"><code class="docutils literal notranslate"><span class="pre">SequenceInterval.to_json()</span></code></a></li>
+<li><a class="reference internal" href="#picea.SequenceInterval.ID"><code class="docutils literal notranslate"><span class="pre">SequenceInterval.ID</span></code></a></li>
+<li><a class="reference internal" href="#picea.SequenceInterval.children"><code class="docutils literal notranslate"><span class="pre">SequenceInterval.children</span></code></a></li>
+<li><a class="reference internal" href="#picea.SequenceInterval.parents"><code class="docutils literal notranslate"><span class="pre">SequenceInterval.parents</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../_static/documentation_options.js?v=c5dbc6bb"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    </body>
+</html>
